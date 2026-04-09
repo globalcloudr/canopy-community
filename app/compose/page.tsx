@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Input, Label } from "@canopy/ui";
 import { cn } from "@canopy/ui";
 import { ProductShell } from "@/app/_components/product-shell";
@@ -28,7 +28,20 @@ function ComposeContent() {
   const [fromName, setFromName] = useState("");
   const [fromEmail, setFromEmail] = useState("");
   const [replyTo, setReplyTo] = useState("");
-  const [listId, setListId] = useState("");
+
+  // Pre-populate sender fields from the most recent sent campaign once overview loads.
+  // The fromEmail will be the school's CM-assigned sending address (e.g. info@ditnld.createsend7.com).
+  const senderPrefilled = useRef(false);
+  useEffect(() => {
+    if (senderPrefilled.current) return;
+    const lastSent = overview?.sentCampaigns[0];
+    if (!lastSent) return;
+    setFromName((prev) => prev || lastSent.fromName || "");
+    setFromEmail((prev) => prev || lastSent.fromEmail || "");
+    setReplyTo((prev) => prev || lastSent.replyTo || "");
+    senderPrefilled.current = true;
+  }, [overview]);
+  const [listIds, setListIds] = useState<string[]>([]);
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [sendMode, setSendMode] = useState<"immediately" | "schedule">("immediately");
@@ -171,12 +184,16 @@ function ComposeContent() {
                     required
                   />
                 </Field>
-                <Field label="From email" required>
+                <Field
+                  label="From email"
+                  required
+                  hint="Use your school's Campaign Monitor sending address."
+                >
                   <Input
                     type="email"
                     value={fromEmail}
                     onChange={(e) => setFromEmail(e.target.value)}
-                    placeholder="newsletter@school.edu"
+                    placeholder="info@yourschool.createsend.com"
                     required
                   />
                 </Field>
