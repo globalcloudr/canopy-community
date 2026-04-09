@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Alert, AlertDescription, AlertTitle, Badge, Button, Card } from "@canopy/ui";
+import { cn } from "@canopy/ui";
 import type { CommunityCampaignSummary } from "@/lib/community-schema";
 
 export function PageIntro({
@@ -7,27 +8,35 @@ export function PageIntro({
   title,
   description,
   actions,
+  className,
 }: {
   eyebrow: string;
   title: string;
   description: string;
   actions?: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-[32px] border border-[var(--app-surface-border)] bg-white px-6 py-6 sm:px-7">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-[32px] border border-[var(--app-surface-border)] bg-[linear-gradient(180deg,#ffffff_0%,#f7fbff_100%)] px-6 py-6 sm:px-7 sm:py-7",
+        className
+      )}
+    >
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top_left,rgba(15,118,110,0.08),transparent_52%)]" />
+      <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-3xl">
           <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#0f766e]">
             {eyebrow}
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-[#0f172a] sm:text-[2.25rem]">
+          <h1 className="mt-2 max-w-[14ch] text-[2.1rem] font-semibold tracking-[-0.05em] text-[#0f172a] sm:text-[2.6rem]">
             {title}
           </h1>
-          <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#526072]">
+          <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#526072] sm:text-[16px]">
             {description}
           </p>
         </div>
-        {actions ? <div className="flex flex-wrap items-center gap-3">{actions}</div> : null}
+        {actions ? <div className="flex flex-wrap items-center gap-3 lg:justify-end">{actions}</div> : null}
       </div>
     </div>
   );
@@ -37,13 +46,18 @@ export function StatCard({
   label,
   value,
   hint,
+  className,
 }: {
   label: string;
   value: string;
   hint: string;
+  className?: string;
 }) {
   return (
-    <Card padding="md" className="rounded-[26px] border border-[var(--app-surface-border)] bg-white shadow-none">
+    <Card
+      padding="md"
+      className={cn("rounded-[26px] border border-[var(--app-surface-border)] bg-white shadow-none", className)}
+    >
       <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#8ca0b3]">
         {label}
       </p>
@@ -60,14 +74,19 @@ export function SectionCard({
   description,
   children,
   action,
+  className,
 }: {
   title: string;
   description: string;
   children: ReactNode;
   action?: ReactNode;
+  className?: string;
 }) {
   return (
-    <Card padding="md" className="rounded-[28px] border border-[var(--app-surface-border)] bg-white shadow-none">
+    <Card
+      padding="md"
+      className={cn("rounded-[28px] border border-[var(--app-surface-border)] bg-white shadow-none", className)}
+    >
       <div className="flex flex-col gap-3 border-b border-[var(--app-divider)] pb-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-[1.25rem] font-semibold tracking-[-0.03em] text-[#0f172a]">
@@ -108,7 +127,7 @@ export function SyncErrorNotice({
 
   return (
     <Alert variant="warning">
-      <AlertTitle>Campaign Monitor sync needs attention</AlertTitle>
+      <AlertTitle>We could not refresh your newsletter data</AlertTitle>
       <AlertDescription>{message}</AlertDescription>
     </Alert>
   );

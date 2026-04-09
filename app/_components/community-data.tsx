@@ -20,7 +20,7 @@ async function getAccessToken() {
 async function requestJson<T>(input: string, init?: RequestInit) {
   const token = await getAccessToken();
   if (!token) {
-    throw new Error("Your workspace session is not available. Return to the portal and relaunch Community.");
+    throw new Error("Your session has expired. Return to Canopy and open Community again.");
   }
 
   const response = await fetch(input, {
@@ -66,7 +66,7 @@ export function useCommunityOverview(): OverviewState {
 
       if (!workspaceId) {
         setOverview(null);
-        setError("Choose a workspace to load Community.");
+        setError("Choose a school before opening Community.");
         setLoading(false);
         return;
       }
@@ -84,7 +84,7 @@ export function useCommunityOverview(): OverviewState {
         }
       } catch (loadError) {
         if (!cancelled) {
-          setError(loadError instanceof Error ? loadError.message : "Failed to load Community data.");
+          setError(loadError instanceof Error ? loadError.message : "We could not load your newsletter data.");
           setOverview(null);
         }
       } finally {

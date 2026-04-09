@@ -22,44 +22,44 @@ function CampaignsContent() {
     <>
       <PageIntro
         eyebrow="Campaigns"
-        title="Recent newsletter activity"
-        description="This first build gives Community a shared view of sent, scheduled, and draft newsletters already living in Campaign Monitor. It’s the operational surface we’ll use to add native campaign creation next."
+        title="Your newsletter activity"
+        description="Review drafts, scheduled sends, and recent newsletters for your school."
         actions={
           <>
             <Button variant="secondary" onClick={() => void refresh()} disabled={loading}>
               {loading ? "Refreshing…" : "Refresh"}
             </Button>
             <Button asChild>
-              <a href="/settings">Update connection</a>
+              <a href="/settings">Manage connection</a>
             </Button>
           </>
         }
       />
 
-      {error ? <EmptyState title="Campaigns could not be loaded" body={error} /> : null}
+      {error ? <EmptyState title="We could not load your newsletters" body={error} /> : null}
 
       <CampaignTable
-        title="Draft campaigns"
-        description="Draft campaigns are a good proxy for in-progress newsletter work while we finish the native composer."
+        title="Drafts"
+        description="Newsletters still being prepared."
         campaigns={overview?.draftCampaigns ?? []}
         emptyTitle="No drafts yet"
-        emptyBody="When a connected account has saved drafts, they’ll appear here."
+        emptyBody="Saved drafts will appear here."
       />
 
       <CampaignTable
-        title="Scheduled campaigns"
-        description="Anything with a future send time shows up here so school staff can confirm what’s about to go out."
+        title="Scheduled"
+        description="Newsletters that already have a send date."
         campaigns={overview?.scheduledCampaigns ?? []}
-        emptyTitle="Nothing is scheduled"
-        emptyBody="Scheduled newsletters will appear here after they’re created in Campaign Monitor."
+        emptyTitle="Nothing scheduled"
+        emptyBody="Scheduled newsletters will appear here."
       />
 
       <CampaignTable
-        title="Sent campaigns"
-        description="The latest delivered newsletters, ready for review and archive linking."
+        title="Sent"
+        description="Recently delivered newsletters from your school."
         campaigns={overview?.sentCampaigns ?? []}
         emptyTitle="No sent newsletters yet"
-        emptyBody="Sent campaigns will populate once a workspace account is connected."
+        emptyBody="Sent newsletters will appear here once your account is connected."
       />
     </>
   );

@@ -22,16 +22,16 @@ function TemplatesContent() {
     <>
       <PageIntro
         eyebrow="Templates"
-        title="Newsletter layouts already assigned to the school"
-        description="Templates stay managed in Campaign Monitor, while Community gives school staff a focused place to review what’s available for future newsletter sends."
+        title="Your newsletter templates"
+        description="Review the layouts your school can keep using for future sends."
         actions={
           <Button variant="secondary" onClick={() => void refresh()} disabled={loading}>
-            {loading ? "Refreshing…" : "Refresh templates"}
+            {loading ? "Refreshing…" : "Refresh"}
           </Button>
         }
       />
 
-      {error ? <EmptyState title="Templates could not be loaded" body={error} /> : null}
+      {error ? <EmptyState title="We could not load your templates" body={error} /> : null}
 
       <TemplateListSection templates={overview?.templates ?? []} />
     </>

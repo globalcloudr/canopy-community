@@ -11,6 +11,7 @@ import {
   TemplateListSection,
 } from "@/app/_components/community-sections";
 import { EmptyState, PageIntro, StatCard } from "@/app/_components/community-ui";
+import { useProductShell } from "@/app/_components/product-shell";
 
 export default function DashboardPage() {
   return (
@@ -22,6 +23,8 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const { overview, error, loading, refresh } = useCommunityOverview();
+  const { activeWorkspace } = useProductShell();
+  const schoolName = activeWorkspace?.name ?? "your school";
 
   const stats = overview?.stats ?? {
     listCount: 0,
@@ -35,31 +38,56 @@ function DashboardContent() {
     <>
       <PageIntro
         eyebrow="Canopy Community"
-        title="Newsletter operations for every school workspace"
-        description="Canopy Community reads each school’s Campaign Monitor account so staff can see newsletter health, active lists, and ready-to-use templates without leaving the Canopy portfolio."
+        title="School newsletters in one place"
+        description={`See recent sends, mailing lists, and templates for ${schoolName} without leaving Canopy.`}
         actions={
           <>
             <Button variant="secondary" onClick={() => void refresh()} disabled={loading}>
-              {loading ? "Refreshing…" : "Refresh data"}
+              {loading ? "Refreshing…" : "Refresh"}
             </Button>
             <Button asChild>
-              <a href="/settings">Connection settings</a>
+              <a href="/settings">Manage connection</a>
             </Button>
           </>
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <StatCard label="Lists" value={stats.listCount.toLocaleString()} hint="Audience segments currently available in Campaign Monitor." />
-        <StatCard label="Templates" value={stats.templateCount.toLocaleString()} hint="Reusable newsletter layouts already available to this school." />
-        <StatCard label="Sent" value={stats.sentCampaignCount.toLocaleString()} hint="Recent sent campaigns pulled from the connected account." />
-        <StatCard label="Drafts" value={stats.draftCampaignCount.toLocaleString()} hint="Draft newsletters waiting for review or send." />
-        <StatCard label="Scheduled" value={stats.scheduledCampaignCount.toLocaleString()} hint="Campaigns that already have a future send time." />
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-12">
+        <StatCard
+          className="xl:col-span-4"
+          label="Sent"
+          value={stats.sentCampaignCount.toLocaleString()}
+          hint="Newsletters already delivered."
+        />
+        <StatCard
+          className="xl:col-span-4"
+          label="Scheduled"
+          value={stats.scheduledCampaignCount.toLocaleString()}
+          hint="Newsletters queued to send."
+        />
+        <StatCard
+          className="xl:col-span-4"
+          label="Drafts"
+          value={stats.draftCampaignCount.toLocaleString()}
+          hint="Drafts waiting for review."
+        />
+        <StatCard
+          className="xl:col-span-6"
+          label="Lists"
+          value={stats.listCount.toLocaleString()}
+          hint="Mailing lists available to this school."
+        />
+        <StatCard
+          className="xl:col-span-6"
+          label="Templates"
+          value={stats.templateCount.toLocaleString()}
+          hint="Ready-to-use newsletter layouts."
+        />
       </div>
 
       {error ? (
         <EmptyState
-          title="Community data is not available yet"
+          title="Your newsletter data is not ready yet"
           body={error}
         />
       ) : null}
@@ -67,22 +95,22 @@ function DashboardContent() {
       <ConnectionSection connection={overview?.connection ?? null} syncError={overview?.syncError ?? null} />
 
       <CampaignTable
-        title="Recent sent newsletters"
-        description="A quick look at what this school has already delivered to its community."
+        title="Recent newsletters"
+        description="A quick look at what this school has recently sent."
         campaigns={overview?.sentCampaigns ?? []}
-        emptyTitle="No sent campaigns yet"
-        emptyBody="Sent newsletters will show up here after Community can read the connected Campaign Monitor account."
-        action={<Button asChild variant="ghost"><a href="/campaigns">See all campaigns</a></Button>}
+        emptyTitle="No newsletters yet"
+        emptyBody="Sent newsletters will appear here once your school account is connected."
+        action={<Button asChild variant="ghost"><a href="/campaigns">View all</a></Button>}
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <AudienceListSection
           lists={(overview?.lists ?? []).slice(0, 4)}
-          action={<Button asChild variant="ghost"><a href="/audiences">All audiences</a></Button>}
+          action={<Button asChild variant="ghost"><a href="/audiences">View all</a></Button>}
         />
         <TemplateListSection
           templates={(overview?.templates ?? []).slice(0, 4)}
-          action={<Button asChild variant="ghost"><a href="/templates">All templates</a></Button>}
+          action={<Button asChild variant="ghost"><a href="/templates">View all</a></Button>}
         />
       </div>
     </>

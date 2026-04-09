@@ -47,7 +47,7 @@ function SettingsContent() {
     event.preventDefault();
 
     if (!workspaceId) {
-      setSaveError("Choose a workspace before saving Campaign Monitor settings.");
+      setSaveError("Choose a school before saving these settings.");
       return;
     }
 
@@ -62,13 +62,13 @@ function SettingsContent() {
         apiKey,
       });
       setApiKey("");
-      setMessage("Campaign Monitor connection saved and validated.");
+      setMessage("Connection saved.");
       await refresh();
     } catch (saveConnectionError) {
       setSaveError(
         saveConnectionError instanceof Error
           ? saveConnectionError.message
-          : "Campaign Monitor settings could not be saved."
+          : "We could not save these settings."
       );
     } finally {
       setSaving(false);
@@ -77,7 +77,7 @@ function SettingsContent() {
 
   async function handleRemove() {
     if (!workspaceId) {
-      setSaveError("Choose a workspace before removing Campaign Monitor settings.");
+      setSaveError("Choose a school before removing these settings.");
       return;
     }
 
@@ -89,13 +89,13 @@ function SettingsContent() {
       await removeCampaignMonitorConnection(workspaceId);
       setClientId("");
       setApiKey("");
-      setMessage("Campaign Monitor connection removed.");
+      setMessage("Connection removed.");
       await refresh();
     } catch (removeError) {
       setSaveError(
         removeError instanceof Error
           ? removeError.message
-          : "Campaign Monitor settings could not be removed."
+          : "We could not remove this connection."
       );
     } finally {
       setRemoving(false);
@@ -106,29 +106,29 @@ function SettingsContent() {
     <>
       <PageIntro
         eyebrow="Settings"
-        title="Workspace connection settings"
-        description="Each school workspace maps to a Campaign Monitor client. When a shared master API key is configured on the server, you only need to save the school’s Client ID here."
+        title="Connect your school account"
+        description="Add the Campaign Monitor Client ID for this school. If Canopy already has a shared API key, you can leave the API key field blank."
         actions={
           <Button variant="secondary" onClick={() => void refresh()} disabled={loading}>
-            {loading ? "Refreshing…" : "Refresh connection"}
+            {loading ? "Refreshing…" : "Refresh"}
           </Button>
         }
       />
 
-      {error ? <EmptyState title="Settings could not be loaded" body={error} /> : null}
+      {error ? <EmptyState title="We could not load your settings" body={error} /> : null}
 
       <ConnectionSection connection={overview?.connection ?? null} syncError={overview?.syncError ?? null} />
 
       <Card padding="md" className="rounded-[28px] border border-[var(--app-surface-border)] bg-white shadow-none">
         <div className="border-b border-[var(--app-divider)] pb-5">
           <h2 className="text-[1.25rem] font-semibold tracking-[-0.03em] text-[#0f172a]">
-            Campaign Monitor credentials
+            Campaign Monitor connection
           </h2>
           <p className="mt-1 max-w-2xl text-[14px] leading-6 text-[#617284]">
-            Community validates the client using Campaign Monitor before saving.
+            We check the connection with Campaign Monitor before saving.
             {sharedApiKeyConfigured
-              ? " This environment is already using a shared master API key, so the API key field below is optional."
-              : " Add a shared CAMPAIGN_MONITOR_API_KEY on the server, or save a workspace-specific override key below."}
+              ? " A shared Canopy API key is already set up, so the API key field below is optional."
+              : " Add a shared CAMPAIGN_MONITOR_API_KEY on the server, or enter a school-specific API key below."}
           </p>
         </div>
 
@@ -139,7 +139,7 @@ function SettingsContent() {
               id="clientId"
               value={clientId}
               onChange={(event) => setClientId(event.target.value)}
-              placeholder="Campaign Monitor client ID"
+              placeholder="Paste the school's Client ID"
               autoComplete="off"
             />
           </div>
@@ -155,10 +155,10 @@ function SettingsContent() {
               onChange={(event) => setApiKey(event.target.value)}
               placeholder={
                 sharedApiKeyConfigured
-                  ? "Optional workspace-specific API key"
+                  ? "Optional school-specific API key"
                   : overview?.connection
-                    ? "Enter a new API key to rotate credentials"
-                    : "Campaign Monitor API key"
+                    ? "Enter a new API key"
+                    : "Paste the Campaign Monitor API key"
               }
               autoComplete="off"
             />
@@ -166,7 +166,7 @@ function SettingsContent() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Button type="submit" disabled={saving || !canSave}>
-              {saving ? "Validating…" : "Save connection"}
+              {saving ? "Checking…" : "Save"}
             </Button>
             {overview?.connection ? (
               <Button
@@ -175,7 +175,7 @@ function SettingsContent() {
                 disabled={removing}
                 onClick={() => void handleRemove()}
               >
-                {removing ? "Removing…" : "Remove connection"}
+                {removing ? "Removing…" : "Remove"}
               </Button>
             ) : null}
           </div>

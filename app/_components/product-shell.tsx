@@ -102,7 +102,7 @@ export function useProductShell() {
 
 function navClass(active: boolean) {
   return cn(
-    "flex items-center gap-2.5 rounded-2xl px-3.5 py-3 font-medium text-[15px] tracking-[-0.01em] transition",
+    "flex items-center gap-2.5 rounded-2xl px-3.5 py-3.5 font-medium text-[15px] tracking-[-0.01em] transition",
     active
       ? "bg-white/82 text-[#172033] shadow-[0_10px_24px_rgba(35,74,144,0.08)]"
       : "text-[#506176] hover:bg-white/48 hover:text-[#172033]"
@@ -441,7 +441,7 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
         />
 
         {/* Main layout */}
-        <div className="md:grid md:h-[calc(100vh-3.5rem)] md:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="md:grid md:h-[calc(100vh-3.5rem)] md:grid-cols-[296px_minmax(0,1fr)]">
 
           {/* Sidebar */}
           <aside className="hidden border-r border-[var(--app-divider)] bg-transparent md:block">
@@ -464,7 +464,7 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
                       {loadingSession ? "…" : orgInitials}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[15px] font-semibold tracking-[-0.02em] text-[#0f172a]">
+                      <p className="text-[15px] font-semibold leading-5 tracking-[-0.02em] text-[#0f172a]">
                         {activeOrg?.name ?? (loadingSession ? "Loading…" : "No workspace")}
                       </p>
                       <p className="mt-0.5 text-[13px] text-[#6f7e90]">{PRODUCT_NAME}</p>
@@ -546,7 +546,7 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
 
           {/* Content */}
           <div className="min-w-0 overflow-y-auto bg-[var(--app-content-bg)]">
-            <div className="mx-auto flex min-h-full w-full max-w-[1340px] flex-col gap-6 px-4 py-6 sm:px-6">
+            <div className="mx-auto flex min-h-full w-full max-w-[1380px] flex-col gap-6 px-4 py-6 sm:px-6 xl:px-8">
               {loadingSession ? (
                 <AppSurface variant="clear" className="overflow-hidden rounded-[34px] px-6 py-7 sm:px-8 sm:py-8">
                   <Card padding="md" className="border border-[var(--app-surface-border)] bg-transparent shadow-none">

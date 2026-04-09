@@ -26,7 +26,7 @@ export function ConnectionSection({
   return (
     <SectionCard
       title="Campaign Monitor"
-      description="Each workspace stores its own Campaign Monitor client connection so school users only see their own newsletters, lists, and templates."
+      description="Connect your school's Campaign Monitor account to bring in newsletters, lists, and templates."
       action={<SecondaryButtonLink href="/settings" label={connection ? "Manage connection" : "Connect account"} />}
     >
       <div className="space-y-4">
@@ -44,12 +44,12 @@ export function ConnectionSection({
             <ConnectionFact label="Client ID" value={connection.clientId} />
             <ConnectionFact label="Timezone" value={connection.timezone || "Not available"} />
             <ConnectionFact label="Country" value={connection.country || "Not available"} />
-            <ConnectionFact label="Last validated" value={formatCompactDateTime(connection.lastValidatedAt)} />
+            <ConnectionFact label="Last checked" value={formatCompactDateTime(connection.lastValidatedAt)} />
           </div>
         ) : (
           <EmptyState
-            title="Connect a school account"
-            body="Add the Campaign Monitor client ID and API key for this workspace in Settings. Once connected, Community can read lists, templates, and newsletter history directly from that account."
+            title="Connect your school account"
+            body="Add the school's Campaign Monitor Client ID in Settings. Once connected, Community will bring in recent sends, mailing lists, and templates."
           />
         )}
       </div>
@@ -90,11 +90,11 @@ export function CampaignTable({
           <table className="min-w-full text-left">
             <thead>
               <tr className="border-b border-[var(--app-divider)] text-[12px] uppercase tracking-[0.16em] text-[#8ca0b3]">
-                <th className="pb-3 font-semibold">Campaign</th>
-                <th className="pb-3 font-semibold">Status</th>
-                <th className="pb-3 font-semibold">Audience</th>
-                <th className="pb-3 font-semibold">Timing</th>
-                <th className="pb-3 font-semibold">Actions</th>
+                <th className="pb-3 pr-4 font-semibold">Newsletter</th>
+                <th className="pb-3 pr-4 font-semibold">Status</th>
+                <th className="pb-3 pr-4 font-semibold">Recipients</th>
+                <th className="pb-3 pr-4 font-semibold">Date</th>
+                <th className="pb-3 font-semibold">Open</th>
               </tr>
             </thead>
             <tbody>
@@ -105,14 +105,15 @@ export function CampaignTable({
                       {campaign.subject}
                     </p>
                     <p className="mt-1 text-[13px] leading-6 text-[#617284]">
-                      {campaign.fromName || "Canopy Community"}{campaign.replyTo ? ` • ${campaign.replyTo}` : ""}
+                      {campaign.fromName || "School newsletter"}
+                      {campaign.replyTo ? ` • ${campaign.replyTo}` : ""}
                     </p>
                   </td>
                   <td className="py-4 pr-4">
                     <CampaignStatusBadge status={campaign.status} />
                   </td>
                   <td className="py-4 pr-4 text-[14px] text-[#526072]">
-                    {campaign.recipientCount !== null ? `${campaign.recipientCount.toLocaleString()} recipients` : "Recipient count not available"}
+                    {campaign.recipientCount !== null ? `${campaign.recipientCount.toLocaleString()} recipients` : "Not available"}
                   </td>
                   <td className="py-4 pr-4 text-[14px] text-[#526072]">
                     {campaign.status === "scheduled"
@@ -158,14 +159,14 @@ export function AudienceListSection({
 }) {
   return (
     <SectionCard
-      title="Audience lists"
-      description="These lists come directly from Campaign Monitor and stay scoped to the active school workspace."
+      title="Mailing lists"
+      description="See the mailing lists already set up for this school."
       action={action}
     >
       {lists.length === 0 ? (
         <EmptyState
-          title="No lists available"
-          body="Once a Campaign Monitor account is connected, the workspace’s newsletter lists will appear here for planning and sending."
+          title="No lists yet"
+          body="Once your school account is connected, mailing lists will appear here."
         />
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
@@ -201,13 +202,13 @@ export function TemplateListSection({
   return (
     <SectionCard
       title="Newsletter templates"
-      description="Community reads the templates already set up in Campaign Monitor so your schools can keep using the designs they know."
+      description="Keep using the newsletter layouts your school already has."
       action={action}
     >
       {templates.length === 0 ? (
         <EmptyState
-          title="No templates found"
-          body="Templates will appear here after the connected Campaign Monitor account exposes them through the client."
+          title="No templates yet"
+          body="Templates will appear here once they are available in the connected account."
         />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">

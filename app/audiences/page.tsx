@@ -21,17 +21,17 @@ function AudiencesContent() {
   return (
     <>
       <PageIntro
-        eyebrow="Audiences"
-        title="School newsletter lists"
-        description="Community keeps the audience view simple for now: it surfaces the lists already maintained in Campaign Monitor so staff know what’s available before we add deeper send planning and segmentation."
+        eyebrow="Lists"
+        title="Your mailing lists"
+        description="Review the mailing lists your school already uses in Campaign Monitor."
         actions={
           <Button variant="secondary" onClick={() => void refresh()} disabled={loading}>
-            {loading ? "Refreshing…" : "Refresh lists"}
+            {loading ? "Refreshing…" : "Refresh"}
           </Button>
         }
       />
 
-      {error ? <EmptyState title="Audience lists could not be loaded" body={error} /> : null}
+      {error ? <EmptyState title="We could not load your lists" body={error} /> : null}
 
       <AudienceListSection lists={overview?.lists ?? []} />
     </>

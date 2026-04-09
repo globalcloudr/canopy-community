@@ -54,7 +54,7 @@ function SettingsIcon({ className }: { className?: string }) {
 export const communityNavItems: NavItem[] = [
   { key: "dashboard", href: "/", label: "Dashboard", icon: DashboardIcon },
   { key: "campaigns", href: "/campaigns", label: "Campaigns", icon: CampaignsIcon },
-  { key: "audiences", href: "/audiences", label: "Audiences", icon: AudienceIcon },
+  { key: "audiences", href: "/audiences", label: "Lists", icon: AudienceIcon },
   { key: "templates", href: "/templates", label: "Templates", icon: TemplateIcon },
   { key: "settings", href: "/settings", label: "Settings", icon: SettingsIcon },
 ];
