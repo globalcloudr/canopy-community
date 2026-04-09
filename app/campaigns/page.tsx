@@ -49,9 +49,7 @@ function CampaignsContent() {
               {loading ? "Refreshing…" : "Refresh"}
             </Button>
             <Button asChild variant="primary">
-              <a href="https://app.createsend.com" target="_blank" rel="noreferrer">
-                Create a campaign
-              </a>
+              <a href="/compose">Create a campaign</a>
             </Button>
           </>
         }

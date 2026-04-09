@@ -44,9 +44,7 @@ function DashboardContent() {
           ) : null}
         </div>
         <Button asChild variant="primary">
-          <a href="https://app.createsend.com" target="_blank" rel="noreferrer">
-            Create campaign
-          </a>
+          <a href="/compose">Create campaign</a>
         </Button>
       </div>
 

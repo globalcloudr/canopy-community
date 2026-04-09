@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import {
+  createCampaignMonitorCampaign,
   getCampaignMonitorClientDetails,
   getCampaignMonitorDraftCampaigns,
   getCampaignMonitorListStats,
@@ -7,6 +8,8 @@ import {
   getCampaignMonitorScheduledCampaigns,
   getCampaignMonitorSentCampaigns,
   getCampaignMonitorTemplates,
+  scheduleCampaignMonitorCampaign,
+  sendCampaignMonitorCampaign,
   type CampaignMonitorApiError,
 } from "@/lib/campaign-monitor";
 import type { CommunityConnection, CommunityOverview } from "@/lib/community-schema";
@@ -309,4 +312,101 @@ export async function getCommunityOverview(
       fetchedAt,
     };
   }
+}
+
+// ─── HTML upload to Supabase Storage ─────────────────────────────────────────
+
+const HTML_BUCKET = "community-html-uploads";
+
+export async function uploadCampaignHtml(params: {
+  workspaceId: string;
+  html: string;
+}): Promise<string> {
+  const client = getServiceClient();
+  const filename = `${params.workspaceId}/${Date.now()}.html`;
+
+  const { error } = await client.storage
+    .from(HTML_BUCKET)
+    .upload(filename, params.html, {
+      contentType: "text/html; charset=utf-8",
+      upsert: false,
+    });
+
+  if (error) {
+    throw new Error(`Failed to upload campaign HTML: ${error.message}`);
+  }
+
+  const { data } = client.storage.from(HTML_BUCKET).getPublicUrl(filename);
+  return data.publicUrl;
+}
+
+// ─── Compose and send campaign ────────────────────────────────────────────────
+
+export type ComposeCampaignParams = {
+  workspaceId: string;
+  name: string;
+  subject: string;
+  fromName: string;
+  fromEmail: string;
+  replyTo: string;
+  listId: string;
+  htmlContent: string;
+  scheduledDate?: string | null;
+  confirmationEmail: string;
+};
+
+export async function composeCampaign(params: ComposeCampaignParams) {
+  const connectionRow = await getCampaignMonitorConnection(params.workspaceId);
+
+  if (!connectionRow) {
+    throw new Error("No Campaign Monitor connection found for this workspace.");
+  }
+
+  const apiKey = resolveCampaignMonitorApiKey({
+    storedApiKey: connectionRow.api_key,
+  });
+
+  if (!apiKey) {
+    throw new Error("Campaign Monitor API key is not configured.");
+  }
+
+  const credentials = {
+    clientId: connectionRow.client_id,
+    apiKey,
+  };
+
+  // 1. Upload HTML to Supabase Storage to get a public URL
+  const htmlUrl = await uploadCampaignHtml({
+    workspaceId: params.workspaceId,
+    html: params.htmlContent,
+  });
+
+  // 2. Create the draft campaign in Campaign Monitor
+  const { campaignId } = await createCampaignMonitorCampaign(credentials, {
+    name: params.name,
+    subject: params.subject,
+    fromName: params.fromName,
+    fromEmail: params.fromEmail,
+    replyTo: params.replyTo,
+    htmlUrl,
+    listIds: [params.listId],
+  });
+
+  // 3. Send or schedule
+  if (params.scheduledDate) {
+    await scheduleCampaignMonitorCampaign(
+      credentials,
+      campaignId,
+      params.confirmationEmail,
+      params.scheduledDate
+    );
+  } else {
+    await sendCampaignMonitorCampaign(
+      credentials,
+      campaignId,
+      params.confirmationEmail
+    );
+  }
+
+  return { campaignId };
 }

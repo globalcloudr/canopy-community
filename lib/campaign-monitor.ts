@@ -305,6 +305,82 @@ export async function getCampaignMonitorScheduledCampaigns(
     .filter((row): row is CommunityCampaignSummary => row !== null);
 }
 
+// ─── Campaign creation and sending ───────────────────────────────────────────
+
+type CreateCampaignParams = {
+  name: string;
+  subject: string;
+  fromName: string;
+  fromEmail: string;
+  replyTo: string;
+  htmlUrl: string;
+  listIds: string[];
+};
+
+type CreateCampaignResponse = {
+  campaignId: string;
+};
+
+export async function createCampaignMonitorCampaign(
+  credentials: CampaignMonitorCredentials,
+  params: CreateCampaignParams
+): Promise<CreateCampaignResponse> {
+  const body = {
+    Name: params.name,
+    Subject: params.subject,
+    FromName: params.fromName,
+    FromEmail: params.fromEmail,
+    ReplyTo: params.replyTo,
+    HtmlUrl: params.htmlUrl,
+    ListIDs: params.listIds,
+  };
+
+  const campaignId = await requestJson<string>(
+    `/campaigns/${encodeURIComponent(credentials.clientId)}.json`,
+    credentials,
+    { method: "POST", body: JSON.stringify(body) }
+  );
+
+  return { campaignId };
+}
+
+export async function sendCampaignMonitorCampaign(
+  credentials: CampaignMonitorCredentials,
+  campaignId: string,
+  confirmationEmail: string
+): Promise<void> {
+  await requestJson<unknown>(
+    `/campaigns/${encodeURIComponent(campaignId)}/send.json`,
+    credentials,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        ConfirmationEmail: confirmationEmail,
+        SendDate: "Immediately",
+      }),
+    }
+  );
+}
+
+export async function scheduleCampaignMonitorCampaign(
+  credentials: CampaignMonitorCredentials,
+  campaignId: string,
+  confirmationEmail: string,
+  scheduledDate: string
+): Promise<void> {
+  await requestJson<unknown>(
+    `/campaigns/${encodeURIComponent(campaignId)}/schedule.json`,
+    credentials,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        ConfirmationEmail: confirmationEmail,
+        ScheduledDate: scheduledDate,
+      }),
+    }
+  );
+}
+
 type CampaignMonitorListStatsResponse = {
   TotalActiveSubscribers?: number | null;
   NewActiveSubscribersToday?: number | null;

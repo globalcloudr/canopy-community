@@ -42,6 +42,15 @@ function TemplateIcon({ className }: { className?: string }) {
   );
 }
 
+function ComposeIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <path d="M12 20h9" strokeLinecap="round" />
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function SettingsIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
@@ -54,6 +63,7 @@ function SettingsIcon({ className }: { className?: string }) {
 export const communityNavItems: NavItem[] = [
   { key: "dashboard", href: "/", label: "Dashboard", icon: DashboardIcon },
   { key: "campaigns", href: "/campaigns", label: "Campaigns", icon: CampaignsIcon },
+  { key: "compose", href: "/compose", label: "New campaign", icon: ComposeIcon },
   { key: "audiences", href: "/audiences", label: "Lists", icon: AudienceIcon },
   { key: "templates", href: "/templates", label: "Templates", icon: TemplateIcon },
   { key: "settings", href: "/settings", label: "Settings", icon: SettingsIcon },
