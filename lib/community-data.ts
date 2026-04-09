@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import {
   createCampaignMonitorCampaign,
+  getCampaignMonitorClientBilling,
   getCampaignMonitorClientDetails,
   getCampaignMonitorDraftCampaigns,
   getCampaignMonitorListStats,
@@ -189,6 +190,7 @@ export async function getCommunityOverview(
       sentCampaigns: [],
       draftCampaigns: [],
       scheduledCampaigns: [],
+      billing: null,
       fetchedAt,
     };
   }
@@ -220,6 +222,7 @@ export async function getCommunityOverview(
       sentCampaigns: [],
       draftCampaigns: [],
       scheduledCampaigns: [],
+      billing: null,
       fetchedAt,
     };
   }
@@ -232,6 +235,7 @@ export async function getCommunityOverview(
   try {
     const [
       account,
+      billing,
       listsRaw,
       templates,
       sentCampaignsResult,
@@ -239,6 +243,7 @@ export async function getCommunityOverview(
       scheduledCampaigns,
     ] = await Promise.all([
       getCampaignMonitorClientDetails(credentials),
+      getCampaignMonitorClientBilling(credentials).catch(() => null),
       getCampaignMonitorLists(credentials),
       getCampaignMonitorTemplates(credentials),
       getCampaignMonitorSentCampaigns(credentials),
@@ -280,6 +285,7 @@ export async function getCommunityOverview(
       sentCampaigns: sentCampaignsResult.campaigns,
       draftCampaigns,
       scheduledCampaigns,
+      billing,
       fetchedAt,
     };
   } catch (error) {
@@ -309,6 +315,7 @@ export async function getCommunityOverview(
       sentCampaigns: [],
       draftCampaigns: [],
       scheduledCampaigns: [],
+      billing: null,
       fetchedAt,
     };
   }

@@ -305,6 +305,41 @@ export async function getCampaignMonitorScheduledCampaigns(
     .filter((row): row is CommunityCampaignSummary => row !== null);
 }
 
+// ─── Client billing details ───────────────────────────────────────────────────
+
+type CampaignMonitorClientDetailsWithBilling = {
+  ClientID?: string;
+  Name?: string | null;
+  Country?: string | null;
+  TimeZone?: string | null;
+  BillingDetails?: {
+    Credits?: number | null;
+    CanPurchaseCredits?: boolean | null;
+    ClientPays?: boolean | null;
+    BaseRatePerRecipient?: number | null;
+    Currency?: string | null;
+  } | null;
+};
+
+export async function getCampaignMonitorClientBilling(
+  credentials: CampaignMonitorCredentials
+) {
+  const payload = await requestJson<CampaignMonitorClientDetailsWithBilling>(
+    `/clients/${encodeURIComponent(credentials.clientId)}.json`,
+    credentials
+  );
+
+  const billing = payload.BillingDetails;
+
+  return {
+    credits: normalizeNumber(billing?.Credits),
+    canPurchaseCredits: billing?.CanPurchaseCredits ?? false,
+    clientPays: billing?.ClientPays ?? true,
+    baseRatePerRecipient: normalizeNumber(billing?.BaseRatePerRecipient),
+    currency: billing?.Currency?.trim() || null,
+  };
+}
+
 // ─── Campaign creation and sending ───────────────────────────────────────────
 
 type CreateCampaignParams = {

@@ -46,6 +46,14 @@ export type CommunityCampaignSummary = {
   tags: string[];
 };
 
+export type CommunityBilling = {
+  credits: number | null;
+  canPurchaseCredits: boolean;
+  clientPays: boolean;
+  baseRatePerRecipient: number | null;
+  currency: string | null;
+};
+
 export type CommunityOverview = {
   connection: CommunityConnection | null;
   sharedApiKeyConfigured: boolean;
@@ -67,5 +75,6 @@ export type CommunityOverview = {
   sentCampaigns: CommunityCampaignSummary[];
   draftCampaigns: CommunityCampaignSummary[];
   scheduledCampaigns: CommunityCampaignSummary[];
+  billing: CommunityBilling | null;
   fetchedAt: string;
 };

@@ -48,8 +48,23 @@ function ComposeContent() {
   const [scheduledDate, setScheduledDate] = useState("");
   const [confirmationEmail, setConfirmationEmail] = useState("");
   const [sending, setSending] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  const billing = overview?.billing ?? null;
+
+  // Compute totals for the confirmation dialog
+  const selectedLists = lists.filter((l) => listIds.includes(l.listId));
+  const totalRecipients = selectedLists.reduce((sum, l) => sum + (l.subscriberCount ?? 0), 0);
+  const estimatedCost =
+    billing?.baseRatePerRecipient != null && totalRecipients > 0
+      ? totalRecipients * billing.baseRatePerRecipient
+      : null;
+  const currency = billing?.currency ?? "USD";
+  const credits = billing?.credits ?? null;
+  const insufficientCredits =
+    credits !== null && estimatedCost !== null && credits < estimatedCost;
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -63,8 +78,13 @@ function ComposeContent() {
     reader.readAsText(file);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleReviewClick(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
+    setConfirming(true);
+  }
+
+  async function handleConfirmSend() {
     if (!workspaceId || !htmlContent) return;
 
     setSending(true);
@@ -102,6 +122,7 @@ function ComposeContent() {
 
       setSuccess(true);
     } catch (err) {
+      setConfirming(false);
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setSending(false);
@@ -159,7 +180,7 @@ function ComposeContent() {
         </p>
       </div>
 
-      <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
+      <form onSubmit={(e) => void handleReviewClick(e)} className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
 
         {/* Left column — form fields */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
@@ -376,22 +397,89 @@ function ComposeContent() {
             </p>
           ) : null}
 
-          <div className="flex items-center gap-3">
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={sending || !htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo || !confirmationEmail || (sendMode === "schedule" && !scheduledDate)}
-            >
-              {sending
-                ? "Sending…"
-                : sendMode === "schedule"
-                  ? "Schedule campaign"
-                  : "Send campaign"}
-            </Button>
-            <Button asChild variant="secondary">
-              <a href="/campaigns">Cancel</a>
-            </Button>
-          </div>
+          {/* Confirmation panel */}
+          {confirming ? (
+            <div className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-5">
+              <h3 className="text-[15px] font-semibold text-[#0f172a]">Review before sending</h3>
+              <div className="mt-4 grid gap-3">
+                <ConfirmRow label="Subject" value={subject} />
+                <ConfirmRow label="From" value={`${fromName} <${fromEmail}>`} />
+                <ConfirmRow
+                  label="Lists"
+                  value={selectedLists.map((l) => l.name).join(", ")}
+                />
+                <ConfirmRow
+                  label="Recipients"
+                  value={
+                    totalRecipients > 0
+                      ? totalRecipients.toLocaleString()
+                      : "Unknown (subscriber counts unavailable)"
+                  }
+                />
+                {estimatedCost !== null ? (
+                  <ConfirmRow
+                    label="Estimated cost"
+                    value={`${currency} ${estimatedCost.toFixed(2)}`}
+                    highlight={insufficientCredits ? "warning" : undefined}
+                  />
+                ) : null}
+                {credits !== null ? (
+                  <ConfirmRow
+                    label="Available credits"
+                    value={`${currency} ${credits.toFixed(2)}`}
+                    highlight={insufficientCredits ? "warning" : undefined}
+                  />
+                ) : null}
+                {sendMode === "schedule" && scheduledDate ? (
+                  <ConfirmRow label="Scheduled for" value={new Date(scheduledDate).toLocaleString()} />
+                ) : (
+                  <ConfirmRow label="Send time" value="Immediately" />
+                )}
+              </div>
+
+              {insufficientCredits ? (
+                <p className="mt-4 rounded-lg border border-[#fca5a5] bg-[#fef2f2] px-4 py-3 text-[14px] text-[#b91c1c]">
+                  Your account may not have enough credits for this send. Campaign Monitor will charge your saved payment method, or the send may fail.
+                </p>
+              ) : null}
+
+              <div className="mt-5 flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="primary"
+                  disabled={sending}
+                  onClick={() => void handleConfirmSend()}
+                >
+                  {sending
+                    ? "Sending…"
+                    : sendMode === "schedule"
+                      ? "Confirm and schedule"
+                      : "Confirm and send"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={sending}
+                  onClick={() => setConfirming(false)}
+                >
+                  Go back
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={!htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo || !confirmationEmail || (sendMode === "schedule" && !scheduledDate)}
+              >
+                {sendMode === "schedule" ? "Review and schedule" : "Review and send"}
+              </Button>
+              <Button asChild variant="secondary">
+                <a href="/campaigns">Cancel</a>
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Right column — preview */}
@@ -424,6 +512,30 @@ function FormSection({ title, children }: { title: string; children: React.React
         {title}
       </h2>
       {children}
+    </div>
+  );
+}
+
+function ConfirmRow({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  highlight?: "warning";
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 border-b border-[var(--app-divider)] pb-2 last:border-0 last:pb-0">
+      <span className="shrink-0 text-[13px] text-[#64748b]">{label}</span>
+      <span
+        className={cn(
+          "text-right text-[14px] font-medium",
+          highlight === "warning" ? "text-[#b91c1c]" : "text-[#0f172a]"
+        )}
+      >
+        {value}
+      </span>
     </div>
   );
 }
