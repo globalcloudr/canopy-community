@@ -19,9 +19,11 @@ import {
 export function ConnectionSection({
   connection,
   syncError,
+  showDetails = true,
 }: {
   connection: CommunityConnection | null;
   syncError: string | null;
+  showDetails?: boolean;
 }) {
   return (
     <SectionCard
@@ -38,20 +40,25 @@ export function ConnectionSection({
               Connected account: <span className="font-medium text-[#0f172a]">{connection.accountName}</span>
             </p>
           ) : null}
+          {connection?.lastValidatedAt ? (
+            <p className="text-[14px] text-[#526072]">
+              Last checked: <span className="font-medium text-[#0f172a]">{formatCompactDateTime(connection.lastValidatedAt)}</span>
+            </p>
+          ) : null}
         </div>
-        {connection ? (
+        {connection && showDetails ? (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <ConnectionFact label="Client ID" value={connection.clientId} />
             <ConnectionFact label="Timezone" value={connection.timezone || "Not available"} />
             <ConnectionFact label="Country" value={connection.country || "Not available"} />
-            <ConnectionFact label="Last checked" value={formatCompactDateTime(connection.lastValidatedAt)} />
+            <ConnectionFact label="Updated" value={formatCompactDateTime(connection.updatedAt)} />
           </div>
-        ) : (
+        ) : null}
+        {!connection ? (
           <EmptyState
             title="Connect your school account"
             body="Add the school's Campaign Monitor Client ID in Settings. Once connected, Community will bring in recent sends, mailing lists, and templates."
           />
-        )}
+        ) : null}
       </div>
     </SectionCard>
   );
@@ -86,68 +93,61 @@ export function CampaignTable({
       {campaigns.length === 0 ? (
         <EmptyState title={emptyTitle} body={emptyBody} />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-left">
-            <thead>
-              <tr className="border-b border-[var(--app-divider)] text-[12px] uppercase tracking-[0.16em] text-[#8ca0b3]">
-                <th className="pb-3 pr-4 font-semibold">Newsletter</th>
-                <th className="pb-3 pr-4 font-semibold">Status</th>
-                <th className="pb-3 pr-4 font-semibold">Recipients</th>
-                <th className="pb-3 pr-4 font-semibold">Date</th>
-                <th className="pb-3 font-semibold">Open</th>
-              </tr>
-            </thead>
-            <tbody>
-              {campaigns.map((campaign) => (
-                <tr key={campaign.id} className="border-b border-[var(--app-divider)] align-top last:border-b-0">
-                  <td className="py-4 pr-4">
-                    <p className="text-[15px] font-semibold tracking-[-0.02em] text-[#0f172a]">
-                      {campaign.subject}
-                    </p>
-                    <p className="mt-1 text-[13px] leading-6 text-[#617284]">
-                      {campaign.fromName || "School newsletter"}
-                      {campaign.replyTo ? ` • ${campaign.replyTo}` : ""}
-                    </p>
-                  </td>
-                  <td className="py-4 pr-4">
-                    <CampaignStatusBadge status={campaign.status} />
-                  </td>
-                  <td className="py-4 pr-4 text-[14px] text-[#526072]">
-                    {campaign.recipientCount !== null ? `${campaign.recipientCount.toLocaleString()} recipients` : "Not available"}
-                  </td>
-                  <td className="py-4 pr-4 text-[14px] text-[#526072]">
-                    {campaign.status === "scheduled"
-                      ? formatCompactDateTime(campaign.scheduledDate)
-                      : campaign.status === "sent"
-                        ? formatCompactDateTime(campaign.sentDate)
-                        : formatCompactDateTime(campaign.createdDate)}
-                  </td>
-                  <td className="py-4">
-                    <div className="flex flex-wrap gap-2">
-                      {campaign.previewUrl ? (
-                        <Button asChild variant="secondary" size="sm">
-                          <a href={campaign.previewUrl} target="_blank" rel="noreferrer">
-                            Preview
-                          </a>
-                        </Button>
-                      ) : null}
-                      {campaign.webVersionUrl ? (
-                        <Button asChild variant="ghost" size="sm">
-                          <a href={campaign.webVersionUrl} target="_blank" rel="noreferrer">
-                            Web view
-                          </a>
-                        </Button>
-                      ) : null}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-3">
+          {campaigns.map((campaign) => (
+            <div
+              key={campaign.id}
+              className="grid gap-3 rounded-[22px] border border-[var(--app-divider)] bg-[#fbfdff] px-4 py-4 md:grid-cols-[minmax(0,1fr)_auto]"
+            >
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-[15px] font-semibold tracking-[-0.02em] text-[#0f172a]">
+                    {campaign.subject}
+                  </p>
+                  <CampaignStatusBadge status={campaign.status} />
+                </div>
+                <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-[#617284]">
+                  <span>{campaign.fromName || "School newsletter"}</span>
+                  {campaign.recipientCount !== null ? (
+                    <span>{campaign.recipientCount.toLocaleString()} recipients</span>
+                  ) : null}
+                  <span>{getCampaignTimingLabel(campaign)}</span>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                {campaign.previewUrl ? (
+                  <Button asChild variant="secondary" size="sm">
+                    <a href={campaign.previewUrl} target="_blank" rel="noreferrer">
+                      Preview
+                    </a>
+                  </Button>
+                ) : null}
+                {campaign.webVersionUrl ? (
+                  <Button asChild variant="ghost" size="sm">
+                    <a href={campaign.webVersionUrl} target="_blank" rel="noreferrer">
+                      Web view
+                    </a>
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </SectionCard>
   );
+}
+
+function getCampaignTimingLabel(campaign: CommunityCampaignSummary) {
+  if (campaign.status === "scheduled") {
+    return `Scheduled ${formatCompactDateTime(campaign.scheduledDate)}`;
+  }
+
+  if (campaign.status === "sent") {
+    return `Sent ${formatCompactDateTime(campaign.sentDate)}`;
+  }
+
+  return `Updated ${formatCompactDateTime(campaign.createdDate)}`;
 }
 
 export function AudienceListSection({
@@ -173,7 +173,9 @@ export function AudienceListSection({
           {lists.map((list) => (
             <div key={list.listId} className="rounded-[22px] border border-[var(--app-divider)] bg-[#f8fafc] px-5 py-5">
               <p className="text-[16px] font-semibold tracking-[-0.02em] text-[#0f172a]">{list.name}</p>
-              <p className="mt-2 text-[13px] leading-6 text-[#617284]">List ID: {list.listId}</p>
+              <p className="mt-2 text-[13px] leading-6 text-[#617284]">
+                Managed in Campaign Monitor and available for future sends.
+              </p>
               <div className="mt-3 flex flex-wrap gap-2 text-[12px] text-[#526072]">
                 {list.unsubscribeSetting ? (
                   <span className="rounded-full border border-[#d7e2ec] px-3 py-1">Unsubscribe: {list.unsubscribeSetting}</span>
@@ -224,7 +226,9 @@ export function TemplateListSection({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[16px] font-semibold tracking-[-0.02em] text-[#0f172a]">{template.name}</p>
-                <p className="mt-2 truncate text-[13px] leading-6 text-[#617284]">{template.templateId}</p>
+                <p className="mt-2 text-[13px] leading-6 text-[#617284]">
+                  Ready to use for future school newsletters.
+                </p>
                 {template.previewUrl ? (
                   <div className="mt-3">
                     <Button asChild variant="secondary" size="sm">

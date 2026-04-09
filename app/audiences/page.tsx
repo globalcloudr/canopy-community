@@ -23,7 +23,7 @@ function AudiencesContent() {
       <PageIntro
         eyebrow="Lists"
         title="Your mailing lists"
-        description="Review the mailing lists your school already uses in Campaign Monitor."
+        description="Review the mailing lists your school already uses. Detailed list management stays in Campaign Monitor."
         actions={
           <Button variant="secondary" onClick={() => void refresh()} disabled={loading}>
             {loading ? "Refreshing…" : "Refresh"}

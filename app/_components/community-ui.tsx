@@ -69,6 +69,37 @@ export function StatCard({
   );
 }
 
+export function MiniStat({
+  label,
+  value,
+  hint,
+  className,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-[22px] border border-[var(--app-surface-border)] bg-white px-4 py-4 shadow-none",
+        className
+      )}
+    >
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8ca0b3]">
+        {label}
+      </p>
+      <div className="mt-2 flex items-end gap-2">
+        <p className="text-[1.75rem] font-semibold tracking-[-0.05em] text-[#0f172a]">
+          {value}
+        </p>
+      </div>
+      {hint ? <p className="mt-1 text-[13px] leading-5 text-[#617284]">{hint}</p> : null}
+    </div>
+  );
+}
+
 export function SectionCard({
   title,
   description,

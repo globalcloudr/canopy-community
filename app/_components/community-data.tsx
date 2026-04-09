@@ -12,6 +12,22 @@ type OverviewState = {
   refresh: () => Promise<void>;
 };
 
+function toUserMessage(message: string) {
+  if (message.includes("CAMPAIGN_MONITOR_API_KEY") || message.includes("Campaign Monitor API access is not configured")) {
+    return "This school's Campaign Monitor connection still needs to be finished in Settings.";
+  }
+
+  if (message.includes("workspaceId is required")) {
+    return "Choose a school before continuing.";
+  }
+
+  if (message.includes("not enabled for the requested workspace") || message.includes("not enabled for any accessible workspaces")) {
+    return "Canopy Community is not set up for this school yet.";
+  }
+
+  return message;
+}
+
 async function getAccessToken() {
   const { data } = await supabase.auth.getSession();
   return data.session?.access_token ?? null;
@@ -35,7 +51,7 @@ async function requestJson<T>(input: string, init?: RequestInit) {
 
   const payload = (await response.json().catch(() => null)) as { error?: string } & T | null;
   if (!response.ok) {
-    throw new Error(payload?.error || "Request failed.");
+    throw new Error(toUserMessage(payload?.error || "Request failed."));
   }
 
   return payload as T;
@@ -80,11 +96,14 @@ export function useCommunityOverview(): OverviewState {
         );
 
         if (!cancelled) {
-          setOverview(payload.overview);
+          setOverview({
+            ...payload.overview,
+            syncError: payload.overview.syncError ? toUserMessage(payload.overview.syncError) : null,
+          });
         }
       } catch (loadError) {
         if (!cancelled) {
-          setError(loadError instanceof Error ? loadError.message : "We could not load your newsletter data.");
+          setError(loadError instanceof Error ? toUserMessage(loadError.message) : "We could not load your newsletter data.");
           setOverview(null);
         }
       } finally {
