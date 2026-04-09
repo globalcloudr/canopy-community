@@ -15,6 +15,7 @@ export async function POST(request: Request) {
       htmlContent?: string;
       scheduledDate?: string | null;
       confirmationEmail?: string;
+      draft?: boolean;
     };
 
     const {
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
       htmlContent,
       scheduledDate,
       confirmationEmail,
+      draft,
     } = body;
 
     if (!workspaceId) {
@@ -51,7 +53,7 @@ export async function POST(request: Request) {
     if (!htmlContent?.trim()) {
       return NextResponse.json({ error: "HTML content is required." }, { status: 400 });
     }
-    if (!confirmationEmail?.trim()) {
+    if (!draft && !confirmationEmail?.trim()) {
       return NextResponse.json({ error: "Confirmation email is required." }, { status: 400 });
     }
 
@@ -67,7 +69,8 @@ export async function POST(request: Request) {
       listIds,
       htmlContent,
       scheduledDate: scheduledDate ?? null,
-      confirmationEmail: confirmationEmail.trim(),
+      confirmationEmail: confirmationEmail?.trim() ?? "",
+      draft: draft === true,
     });
 
     return NextResponse.json({ campaignId: result.campaignId });

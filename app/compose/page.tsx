@@ -48,9 +48,11 @@ function ComposeContent() {
   const [scheduledDate, setScheduledDate] = useState("");
   const [confirmationEmail, setConfirmationEmail] = useState("");
   const [sending, setSending] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [savedAsDraft, setSavedAsDraft] = useState(false);
 
   const billing = overview?.billing ?? null;
 
@@ -82,6 +84,49 @@ function ComposeContent() {
     e.preventDefault();
     setError(null);
     setConfirming(true);
+  }
+
+  async function handleSaveAsDraft() {
+    if (!workspaceId || !htmlContent) return;
+
+    setSavingDraft(true);
+    setError(null);
+
+    try {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) throw new Error("Your session has expired. Please sign in again.");
+
+      const response = await fetch("/api/community/compose", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          workspaceId,
+          subject,
+          fromName,
+          fromEmail,
+          replyTo,
+          listIds,
+          htmlContent,
+          draft: true,
+        }),
+      });
+
+      const payload = (await response.json()) as { error?: string; campaignId?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Failed to save draft.");
+      }
+
+      setSavedAsDraft(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setSavingDraft(false);
+    }
   }
 
   async function handleConfirmSend() {
@@ -127,6 +172,29 @@ function ComposeContent() {
     } finally {
       setSending(false);
     }
+  }
+
+  if (savedAsDraft) {
+    return (
+      <div className="flex flex-col gap-6">
+        <div>
+          <h1 className="text-[1.85rem] font-semibold tracking-[-0.03em] text-[#0f172a]">
+            Draft saved
+          </h1>
+          <p className="mt-1.5 text-[15px] text-[#64748b]">
+            Your campaign has been saved as a draft in Campaign Monitor. You can find it in your Campaigns page.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <Button asChild variant="primary">
+            <a href="/campaigns">View campaigns</a>
+          </Button>
+          <Button variant="secondary" onClick={() => setSavedAsDraft(false)}>
+            Keep editing
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   if (success) {
@@ -413,13 +481,21 @@ function ComposeContent() {
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Button
                 type="submit"
                 variant="primary"
-                disabled={!htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo || !confirmationEmail || (sendMode === "schedule" && !scheduledDate)}
+                disabled={savingDraft || !htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo || !confirmationEmail || (sendMode === "schedule" && !scheduledDate)}
               >
                 {sendMode === "schedule" ? "Review and schedule" : "Review and send"}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={savingDraft || !htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo}
+                onClick={() => void handleSaveAsDraft()}
+              >
+                {savingDraft ? "Saving…" : "Save as draft"}
               </Button>
               <Button asChild variant="secondary">
                 <a href="/campaigns">Cancel</a>

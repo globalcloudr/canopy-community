@@ -2,24 +2,24 @@
 -- Run this once in the Supabase dashboard SQL editor or via migration.
 --
 -- This bucket stores HTML files uploaded by school users when composing campaigns.
--- Files must be publicly accessible so Campaign Monitor can fetch them via URL.
--- The service role key is used to upload from the server-side API route.
+-- Files are PRIVATE — accessed only via short-lived signed URLs generated server-side.
+-- Campaign Monitor fetches the HTML once at campaign creation time using the signed URL.
+-- Files are deleted from storage immediately after CM confirms campaign creation.
+-- The service role key is used to upload and delete from the server-side API route.
 
--- 1. Create the public bucket
+-- 1. Create a PRIVATE bucket (public: false)
 insert into storage.buckets (id, name, public)
-values ('community-html-uploads', 'community-html-uploads', true)
-on conflict (id) do nothing;
+values ('community-html-uploads', 'community-html-uploads', false)
+on conflict (id) do update set public = false;
 
--- 2. Allow public read (GET) on all objects in the bucket
--- Campaign Monitor needs to fetch the HTML file without authentication.
-create policy "Public read for campaign HTML"
-  on storage.objects for select
-  using (bucket_id = 'community-html-uploads');
+-- 2. NO public read policy — bucket is private.
+-- Signed URLs (generated server-side with service role) are used instead.
+-- Signed URLs expire in 15 minutes, which is sufficient for Campaign Monitor
+-- to fetch the HTML during campaign creation.
 
--- 3. Allow service role to insert (upload) objects
--- The compose API route uses the service role key to upload.
--- No additional policy needed — service role bypasses RLS.
+-- 3. Service role bypasses RLS entirely for upload and delete operations.
+-- No additional policies are needed for server-side operations.
 
--- Note: files are namespaced by workspace_id/{timestamp}.html
--- There is no automated cleanup — old HTML files can be deleted manually
--- from the Supabase Storage dashboard or via a scheduled job after campaigns send.
+-- Note: Files are namespaced as {workspaceId}/{timestamp}.html and are
+-- deleted immediately after successful Campaign Monitor campaign creation.
+-- Storage should remain near-empty at all times.

@@ -324,27 +324,42 @@ export async function getCommunityOverview(
 // ─── HTML upload to Supabase Storage ─────────────────────────────────────────
 
 const HTML_BUCKET = "community-html-uploads";
+const SIGNED_URL_EXPIRY_SECONDS = 60 * 15; // 15 minutes — enough for CM to fetch once
 
-export async function uploadCampaignHtml(params: {
+async function uploadCampaignHtmlForSend(params: {
   workspaceId: string;
   html: string;
-}): Promise<string> {
+}): Promise<{ signedUrl: string; storagePath: string }> {
   const client = getServiceClient();
-  const filename = `${params.workspaceId}/${Date.now()}.html`;
+  const storagePath = `${params.workspaceId}/${Date.now()}.html`;
 
-  const { error } = await client.storage
+  const { error: uploadError } = await client.storage
     .from(HTML_BUCKET)
-    .upload(filename, params.html, {
+    .upload(storagePath, params.html, {
       contentType: "text/html; charset=utf-8",
       upsert: false,
     });
 
-  if (error) {
-    throw new Error(`Failed to upload campaign HTML: ${error.message}`);
+  if (uploadError) {
+    throw new Error(`Failed to upload campaign HTML: ${uploadError.message}`);
   }
 
-  const { data } = client.storage.from(HTML_BUCKET).getPublicUrl(filename);
-  return data.publicUrl;
+  const { data: signedData, error: signedError } = await client.storage
+    .from(HTML_BUCKET)
+    .createSignedUrl(storagePath, SIGNED_URL_EXPIRY_SECONDS);
+
+  if (signedError || !signedData?.signedUrl) {
+    // Clean up the uploaded file if we can't sign it
+    await client.storage.from(HTML_BUCKET).remove([storagePath]).catch(() => null);
+    throw new Error(`Failed to generate signed URL: ${signedError?.message ?? "unknown error"}`);
+  }
+
+  return { signedUrl: signedData.signedUrl, storagePath };
+}
+
+async function deleteCampaignHtml(storagePath: string): Promise<void> {
+  const client = getServiceClient();
+  await client.storage.from(HTML_BUCKET).remove([storagePath]);
 }
 
 // ─── Compose and send campaign ────────────────────────────────────────────────
@@ -360,6 +375,7 @@ export type ComposeCampaignParams = {
   htmlContent: string;
   scheduledDate?: string | null;
   confirmationEmail: string;
+  draft?: boolean;
 };
 
 export async function composeCampaign(params: ComposeCampaignParams) {
@@ -382,38 +398,46 @@ export async function composeCampaign(params: ComposeCampaignParams) {
     apiKey,
   };
 
-  // 1. Upload HTML to Supabase Storage to get a public URL
-  const htmlUrl = await uploadCampaignHtml({
+  // 1. Upload HTML to Supabase Storage and get a short-lived signed URL
+  const { signedUrl, storagePath } = await uploadCampaignHtmlForSend({
     workspaceId: params.workspaceId,
     html: params.htmlContent,
   });
 
-  // 2. Create the draft campaign in Campaign Monitor
-  const { campaignId } = await createCampaignMonitorCampaign(credentials, {
-    name: params.name,
-    subject: params.subject,
-    fromName: params.fromName,
-    fromEmail: params.fromEmail,
-    replyTo: params.replyTo,
-    htmlUrl,
-    listIds: params.listIds,
-  });
+  try {
+    // 2. Create the draft campaign in Campaign Monitor
+    // CM fetches the HTML from the signed URL at this point
+    const { campaignId } = await createCampaignMonitorCampaign(credentials, {
+      name: params.name,
+      subject: params.subject,
+      fromName: params.fromName,
+      fromEmail: params.fromEmail,
+      replyTo: params.replyTo,
+      htmlUrl: signedUrl,
+      listIds: params.listIds,
+    });
 
-  // 3. Send or schedule
-  if (params.scheduledDate) {
-    await scheduleCampaignMonitorCampaign(
-      credentials,
-      campaignId,
-      params.confirmationEmail,
-      params.scheduledDate
-    );
-  } else {
-    await sendCampaignMonitorCampaign(
-      credentials,
-      campaignId,
-      params.confirmationEmail
-    );
+    // 3. Send or schedule (skip if saving as draft)
+    if (!params.draft) {
+      if (params.scheduledDate) {
+        await scheduleCampaignMonitorCampaign(
+          credentials,
+          campaignId,
+          params.confirmationEmail,
+          params.scheduledDate
+        );
+      } else {
+        await sendCampaignMonitorCampaign(
+          credentials,
+          campaignId,
+          params.confirmationEmail
+        );
+      }
+    }
+
+    return { campaignId, draft: params.draft === true };
+  } finally {
+    // 4. Always delete the HTML file from storage — CM has already fetched it
+    await deleteCampaignHtml(storagePath).catch(() => null);
   }
-
-  return { campaignId };
 }
