@@ -239,67 +239,13 @@ function ComposeContent() {
                 <a href="/settings" className="text-[#2563eb] hover:underline">Settings</a>.
               </p>
             ) : (
-              <div className="grid gap-3">
-                {/* Select all */}
-                <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#e2e8f0] px-4 py-3 hover:bg-[#f8fafc]">
-                  <input
-                    type="checkbox"
-                    className="accent-[#2563eb]"
-                    checked={listIds.length === lists.length}
-                    ref={(el) => {
-                      if (el) el.indeterminate = listIds.length > 0 && listIds.length < lists.length;
-                    }}
-                    onChange={(e) => {
-                      setListIds(e.target.checked ? lists.map((l) => l.listId) : []);
-                    }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[14px] font-semibold text-[#0f172a]">All lists</p>
-                    <p className="text-[13px] text-[#64748b]">
-                      {lists.reduce((sum, l) => sum + (l.subscriberCount ?? 0), 0).toLocaleString()} total subscribers
-                    </p>
-                  </div>
-                </label>
-
-                {/* Individual lists */}
-                <div className="grid gap-2">
-                  {lists.map((list) => (
-                    <label
-                      key={list.listId}
-                      className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#e2e8f0] px-4 py-3 hover:bg-[#f8fafc]"
-                    >
-                      <input
-                        type="checkbox"
-                        className="accent-[#2563eb]"
-                        checked={listIds.includes(list.listId)}
-                        onChange={(e) => {
-                          setListIds((prev) =>
-                            e.target.checked
-                              ? [...prev, list.listId]
-                              : prev.filter((id) => id !== list.listId)
-                          );
-                        }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[14px] font-medium text-[#0f172a]">{list.name}</p>
-                        {list.subscriberCount != null ? (
-                          <p className="text-[13px] text-[#64748b]">
-                            {list.subscriberCount.toLocaleString()} subscribers
-                          </p>
-                        ) : null}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-
-                {listIds.length > 0 ? (
-                  <p className="text-[13px] text-[#64748b]">
-                    {listIds.length === lists.length
-                      ? "Sending to all lists"
-                      : `${listIds.length} list${listIds.length === 1 ? "" : "s"} selected`}
-                  </p>
-                ) : null}
-              </div>
+              <Field label="Mailing lists" required>
+                <ListMultiSelect
+                  lists={lists}
+                  selected={listIds}
+                  onChange={setListIds}
+                />
+              </Field>
             )}
           </FormSection>
 
@@ -512,6 +458,117 @@ function FormSection({ title, children }: { title: string; children: React.React
         {title}
       </h2>
       {children}
+    </div>
+  );
+}
+
+function ListMultiSelect({
+  lists,
+  selected,
+  onChange,
+}: {
+  lists: { listId: string; name: string; subscriberCount: number | null }[];
+  selected: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const allSelected = selected.length === lists.length;
+  const someSelected = selected.length > 0 && !allSelected;
+
+  const triggerLabel = allSelected
+    ? "All lists"
+    : selected.length === 0
+      ? "Select lists…"
+      : selected.length === 1
+        ? (lists.find((l) => l.listId === selected[0])?.name ?? "1 list")
+        : `${selected.length} lists selected`;
+
+  const totalSelected = lists
+    .filter((l) => selected.includes(l.listId))
+    .reduce((sum, l) => sum + (l.subscriberCount ?? 0), 0);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          "flex w-full items-center justify-between rounded-md border px-3 py-2 text-[14px] transition focus:outline-none focus:ring-2 focus:ring-[#2563eb]",
+          open ? "border-[#2563eb] ring-2 ring-[#2563eb]" : "border-[#e2e8f0]",
+          selected.length === 0 ? "text-[#94a3b8]" : "text-[#0f172a]"
+        )}
+      >
+        <span>{triggerLabel}</span>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4 shrink-0 text-[#94a3b8]">
+          <path d="m4 6 4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {open ? (
+        <div className="absolute z-20 mt-1 w-full rounded-md border border-[#e2e8f0] bg-white shadow-md">
+          {/* Select all row */}
+          <label className="flex cursor-pointer items-center gap-3 border-b border-[#e2e8f0] px-3 py-2.5 hover:bg-[#f8fafc]">
+            <input
+              type="checkbox"
+              className="accent-[#2563eb]"
+              checked={allSelected}
+              ref={(el) => { if (el) el.indeterminate = someSelected; }}
+              onChange={(e) => onChange(e.target.checked ? lists.map((l) => l.listId) : [])}
+            />
+            <span className="text-[13px] font-semibold text-[#334155]">All lists</span>
+            <span className="ml-auto text-[12px] text-[#94a3b8]">
+              {lists.reduce((s, l) => s + (l.subscriberCount ?? 0), 0).toLocaleString()} subscribers
+            </span>
+          </label>
+
+          {/* Individual lists */}
+          {lists.map((list) => (
+            <label key={list.listId} className="flex cursor-pointer items-center gap-3 px-3 py-2 hover:bg-[#f8fafc]">
+              <input
+                type="checkbox"
+                className="accent-[#2563eb]"
+                checked={selected.includes(list.listId)}
+                onChange={(e) =>
+                  onChange(
+                    e.target.checked
+                      ? [...selected, list.listId]
+                      : selected.filter((id) => id !== list.listId)
+                  )
+                }
+              />
+              <span className="min-w-0 flex-1 truncate text-[13px] text-[#0f172a]">{list.name}</span>
+              {list.subscriberCount != null ? (
+                <span className="ml-auto shrink-0 text-[12px] text-[#94a3b8]">
+                  {list.subscriberCount.toLocaleString()}
+                </span>
+              ) : null}
+            </label>
+          ))}
+
+          {/* Footer */}
+          <div className="flex items-center justify-between border-t border-[#e2e8f0] px-3 py-2">
+            <span className="text-[12px] text-[#64748b]">
+              {selected.length === 0
+                ? "No lists selected"
+                : `${totalSelected.toLocaleString()} recipients`}
+            </span>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="text-[12px] font-medium text-[#2563eb] hover:underline"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Recipient count hint below the trigger */}
+      {selected.length > 0 && !open ? (
+        <p className="mt-1.5 text-[13px] text-[#64748b]">
+          {totalSelected.toLocaleString()} recipients across {selected.length} list{selected.length === 1 ? "" : "s"}
+        </p>
+      ) : null}
     </div>
   );
 }
