@@ -4,6 +4,60 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-04-09 — Native compose, UI redesign, and storage security
+
+Built campaign compose/send, redesigned the UI to match Campaign Monitor's layout, tightened storage security, and fixed Campaign Monitor API response mapping.
+
+### What changed
+
+**Campaign compose and send (`/compose`)**
+- New page at `app/compose/page.tsx` with two-column layout: form left, HTML preview right
+- HTML file upload via `<input type="file">` read client-side with `FileReader`, previewed in a sandboxed iframe
+- `ListMultiSelect` component: compact dropdown trigger, "All lists" indeterminate checkbox, per-list subscriber counts, recipient total footer
+- From name / from email / reply-to pre-populated from last sent campaign (`sentCampaigns[0]`) using `useRef` guard to avoid overwriting user edits
+- Billing-aware confirmation panel before sending: estimated cost (`recipients × BaseRatePerRecipient`), credit balance, red warning if credits are insufficient
+- "Save as draft" flow: skips send step and skips `confirmationEmail` validation
+- New API route: `POST /api/community/compose`
+- New nav item: "New campaign" linking to `/compose`
+
+**Campaign Monitor API additions (`lib/campaign-monitor.ts`)**
+- `createCampaignMonitorCampaign()` — `POST /campaigns/{clientId}.json`
+- `sendCampaignMonitorCampaign()` — `POST /campaigns/{campaignId}/send.json`
+- `scheduleCampaignMonitorCampaign()` — `POST /campaigns/{campaignId}/schedule.json`
+- `getCampaignMonitorListStats()` — `GET /lists/{listId}/stats.json` for subscriber counts
+- `getCampaignMonitorClientBilling()` — `BillingDetails` from `GET /clients/{clientId}.json`
+- Fixed `openRate`/`clickRate` to use `computeRate()` (was returning raw counts)
+- Fixed `BasicDetails` mapping for `GET /clients/{clientId}.json` — country and timezone are nested under `BasicDetails`, not at the root level
+
+**Storage security**
+- `community-html-uploads` bucket changed to **private** (`public: false`)
+- Upload generates a 15-minute signed URL passed to CM as `HtmlUrl`
+- File deleted in `finally` block after CM campaign creation, regardless of send outcome
+- `uploadCampaignHtmlForSend()` and `deleteCampaignHtml()` added to `lib/community-data.ts`
+- SQL updated: `docs/sql/2026-04-08-cc-002-html-upload-bucket.sql`
+
+**UI redesign to match Campaign Monitor layout**
+- Dashboard: removed Templates section, capped Drafts/Sent/Lists at 3 rows each
+- Sent rows: stacked stat blocks (number + label) for Recipients / Opened / Clicked
+- List rows: each row is a clickable link to `/audiences`, subscriber count stacked
+- `CampaignTable` in `community-sections.tsx`: HTML `<table>` with hover actions dropdown
+- `PageHeader` replaced gradient `PageIntro` (flat, plain text)
+- All border radii flattened to `rounded-lg`
+
+**Community detail page in Portal (`canopy-platform`)**
+- Added `CommunityDetailPage` component to `apps/portal/src/app/(portal)/app/products/[slug]/page.tsx`
+- Matches Stories and Reach layout: header, "How it works" 3-step section, highlights, CTA card
+- Replaces the generic "Coming soon" fallback for `community_canopy`
+
+### Notes
+
+- CM does not expose sending domain addresses via API. Pre-populate from/reply-to from `sentCampaigns[0].fromEmail`.
+- Option B (`fromtemplate`) is not viable — CM only supports it for coded HTML templates with CM editable tags, not Email Builder templates.
+- Storage is near-empty at all times; files live only for the duration of campaign creation.
+- All data remains workspace-isolated; `requireWorkspaceAccess()` is called on every API route.
+
+---
+
 ## 2026-04-08 — Documentation refresh and launch notes
 
 Updated the repo docs so they describe the actual Community product instead of the original scaffold.

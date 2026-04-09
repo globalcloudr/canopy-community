@@ -4,7 +4,7 @@ This repo is the active Canopy Community product. It is not a starter scaffold a
 
 ## Product Purpose
 
-Canopy Community gives school workspaces a Canopy-native place to work with their newsletter program. Today the app focuses on connecting to Campaign Monitor, validating access, and surfacing workspace-specific campaigns, audiences, and templates.
+Canopy Community gives school workspaces a Canopy-native place to manage their newsletter program. The app connects to Campaign Monitor, surfaces workspace-specific campaigns, audiences, and templates, and allows users to compose and send HTML newsletters directly from Canopy — without logging into Campaign Monitor.
 
 ## Current Product Shape
 
@@ -21,39 +21,50 @@ Canopy Community gives school workspaces a Canopy-native place to work with thei
 3. Portal creates a product handoff and redirects into Community.
 4. Community exchanges the handoff, resolves the active workspace session, and loads workspace data.
 5. The workspace enters its Campaign Monitor `Client ID` in Settings.
-6. Community uses the shared `CAMPAIGN_MONITOR_API_KEY` plus that `Client ID` to read data for that school.
+6. Community uses the shared `CAMPAIGN_MONITOR_API_KEY` plus that `Client ID` to read and send data for that school.
+7. Users compose campaigns by uploading an HTML file, selecting subscriber lists, and sending or saving as a draft.
 
 ## Major Files
 
 ### App shell and routes
 
 - `app/_components/product-shell.tsx`
-- `app/page.tsx`
+- `app/page.tsx` — dashboard (Drafts, Sent, Lists)
 - `app/campaigns/page.tsx`
 - `app/audiences/page.tsx`
 - `app/templates/page.tsx`
 - `app/settings/page.tsx`
+- `app/compose/page.tsx` — native campaign compose and send
 
 ### API routes
 
 - `app/api/app-session/route.ts`
 - `app/api/auth/exchange-handoff/route.ts`
 - `app/api/community/overview/route.ts`
+- `app/api/community/compose/route.ts` — create and send campaigns
 - `app/api/integrations/campaign-monitor/route.ts`
 - `app/api/launcher-products/route.ts`
 
 ### Data and integrations
 
-- `lib/community-data.ts`
-- `lib/community-schema.ts`
-- `lib/campaign-monitor.ts`
+- `lib/community-data.ts` — all DB access and campaign orchestration
+- `lib/community-schema.ts` — shared TypeScript types
+- `lib/campaign-monitor.ts` — all Campaign Monitor API calls
 - `lib/server-auth.ts`
 - `lib/supabase-client.ts`
 - `lib/workspace-client.ts`
 
+### UI components
+
+- `app/_components/community-nav.tsx` — sidebar nav items
+- `app/_components/community-ui.tsx` — shared UI primitives
+- `app/_components/community-sections.tsx` — page-level section components
+- `app/_components/community-data.tsx` — client-side data hooks
+
 ### SQL
 
 - `docs/sql/2026-04-08-cc-001-campaign-monitor-connections.sql`
+- `docs/sql/2026-04-08-cc-002-html-upload-bucket.sql`
 
 ## Environment Variables
 
@@ -86,6 +97,40 @@ Important:
 - Store one Campaign Monitor `Client ID` per workspace.
 - Treat a per-workspace API key as an override only.
 - Validate the client connection server-side before saving it.
+- CM returns client details (name, country, timezone) nested under `BasicDetails` in `GET /clients/{clientId}.json`.
+- CM assigns per-account sending domain addresses (e.g. `SMACE_info@ditnld.createsend7.com`). These are not exposed via the API — pre-populate from/reply-to fields using the most recent sent campaign's `fromEmail`.
+- Campaign creation requires an `HtmlUrl` (a publicly accessible URL). Use a signed Supabase Storage URL.
+- Billing is pay-per-subscriber. Calculate estimated cost as `recipients × BaseRatePerRecipient` from `GET /clients/{clientId}.json` → `BillingDetails`.
+
+## Campaign Compose Flow
+
+The compose page (`/compose`) handles the full send lifecycle:
+
+1. User uploads an HTML file (read client-side via `FileReader`, previewed in an iframe).
+2. User fills subject, from name, from email, reply-to, and selects one or more lists.
+3. User enters a confirmation email address and reviews estimated cost before sending.
+4. On submit, the API route (`POST /api/community/compose`) calls `composeCampaign()` in `lib/community-data.ts`.
+5. `composeCampaign()` orchestrates:
+   - Upload HTML to private Supabase Storage bucket (`community-html-uploads`)
+   - Generate a 15-minute signed URL
+   - Create the campaign in CM via `POST /campaigns/{clientId}.json` using the signed URL as `HtmlUrl`
+   - Send immediately via `POST /campaigns/{campaignId}/send.json` (skipped if `draft: true`)
+   - Delete the HTML file from storage in a `finally` block (always runs)
+6. Draft saves skip the send step and skip `confirmationEmail` validation.
+
+## Storage Security
+
+The `community-html-uploads` Supabase Storage bucket is **private** (`public: false`).
+
+- Files are uploaded server-side using the service role key.
+- Access is via signed URLs with a 15-minute expiry — sufficient for Campaign Monitor to fetch the HTML.
+- Files are deleted immediately after campaign creation, whether the send succeeds or fails.
+- Storage should be near-empty at all times.
+- No RLS policies are needed; the service role bypasses RLS.
+
+## Workspace Isolation
+
+Every API route calls `requireWorkspaceAccess(request, workspaceId)` before touching any data. All Campaign Monitor data is scoped to the workspace's stored `Client ID`. No cross-workspace data access is possible.
 
 ## Portal Dependencies
 
@@ -104,6 +149,9 @@ Portal must include:
 
 The launch-handoff database constraint in Portal must also allow `community_canopy`.
 
+The Community detail page in Portal is defined in:
+`apps/portal/src/app/(portal)/app/products/[slug]/page.tsx` → `CommunityDetailPage`
+
 ## Local Testing Notes
 
 To test the full launch flow locally:
@@ -120,6 +168,7 @@ Opening Community directly without a valid launch/session can redirect back to t
 - Community is deployed on Vercel.
 - Vercel env changes require a redeploy to take effect.
 - Production launch depends on both Portal and Community having correct env values.
+- The `community-html-uploads` Supabase Storage bucket must be created before compose/send can work (run `docs/sql/2026-04-08-cc-002-html-upload-bucket.sql`).
 
 ## Working Agreements For Future Changes
 
@@ -131,4 +180,6 @@ Opening Community directly without a valid launch/session can redirect back to t
 
 ## Next Product Phase
 
-The next major implementation area is native newsletter composition and sending inside Community, building on the existing connection and visibility layer.
+- Subscriber management (add/remove/search subscribers within Canopy)
+- Scheduled sending (send at a future date/time rather than immediately)
+- Campaign analytics detail view (per-campaign recipient list, click map)
