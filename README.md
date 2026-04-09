@@ -1,59 +1,143 @@
 # Canopy Community
 
-Newsletter and community communications product for the Canopy portfolio.
+Canopy Community is the school newsletter product in the Canopy portfolio. It lets Canopy workspaces connect a Campaign Monitor client, review newsletter activity, and prepare for native newsletter creation and sending inside Canopy.
 
-**Status**: Early product foundation with Campaign Monitor integration
+## Current Scope
 
-## What's Included
-
-- Next.js 16, React 19, TypeScript, Tailwind v4, Node 20
-- `@canopy/ui` v0.1.4 vendored
-- Portal handoff exchange fully wired
-- Server-backed workspace session
-- In-app product switcher
-- Portal return flow
-- Centralized server auth pattern
+- Portal handoff and workspace-aware app shell
+- Dashboard with recent Campaign Monitor activity
+- Campaigns, audiences, templates, and settings pages
 - Workspace-scoped Campaign Monitor connection storage
-- Community dashboard, campaigns, audiences, templates, and settings pages
-- Server routes for Campaign Monitor overview + connection validation
+- Shared master Campaign Monitor API key support with per-workspace `Client ID`
 
-## Current Direction
+This repo currently focuses on connection, validation, and visibility. Native compose and send flows are still a future phase.
 
-Canopy Community uses each school's existing Campaign Monitor account.
-The app stores a workspace-scoped `client_id` and API key, validates the
-connection server-side, then reads newsletter lists, templates, and campaigns
-through the Campaign Monitor API.
+## Stack
 
-Recommended setup:
-- store one master `CAMPAIGN_MONITOR_API_KEY` in the app environment
-- save each school's Campaign Monitor `Client ID` per workspace in Community settings
-- use a workspace-specific API key only if you need an override
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- Supabase
+- Campaign Monitor API
+- `@canopy/ui` v0.1.4 vendored locally
 
-SQL for the first integration table lives in:
-
-```bash
-docs/sql/2026-04-08-cc-001-campaign-monitor-connections.sql
-```
-
-## How to Run
+## Local Development
 
 ```bash
 cp .env.local.example .env.local
-# fill in Supabase credentials
 npm install
-npm run dev     # localhost:3003
+npm run dev
 ```
 
-Requires Node 20 (pinned in `.nvmrc`).
+Local dev runs on `http://localhost:3003`.
+
+Use Node 20 as pinned in [.nvmrc](/Users/zylstra/Code/canopy-community/.nvmrc).
 
 ## Environment Variables
 
-```
-NEXT_PUBLIC_SUPABASE_URL=
+Required:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_APP_URL=http://localhost:3003
 NEXT_PUBLIC_PORTAL_URL=https://usecanopy.school
 CAMPAIGN_MONITOR_API_KEY=
+```
+
+Optional:
+
+```env
 CAMPAIGN_MONITOR_API_BASE_URL=https://api.createsend.com/api/v3.3
+```
+
+Notes:
+
+- `NEXT_PUBLIC_SUPABASE_URL` should use your actual Supabase project URL on `supabase.co`.
+- `CAMPAIGN_MONITOR_API_KEY` is intended to be the shared master account key.
+- Each school workspace typically stores its own Campaign Monitor `Client ID`, not its own API key.
+
+## Campaign Monitor Model
+
+Canopy Community supports the common Canopy setup where one master Campaign Monitor account contains multiple client accounts.
+
+Recommended setup:
+
+- store one shared `CAMPAIGN_MONITOR_API_KEY` in the app environment
+- save the correct Campaign Monitor `Client ID` per workspace in Community Settings
+- use the optional per-workspace API key field only if a workspace needs an override
+
+The Settings page validates the connection server-side before saving it.
+
+## Required Database Setup
+
+Apply the first Community migration before testing real data:
+
+```bash
+docs/sql/2026-04-08-cc-001-campaign-monitor-connections.sql
+```
+
+This creates the `community_campaign_monitor_connections` table used for workspace connection storage.
+
+## Routes
+
+Workspace routes:
+
+- `/`
+- `/campaigns`
+- `/audiences`
+- `/templates`
+- `/settings`
+
+API routes:
+
+- `GET /api/app-session`
+- `POST /api/auth/exchange-handoff`
+- `GET /api/launcher-products`
+- `GET /api/community/overview`
+- `GET/PUT/DELETE /api/integrations/campaign-monitor`
+
+## Portal Integration
+
+Community is launched from `canopy-platform` using Canopy's product handoff flow.
+
+For a workspace to access Community:
+
+- the workspace must be provisioned with `community_canopy`
+- the Portal app must know the Community app URL
+- the Community app must share the same Supabase project as the rest of Canopy
+
+Local portal setup:
+
+```env
+COMMUNITY_APP_URL=http://localhost:3003
+```
+
+Production portal setup:
+
+```env
+COMMUNITY_APP_URL=https://canopy-community.vercel.app
+```
+
+Directly opening Community without a valid handoff or session will send the user back to the configured portal URL.
+
+## Deployment Notes
+
+Community is designed to run on Vercel.
+
+Before testing production:
+
+- confirm `NEXT_PUBLIC_APP_URL` matches the deployed Community URL
+- confirm `NEXT_PUBLIC_PORTAL_URL` matches the deployed portal URL
+- confirm `NEXT_PUBLIC_SUPABASE_URL` uses the real `supabase.co` project URL
+- redeploy after any Vercel environment variable change
+
+## Verification
+
+Type-check the app with:
+
+```bash
+npx tsc --noEmit --incremental false
 ```

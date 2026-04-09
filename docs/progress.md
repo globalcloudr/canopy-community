@@ -1,6 +1,26 @@
-# Canopy Product Starter — Progress
+# Canopy Community — Progress
 
 Append new sessions at the top. Do not overwrite history.
+
+---
+
+## 2026-04-08 — Documentation refresh and launch notes
+
+Updated the repo docs so they describe the actual Community product instead of the original scaffold.
+
+### What changed
+
+- Rewrote `README.md` with product-specific setup, routes, env vars, and deployment guidance
+- Replaced scaffold instructions in `CLAUDE.md` with Community-specific architecture and workflow notes
+- Documented the shared master Campaign Monitor key model with per-workspace `Client ID`
+- Added explicit notes about Portal provisioning, `COMMUNITY_APP_URL`, and launch handoff dependencies
+- Captured important troubleshooting context around Supabase URL format and Vercel redeploy requirements
+
+### Notes
+
+- Community depends on both Portal provisioning and Portal launch config to open correctly for a workspace
+- `NEXT_PUBLIC_SUPABASE_URL` must use the real Supabase project URL on `supabase.co`
+- Direct opens without a valid session can redirect back to the configured portal URL
 
 ---
 
