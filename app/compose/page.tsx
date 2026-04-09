@@ -87,7 +87,7 @@ function ComposeContent() {
           fromName,
           fromEmail,
           replyTo,
-          listId,
+          listIds,
           htmlContent,
           scheduledDate: sendMode === "schedule" && scheduledDate ? scheduledDate : null,
           confirmationEmail,
@@ -133,7 +133,7 @@ function ComposeContent() {
               setFromName("");
               setFromEmail("");
               setReplyTo("");
-              setListId("");
+              setListIds([]);
               setHtmlContent(null);
               setFileName(null);
               setScheduledDate("");
@@ -218,22 +218,67 @@ function ComposeContent() {
                 <a href="/settings" className="text-[#2563eb] hover:underline">Settings</a>.
               </p>
             ) : (
-              <Field label="Mailing list" required>
-                <select
-                  value={listId}
-                  onChange={(e) => setListId(e.target.value)}
-                  required
-                  className="w-full rounded-md border border-[#e2e8f0] bg-white px-3 py-2 text-[14px] text-[#0f172a] focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
-                >
-                  <option value="">Select a list…</option>
+              <div className="grid gap-3">
+                {/* Select all */}
+                <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#e2e8f0] px-4 py-3 hover:bg-[#f8fafc]">
+                  <input
+                    type="checkbox"
+                    className="accent-[#2563eb]"
+                    checked={listIds.length === lists.length}
+                    ref={(el) => {
+                      if (el) el.indeterminate = listIds.length > 0 && listIds.length < lists.length;
+                    }}
+                    onChange={(e) => {
+                      setListIds(e.target.checked ? lists.map((l) => l.listId) : []);
+                    }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14px] font-semibold text-[#0f172a]">All lists</p>
+                    <p className="text-[13px] text-[#64748b]">
+                      {lists.reduce((sum, l) => sum + (l.subscriberCount ?? 0), 0).toLocaleString()} total subscribers
+                    </p>
+                  </div>
+                </label>
+
+                {/* Individual lists */}
+                <div className="grid gap-2">
                   {lists.map((list) => (
-                    <option key={list.listId} value={list.listId}>
-                      {list.name}
-                      {list.subscriberCount != null ? ` (${list.subscriberCount.toLocaleString()} subscribers)` : ""}
-                    </option>
+                    <label
+                      key={list.listId}
+                      className="flex cursor-pointer items-center gap-3 rounded-lg border border-[#e2e8f0] px-4 py-3 hover:bg-[#f8fafc]"
+                    >
+                      <input
+                        type="checkbox"
+                        className="accent-[#2563eb]"
+                        checked={listIds.includes(list.listId)}
+                        onChange={(e) => {
+                          setListIds((prev) =>
+                            e.target.checked
+                              ? [...prev, list.listId]
+                              : prev.filter((id) => id !== list.listId)
+                          );
+                        }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[14px] font-medium text-[#0f172a]">{list.name}</p>
+                        {list.subscriberCount != null ? (
+                          <p className="text-[13px] text-[#64748b]">
+                            {list.subscriberCount.toLocaleString()} subscribers
+                          </p>
+                        ) : null}
+                      </div>
+                    </label>
                   ))}
-                </select>
-              </Field>
+                </div>
+
+                {listIds.length > 0 ? (
+                  <p className="text-[13px] text-[#64748b]">
+                    {listIds.length === lists.length
+                      ? "Sending to all lists"
+                      : `${listIds.length} list${listIds.length === 1 ? "" : "s"} selected`}
+                  </p>
+                ) : null}
+              </div>
             )}
           </FormSection>
 
@@ -335,7 +380,7 @@ function ComposeContent() {
             <Button
               type="submit"
               variant="primary"
-              disabled={sending || !htmlContent || !listId || !subject || !fromName || !fromEmail || !replyTo || !confirmationEmail || (sendMode === "schedule" && !scheduledDate)}
+              disabled={sending || !htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo || !confirmationEmail || (sendMode === "schedule" && !scheduledDate)}
             >
               {sending
                 ? "Sending…"

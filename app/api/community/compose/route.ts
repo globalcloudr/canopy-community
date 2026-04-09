@@ -11,7 +11,7 @@ export async function POST(request: Request) {
       fromName?: string;
       fromEmail?: string;
       replyTo?: string;
-      listId?: string;
+      listIds?: string[];
       htmlContent?: string;
       scheduledDate?: string | null;
       confirmationEmail?: string;
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       fromName,
       fromEmail,
       replyTo,
-      listId,
+      listIds,
       htmlContent,
       scheduledDate,
       confirmationEmail,
@@ -45,8 +45,8 @@ export async function POST(request: Request) {
     if (!replyTo?.trim()) {
       return NextResponse.json({ error: "Reply-to email is required." }, { status: 400 });
     }
-    if (!listId?.trim()) {
-      return NextResponse.json({ error: "A mailing list must be selected." }, { status: 400 });
+    if (!listIds || listIds.length === 0) {
+      return NextResponse.json({ error: "At least one mailing list must be selected." }, { status: 400 });
     }
     if (!htmlContent?.trim()) {
       return NextResponse.json({ error: "HTML content is required." }, { status: 400 });
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
       fromName: fromName.trim(),
       fromEmail: fromEmail.trim(),
       replyTo: replyTo.trim(),
-      listId: listId.trim(),
+      listIds,
       htmlContent,
       scheduledDate: scheduledDate ?? null,
       confirmationEmail: confirmationEmail.trim(),

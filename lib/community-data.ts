@@ -349,7 +349,7 @@ export type ComposeCampaignParams = {
   fromName: string;
   fromEmail: string;
   replyTo: string;
-  listId: string;
+  listIds: string[];
   htmlContent: string;
   scheduledDate?: string | null;
   confirmationEmail: string;
@@ -389,7 +389,7 @@ export async function composeCampaign(params: ComposeCampaignParams) {
     fromEmail: params.fromEmail,
     replyTo: params.replyTo,
     htmlUrl,
-    listIds: [params.listId],
+    listIds: params.listIds,
   });
 
   // 3. Send or schedule
