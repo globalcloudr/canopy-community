@@ -30,10 +30,20 @@ type CampaignMonitorErrorPayload = {
 };
 
 type CampaignMonitorClientDetails = {
+  // Flat structure (some API versions / access levels)
   ClientID?: string;
   Name?: string | null;
   Country?: string | null;
   TimeZone?: string | null;
+  // Nested structure returned by GET /clients/{id}.json
+  BasicDetails?: {
+    ClientID?: string | null;
+    CompanyName?: string | null;
+    ContactName?: string | null;
+    EmailAddress?: string | null;
+    Country?: string | null;
+    TimeZone?: string | null;
+  } | null;
 };
 
 type CampaignMonitorListRow = {
@@ -199,11 +209,14 @@ export async function getCampaignMonitorClientDetails(
     credentials
   );
 
+  // CM returns details nested under BasicDetails for most access levels
+  const basic = payload.BasicDetails;
+
   return {
-    clientId: payload.ClientID?.trim() || credentials.clientId,
-    name: payload.Name?.trim() || null,
-    country: payload.Country?.trim() || null,
-    timezone: payload.TimeZone?.trim() || null,
+    clientId: basic?.ClientID?.trim() || payload.ClientID?.trim() || credentials.clientId,
+    name: basic?.CompanyName?.trim() || payload.Name?.trim() || null,
+    country: basic?.Country?.trim() || payload.Country?.trim() || null,
+    timezone: basic?.TimeZone?.trim() || payload.TimeZone?.trim() || null,
   };
 }
 
