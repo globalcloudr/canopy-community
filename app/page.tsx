@@ -10,7 +10,6 @@ import type {
   CommunityCampaignSummary,
   CommunityConnection,
   CommunityListSummary,
-  CommunityTemplateSummary,
 } from "@/lib/community-schema";
 
 export default function DashboardPage() {
@@ -80,15 +79,6 @@ function DashboardContent() {
         actionLabel="See all subscriber lists"
       >
         <ListRows lists={overview?.lists ?? []} />
-      </DashboardSection>
-
-      {/* Templates */}
-      <DashboardSection
-        title="Templates"
-        actionHref="/templates"
-        actionLabel="See all templates"
-      >
-        <TemplateRows templates={overview?.templates ?? []} />
       </DashboardSection>
     </div>
   );
@@ -190,14 +180,14 @@ function DashboardSection({
   );
 }
 
-/* ── Draft campaigns — card style with thumbnail placeholder ───────────── */
+/* ── Draft campaigns ────────────────────────────────────────────────────── */
 
 function DraftRows({
   campaigns,
 }: {
   campaigns: CommunityCampaignSummary[];
 }) {
-  const visible = campaigns.slice(0, 4);
+  const visible = campaigns.slice(0, 3);
 
   if (visible.length === 0) {
     return (
@@ -210,54 +200,35 @@ function DraftRows({
   return (
     <div className="divide-y divide-[var(--app-divider)]">
       {visible.map((campaign) => (
-        <div key={campaign.id} className="flex items-center gap-4 py-3.5">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-[#e2e8f0] bg-[#f1f5f9]">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" className="h-5 w-5" aria-hidden="true">
+        <div key={campaign.id} className="flex items-center gap-4 py-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded border border-[#e2e8f0] bg-[#f8fafc]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" className="h-4 w-4" aria-hidden="true">
               <rect x="3" y="5" width="18" height="14" rx="2" />
               <path d="m6 9 6 4 6-4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <div className="min-w-0 flex-1">
-            {campaign.previewUrl ? (
-              <a
-                href={campaign.previewUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="truncate text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
-              >
-                {campaign.subject}
-              </a>
-            ) : (
-              <p className="truncate text-[14px] font-medium text-[#0f172a]">
-                {campaign.subject}
-              </p>
-            )}
+            <p className="truncate text-[14px] font-medium text-[#0f172a]">
+              {campaign.name || campaign.subject}
+            </p>
             <p className="mt-0.5 text-[13px] text-[#64748b]">
               Last edited {formatShortDate(campaign.createdDate)}
             </p>
           </div>
-          <a
-            href="https://app.createsend.com"
-            target="_blank"
-            rel="noreferrer"
-            className="shrink-0 text-[13px] font-medium text-[#64748b] hover:text-[#2563eb]"
-          >
-            Edit ↗
-          </a>
         </div>
       ))}
     </div>
   );
 }
 
-/* ── Sent campaigns — table with Recipients / Opened / Clicked ─────────── */
+/* ── Sent campaigns ─────────────────────────────────────────────────────── */
 
 function SentRows({
   campaigns,
 }: {
   campaigns: CommunityCampaignSummary[];
 }) {
-  const visible = campaigns.slice(0, 5);
+  const visible = campaigns.slice(0, 3);
 
   if (visible.length === 0) {
     return (
@@ -268,68 +239,60 @@ function SentRows({
   }
 
   return (
-    <table className="w-full">
-      <thead>
-        <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[#64748b]">
-          <th className="py-3 pr-4 font-medium">Campaign</th>
-          <th className="hidden py-3 pr-4 text-right font-medium md:table-cell">Recipients</th>
-          <th className="hidden py-3 pr-4 text-right font-medium md:table-cell">Opened</th>
-          <th className="hidden py-3 pr-4 text-right font-medium md:table-cell">Clicked</th>
-          <th className="py-3 text-right font-medium">Sent</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-[var(--app-divider)]">
-        {visible.map((campaign) => (
-          <tr key={campaign.id} className="group">
-            <td className="py-3.5 pr-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#e2e8f0] bg-[#f1f5f9]">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" className="h-4 w-4" aria-hidden="true">
-                    <rect x="3" y="5" width="18" height="14" rx="2" />
-                    <path d="m6 9 6 4 6-4" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <div className="min-w-0">
-                  {campaign.webVersionUrl ? (
-                    <a
-                      href={campaign.webVersionUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="truncate text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
-                    >
-                      {campaign.subject}
-                    </a>
-                  ) : (
-                    <p className="truncate text-[14px] font-medium text-[#0f172a]">
-                      {campaign.subject}
-                    </p>
-                  )}
-                  <p className="mt-0.5 text-[13px] text-[#64748b] md:hidden">
-                    {campaign.recipientCount?.toLocaleString() ?? "—"} recipients &middot; {formatShortDate(campaign.sentDate)}
-                  </p>
-                </div>
-              </div>
-            </td>
-            <td className="hidden py-3.5 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
-              {campaign.recipientCount?.toLocaleString() ?? "—"}
-            </td>
-            <td className="hidden py-3.5 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
-              {campaign.openRate != null ? `${campaign.openRate}%` : "—"}
-            </td>
-            <td className="hidden py-3.5 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
-              {campaign.clickRate != null ? `${campaign.clickRate}%` : "—"}
-            </td>
-            <td className="py-3.5 text-right text-[14px] text-[#64748b]">
-              {formatShortDate(campaign.sentDate)}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="divide-y divide-[var(--app-divider)]">
+      {visible.map((campaign) => (
+        <div key={campaign.id} className="flex items-center gap-4 py-4">
+          {/* Thumbnail */}
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded border border-[#e2e8f0] bg-[#f8fafc]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" className="h-4 w-4" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+              <path d="m6 9 6 4 6-4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+
+          {/* Name + date */}
+          <div className="min-w-0 flex-1">
+            {campaign.webVersionUrl ? (
+              <a
+                href={campaign.webVersionUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="block truncate text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
+              >
+                {campaign.name || campaign.subject}
+              </a>
+            ) : (
+              <p className="truncate text-[14px] font-medium text-[#0f172a]">
+                {campaign.name || campaign.subject}
+              </p>
+            )}
+            <p className="mt-0.5 text-[13px] text-[#64748b]">
+              Sent {formatShortDate(campaign.sentDate)}
+            </p>
+          </div>
+
+          {/* Stats — stacked number + label */}
+          <div className="hidden shrink-0 items-center gap-8 md:flex">
+            <StatBlock value={campaign.recipientCount?.toLocaleString() ?? "—"} label="Recipients" />
+            <StatBlock value={campaign.openRate != null ? `${campaign.openRate}%` : "—"} label="Opened" />
+            <StatBlock value={campaign.clickRate != null ? `${campaign.clickRate}%` : "—"} label="Clicked" />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
-/* ── Lists — name + subscriber count ───────────────────────────────────── */
+function StatBlock({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="text-right">
+      <p className="text-[14px] font-medium text-[#0f172a]">{value}</p>
+      <p className="text-[12px] text-[#64748b]">{label}</p>
+    </div>
+  );
+}
+
+/* ── Lists ──────────────────────────────────────────────────────────────── */
 
 function ListRows({
   lists,
@@ -352,69 +315,25 @@ function ListRows({
   return (
     <div className="divide-y divide-[var(--app-divider)]">
       {visible.map((list) => (
-        <div key={list.listId} className="flex items-center justify-between py-3.5">
-          <div className="min-w-0">
-            <p className="truncate text-[14px] font-medium text-[#0f172a]">
-              {list.name}
-            </p>
-          </div>
-          <span className="ml-4 shrink-0 text-[14px] text-[#64748b]">
-            {list.subscriberCount != null
-              ? `${list.subscriberCount.toLocaleString()} Subscribers`
-              : "Managed in Campaign Monitor"}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── Templates — simple list ───────────────────────────────────────────── */
-
-function TemplateRows({
-  templates,
-}: {
-  templates: CommunityTemplateSummary[];
-}) {
-  const visible = templates.slice(0, 4);
-
-  if (visible.length === 0) {
-    return (
-      <div className="pt-4">
-        <EmptyState
-          title="No templates yet"
-          body="Templates will appear here once they are available in the connected account."
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="divide-y divide-[var(--app-divider)]">
-      {visible.map((template) => (
-        <div key={template.templateId} className="flex items-center gap-4 py-3.5">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#e2e8f0] bg-white">
-            {template.screenshotUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={template.screenshotUrl} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <span className="text-[9px] uppercase tracking-[0.12em] text-[#94a3b8]">Tmpl</span>
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[14px] font-medium text-[#0f172a]">
-              {template.name}
-            </p>
-          </div>
-          {template.previewUrl ? (
-            <Button asChild variant="ghost" size="sm">
-              <a href={template.previewUrl} target="_blank" rel="noreferrer">
-                Preview
-              </a>
-            </Button>
+        <a
+          key={list.listId}
+          href="/audiences"
+          className="flex items-center justify-between py-4 hover:bg-[#f8fafc] -mx-4 px-4 transition-colors"
+        >
+          <p className="truncate text-[14px] font-medium text-[#0f172a]">
+            {list.name}
+          </p>
+          {list.subscriberCount != null ? (
+            <div className="ml-4 shrink-0 text-right">
+              <p className="text-[14px] font-medium text-[#0f172a]">
+                {list.subscriberCount.toLocaleString()}
+              </p>
+              <p className="text-[12px] text-[#64748b]">Subscribers</p>
+            </div>
           ) : null}
-        </div>
+        </a>
       ))}
     </div>
   );
 }
+
