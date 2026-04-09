@@ -81,6 +81,11 @@ function encodeBasicAuth(apiKey: string) {
   return Buffer.from(`${apiKey}:x`).toString("base64");
 }
 
+function computeRate(count: number | null, total: number | null): number | null {
+  if (count === null || total === null || total === 0) return null;
+  return Math.round((count / total) * 1000) / 10;
+}
+
 function normalizeNumber(value: unknown) {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -119,8 +124,8 @@ function toCampaignSummary(
     previewUrl: row.PreviewURL?.trim() || null,
     webVersionUrl: row.WebVersionURL?.trim() || null,
     recipientCount: normalizeNumber(row.TotalRecipients ?? row.RecipientCount),
-    openRate: normalizeNumber(row.UniqueOpened),
-    clickRate: normalizeNumber(row.Clicks),
+    openRate: computeRate(normalizeNumber(row.UniqueOpened), normalizeNumber(row.TotalRecipients ?? row.RecipientCount)),
+    clickRate: computeRate(normalizeNumber(row.Clicks), normalizeNumber(row.TotalRecipients ?? row.RecipientCount)),
     tags: Array.isArray(row.Tags) ? row.Tags.filter((tag): tag is string => typeof tag === "string" && tag.trim().length > 0) : [],
   };
 }
@@ -298,4 +303,30 @@ export async function getCampaignMonitorScheduledCampaigns(
   return payload
     .map((row) => toCampaignSummary(row, "scheduled"))
     .filter((row): row is CommunityCampaignSummary => row !== null);
+}
+
+type CampaignMonitorListStatsResponse = {
+  TotalActiveSubscribers?: number | null;
+  NewActiveSubscribersToday?: number | null;
+  NewActiveSubscribersYesterday?: number | null;
+  NewActiveSubscribersThisWeek?: number | null;
+  NewActiveSubscribersThisMonth?: number | null;
+  NewActiveSubscribersThisYear?: number | null;
+  TotalUnsubscribes?: number | null;
+  TotalDeleted?: number | null;
+  TotalBounces?: number | null;
+};
+
+export async function getCampaignMonitorListStats(
+  credentials: CampaignMonitorCredentials,
+  listId: string
+): Promise<{ totalActiveSubscribers: number | null }> {
+  const payload = await requestJson<CampaignMonitorListStatsResponse>(
+    `/lists/${encodeURIComponent(listId)}/stats.json`,
+    credentials
+  );
+
+  return {
+    totalActiveSubscribers: normalizeNumber(payload.TotalActiveSubscribers),
+  };
 }

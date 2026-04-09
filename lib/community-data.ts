@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import {
   getCampaignMonitorClientDetails,
   getCampaignMonitorDraftCampaigns,
+  getCampaignMonitorListStats,
   getCampaignMonitorLists,
   getCampaignMonitorScheduledCampaigns,
   getCampaignMonitorSentCampaigns,
@@ -228,7 +229,7 @@ export async function getCommunityOverview(
   try {
     const [
       account,
-      lists,
+      listsRaw,
       templates,
       sentCampaignsResult,
       draftCampaigns,
@@ -241,6 +242,18 @@ export async function getCommunityOverview(
       getCampaignMonitorDraftCampaigns(credentials),
       getCampaignMonitorScheduledCampaigns(credentials),
     ]);
+
+    // Fan out per-list stats to get subscriber counts; individual failures fall back to null
+    const lists = await Promise.all(
+      listsRaw.map(async (list) => {
+        try {
+          const stats = await getCampaignMonitorListStats(credentials, list.listId);
+          return { ...list, subscriberCount: stats.totalActiveSubscribers };
+        } catch {
+          return list;
+        }
+      })
+    );
 
     return {
       connection: {

@@ -43,8 +43,10 @@ function DashboardContent() {
             </p>
           ) : null}
         </div>
-        <Button onClick={() => void refresh()} variant="primary" disabled={loading}>
-          {loading ? "Refreshing…" : "Create"}
+        <Button asChild variant="primary">
+          <a href="https://app.createsend.com" target="_blank" rel="noreferrer">
+            Create campaign
+          </a>
         </Button>
       </div>
 
@@ -218,13 +220,32 @@ function DraftRows({
             </svg>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[14px] font-medium text-[#0f172a]">
-              {campaign.subject}
-            </p>
+            {campaign.previewUrl ? (
+              <a
+                href={campaign.previewUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="truncate text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
+              >
+                {campaign.subject}
+              </a>
+            ) : (
+              <p className="truncate text-[14px] font-medium text-[#0f172a]">
+                {campaign.subject}
+              </p>
+            )}
             <p className="mt-0.5 text-[13px] text-[#64748b]">
               Last edited {formatShortDate(campaign.createdDate)}
             </p>
           </div>
+          <a
+            href="https://app.createsend.com"
+            target="_blank"
+            rel="noreferrer"
+            className="shrink-0 text-[13px] font-medium text-[#64748b] hover:text-[#2563eb]"
+          >
+            Edit ↗
+          </a>
         </div>
       ))}
     </div>
@@ -271,9 +292,20 @@ function SentRows({
                   </svg>
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-[14px] font-medium text-[#0f172a]">
-                    {campaign.subject}
-                  </p>
+                  {campaign.webVersionUrl ? (
+                    <a
+                      href={campaign.webVersionUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="truncate text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
+                    >
+                      {campaign.subject}
+                    </a>
+                  ) : (
+                    <p className="truncate text-[14px] font-medium text-[#0f172a]">
+                      {campaign.subject}
+                    </p>
+                  )}
                   <p className="mt-0.5 text-[13px] text-[#64748b] md:hidden">
                     {campaign.recipientCount?.toLocaleString() ?? "—"} recipients &middot; {formatShortDate(campaign.sentDate)}
                   </p>

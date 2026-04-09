@@ -1,4 +1,11 @@
-import { BodyText, Button } from "@canopy/ui";
+import {
+  BodyText,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@canopy/ui";
 import type {
   CommunityCampaignSummary,
   CommunityConnection,
@@ -100,9 +107,9 @@ export function CampaignTable({
           <thead>
             <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[#64748b]">
               <th className="py-3 pr-4 font-medium">Campaign</th>
-              <th className="hidden py-3 pr-4 font-medium md:table-cell">Recipients</th>
-              <th className="hidden py-3 pr-4 font-medium md:table-cell">Opened</th>
-              <th className="hidden py-3 pr-4 font-medium md:table-cell">Clicked</th>
+              <th className="hidden py-3 pr-4 text-right font-medium md:table-cell">Recipients</th>
+              <th className="hidden py-3 pr-4 text-right font-medium md:table-cell">Opened</th>
+              <th className="hidden py-3 pr-4 text-right font-medium md:table-cell">Clicked</th>
               <th className="py-3 pr-4 text-right font-medium">
                 {campaigns[0]?.status === "sent" ? "Sent" : "Edited"}
               </th>
@@ -110,53 +117,100 @@ export function CampaignTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--app-divider)]">
-            {campaigns.map((campaign) => (
-              <tr key={campaign.id} className="group">
-                <td className="py-3.5 pr-4">
-                  <div className="flex items-center gap-3">
-                    <CampaignStatusBadge status={campaign.status} />
-                    <span className="text-[14px] font-medium text-[#0f172a]">
-                      {campaign.subject}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 text-[13px] text-[#64748b] md:hidden">
-                    {campaign.fromName || "School newsletter"} &middot; {getCampaignTimingLabel(campaign)}
-                  </p>
-                </td>
-                <td className="hidden py-3.5 pr-4 text-[14px] text-[#334155] md:table-cell">
-                  {campaign.recipientCount !== null
-                    ? campaign.recipientCount.toLocaleString()
-                    : "—"}
-                </td>
-                <td className="hidden py-3.5 pr-4 text-[14px] text-[#334155] md:table-cell">
-                  {campaign.openRate != null ? `${campaign.openRate}%` : "—"}
-                </td>
-                <td className="hidden py-3.5 pr-4 text-[14px] text-[#334155] md:table-cell">
-                  {campaign.clickRate != null ? `${campaign.clickRate}%` : "—"}
-                </td>
-                <td className="py-3.5 pr-4 text-right text-[14px] text-[#64748b]">
-                  {formatShortDate(campaign.sentDate ?? campaign.createdDate)}
-                </td>
-                <td className="py-3.5 text-right">
-                  {campaign.previewUrl || campaign.webVersionUrl ? (
-                    <Button asChild variant="ghost" size="sm">
-                      <a
-                        href={campaign.previewUrl ?? campaign.webVersionUrl ?? "#"}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[13px]"
-                      >
-                        &#8942;
-                      </a>
-                    </Button>
-                  ) : null}
-                </td>
-              </tr>
-            ))}
+            {campaigns.map((campaign) => {
+              const primaryUrl = campaign.webVersionUrl ?? campaign.previewUrl;
+              return (
+                <tr key={campaign.id} className="group hover:bg-[#f8fafc]">
+                  <td className="py-3.5 pr-4">
+                    <div className="flex items-center gap-3">
+                      <CampaignStatusBadge status={campaign.status} />
+                      {primaryUrl ? (
+                        <a
+                          href={primaryUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
+                        >
+                          {campaign.subject}
+                        </a>
+                      ) : (
+                        <span className="text-[14px] font-medium text-[#0f172a]">
+                          {campaign.subject}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-0.5 text-[13px] text-[#64748b] md:hidden">
+                      {campaign.fromName || "School newsletter"} &middot; {getCampaignTimingLabel(campaign)}
+                    </p>
+                  </td>
+                  <td className="hidden py-3.5 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
+                    {campaign.recipientCount !== null
+                      ? campaign.recipientCount.toLocaleString()
+                      : "—"}
+                  </td>
+                  <td className="hidden py-3.5 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
+                    {campaign.openRate != null ? `${campaign.openRate}%` : "—"}
+                  </td>
+                  <td className="hidden py-3.5 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
+                    {campaign.clickRate != null ? `${campaign.clickRate}%` : "—"}
+                  </td>
+                  <td className="py-3.5 pr-4 text-right text-[14px] text-[#64748b]">
+                    {formatShortDate(campaign.sentDate ?? campaign.createdDate)}
+                  </td>
+                  <td className="py-3.5">
+                    <CampaignActionsMenu campaign={campaign} />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
     </SectionCard>
+  );
+}
+
+const CM_HOME = "https://app.createsend.com";
+
+function CampaignActionsMenu({ campaign }: { campaign: CommunityCampaignSummary }) {
+  const items: { label: string; href: string }[] = [];
+
+  if (campaign.webVersionUrl) {
+    items.push({ label: "View newsletter", href: campaign.webVersionUrl });
+  }
+  if (campaign.previewUrl) {
+    items.push({ label: "Preview", href: campaign.previewUrl });
+  }
+  items.push({
+    label: campaign.status === "sent" ? "Open in Campaign Monitor" : "Edit in Campaign Monitor",
+    href: CM_HOME,
+  });
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="flex h-7 w-7 items-center justify-center rounded text-[#94a3b8] opacity-0 transition hover:bg-[#e2e8f0] hover:text-[#334155] group-hover:opacity-100"
+          aria-label="Campaign actions"
+        >
+          <svg viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
+            <circle cx="8" cy="3" r="1.25" />
+            <circle cx="8" cy="8" r="1.25" />
+            <circle cx="8" cy="13" r="1.25" />
+          </svg>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52 bg-white">
+        {items.map((item) => (
+          <DropdownMenuItem key={item.label} asChild>
+            <a href={item.href} target="_blank" rel="noreferrer">
+              {item.label}
+            </a>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

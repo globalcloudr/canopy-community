@@ -44,9 +44,16 @@ function CampaignsContent() {
       <PageHeader
         title="Campaigns"
         actions={
-          <Button variant="secondary" onClick={() => void refresh()} disabled={loading}>
-            {loading ? "Refreshing…" : "Refresh"}
-          </Button>
+          <>
+            <Button variant="secondary" onClick={() => void refresh()} disabled={loading}>
+              {loading ? "Refreshing…" : "Refresh"}
+            </Button>
+            <Button asChild variant="primary">
+              <a href="https://app.createsend.com" target="_blank" rel="noreferrer">
+                Create a campaign
+              </a>
+            </Button>
+          </>
         }
       />
 
@@ -166,10 +173,19 @@ function DraftRow({ campaign }: { campaign: CommunityCampaignSummary }) {
       ? campaign.scheduledDate
       : campaign.createdDate;
 
+  const href = campaign.previewUrl ?? "https://app.createsend.com";
+
   return (
-    <tr>
-      <td className="py-3 pr-4 text-[14px] font-medium text-[#0f172a]">
-        {campaign.subject}
+    <tr className="group hover:bg-[#f8fafc]">
+      <td className="py-3 pr-4">
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          className="text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
+        >
+          {campaign.subject}
+        </a>
       </td>
       <td className="py-3 text-right text-[14px] text-[#64748b]">
         {formatShortDate(dateValue)}
@@ -211,9 +227,20 @@ function SentSection({
         </thead>
         <tbody className="divide-y divide-[var(--app-divider)]">
           {campaigns.map((c) => (
-            <tr key={c.id}>
-              <td className="py-3 pr-4 text-[14px] font-medium text-[#0f172a]">
-                {c.subject}
+            <tr key={c.id} className="group hover:bg-[#f8fafc]">
+              <td className="py-3 pr-4">
+                {c.webVersionUrl ? (
+                  <a
+                    href={c.webVersionUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
+                  >
+                    {c.subject}
+                  </a>
+                ) : (
+                  <span className="text-[14px] font-medium text-[#0f172a]">{c.subject}</span>
+                )}
               </td>
               <td className="hidden py-3 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
                 {c.recipientCount?.toLocaleString() ?? "—"}
