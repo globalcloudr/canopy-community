@@ -67,6 +67,8 @@ type CampaignMonitorCampaignRow = {
   ScheduledDate?: string | null;
   TotalRecipients?: number | null;
   RecipientCount?: number | null;
+  UniqueOpened?: number | null;
+  Clicks?: number | null;
   Tags?: string[] | null;
 };
 
@@ -117,6 +119,8 @@ function toCampaignSummary(
     previewUrl: row.PreviewURL?.trim() || null,
     webVersionUrl: row.WebVersionURL?.trim() || null,
     recipientCount: normalizeNumber(row.TotalRecipients ?? row.RecipientCount),
+    openRate: normalizeNumber(row.UniqueOpened),
+    clickRate: normalizeNumber(row.Clicks),
     tags: Array.isArray(row.Tags) ? row.Tags.filter((tag): tag is string => typeof tag === "string" && tag.trim().length > 0) : [],
   };
 }
@@ -206,22 +210,23 @@ export async function getCampaignMonitorLists(
     credentials
   );
 
-  return payload
-    .map((row) => {
-      const listId = row.ListID?.trim();
-      if (!listId) {
-        return null;
-      }
+  const results: CommunityListSummary[] = [];
 
-      return {
-        listId,
-        name: row.Name?.trim() || row.Title?.trim() || "Untitled list",
-        unsubscribeSetting: row.UnsubscribeSetting?.trim() || null,
-        confirmedOptIn:
-          typeof row.ConfirmedOptIn === "boolean" ? row.ConfirmedOptIn : null,
-      };
-    })
-    .filter((row): row is CommunityListSummary => row !== null);
+  for (const row of payload) {
+    const listId = row.ListID?.trim();
+    if (!listId) continue;
+
+    results.push({
+      listId,
+      name: row.Name?.trim() || row.Title?.trim() || "Untitled list",
+      unsubscribeSetting: row.UnsubscribeSetting?.trim() || null,
+      confirmedOptIn:
+        typeof row.ConfirmedOptIn === "boolean" ? row.ConfirmedOptIn : null,
+      subscriberCount: null,
+    });
+  }
+
+  return results;
 }
 
 export async function getCampaignMonitorTemplates(

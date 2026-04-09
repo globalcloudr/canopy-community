@@ -11,7 +11,7 @@ import {
   useCommunityWorkspaceId,
 } from "@/app/_components/community-data";
 import { ConnectionSection } from "@/app/_components/community-sections";
-import { EmptyState, PageIntro } from "@/app/_components/community-ui";
+import { EmptyState, PageHeader } from "@/app/_components/community-ui";
 
 export default function SettingsPage() {
   return (
@@ -103,10 +103,9 @@ function SettingsContent() {
   }
 
   return (
-    <>
-      <PageIntro
-        eyebrow="Settings"
-        title="Connect your school account"
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Settings"
         description="Add the Campaign Monitor Client ID for this school. If Canopy already has a shared API key, you can leave the API key field blank."
         actions={
           <Button variant="secondary" onClick={() => void refresh()} disabled={loading}>
@@ -119,12 +118,12 @@ function SettingsContent() {
 
       <ConnectionSection connection={overview?.connection ?? null} syncError={overview?.syncError ?? null} />
 
-      <Card padding="md" className="rounded-[28px] border border-[var(--app-surface-border)] bg-white shadow-none">
-        <div className="border-b border-[var(--app-divider)] pb-5">
-          <h2 className="text-[1.25rem] font-semibold tracking-[-0.03em] text-[#0f172a]">
+      <div className="rounded-lg border border-[var(--app-surface-border)] bg-white p-6">
+        <div className="border-b border-[var(--app-divider)] pb-4">
+          <h2 className="text-[1.1rem] font-semibold tracking-[-0.02em] text-[#0f172a]">
             Campaign Monitor connection
           </h2>
-          <p className="mt-1 max-w-2xl text-[14px] leading-6 text-[#617284]">
+          <p className="mt-1 max-w-2xl text-[14px] leading-6 text-[#64748b]">
             We check the connection with Campaign Monitor before saving.
             {sharedApiKeyConfigured
               ? " A shared Canopy API key is already set up, so the API key field below is optional."
@@ -183,7 +182,7 @@ function SettingsContent() {
           {message ? <BodyText className="text-[#0f766e]">{message}</BodyText> : null}
           {saveError ? <BodyText className="text-[#b42318]">{saveError}</BodyText> : null}
         </form>
-      </Card>
-    </>
+      </div>
+    </div>
   );
 }

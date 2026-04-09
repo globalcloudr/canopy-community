@@ -5,10 +5,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
-  AppSurface,
   BodyText,
   CanopyHeader,
-  Card,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -545,14 +543,12 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
           </aside>
 
           {/* Content */}
-          <div className="min-w-0 overflow-y-auto bg-[var(--app-content-bg)]">
-            <div className="mx-auto flex min-h-full w-full max-w-[1380px] flex-col gap-6 px-4 py-6 sm:px-6 xl:px-8">
+          <div className="min-w-0 overflow-y-auto bg-white">
+            <div className="mx-auto w-full max-w-[1080px] px-6 py-8 sm:px-8 lg:px-10">
               {loadingSession ? (
-                <AppSurface variant="clear" className="overflow-hidden rounded-[34px] px-6 py-7 sm:px-8 sm:py-8">
-                  <Card padding="md" className="border border-[var(--app-surface-border)] bg-transparent shadow-none">
-                    <BodyText muted>Loading workspace…</BodyText>
-                  </Card>
-                </AppSurface>
+                <div className="py-12 text-center">
+                  <BodyText muted>Loading workspace…</BodyText>
+                </div>
               ) : (
                 children
               )}

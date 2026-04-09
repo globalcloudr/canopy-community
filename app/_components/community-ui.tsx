@@ -3,6 +3,39 @@ import { Alert, AlertDescription, AlertTitle, Badge, Button, Card } from "@canop
 import { cn } from "@canopy/ui";
 import type { CommunityCampaignSummary } from "@/lib/community-schema";
 
+export function PageHeader({
+  title,
+  description,
+  actions,
+  className,
+}: {
+  title: string;
+  description?: string;
+  actions?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("pb-6", className)}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-[1.75rem] font-semibold tracking-[-0.03em] text-[#0f172a] sm:text-[2rem]">
+            {title}
+          </h1>
+          {description ? (
+            <p className="mt-1.5 max-w-2xl text-[15px] leading-6 text-[#64748b]">
+              {description}
+            </p>
+          ) : null}
+        </div>
+        {actions ? (
+          <div className="flex flex-wrap items-center gap-3 sm:justify-end">{actions}</div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/** @deprecated Use PageHeader instead */
 export function PageIntro({
   eyebrow,
   title,
@@ -17,28 +50,7 @@ export function PageIntro({
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "relative overflow-hidden rounded-[32px] border border-[var(--app-surface-border)] bg-[linear-gradient(180deg,#ffffff_0%,#f7fbff_100%)] px-6 py-6 sm:px-7 sm:py-7",
-        className
-      )}
-    >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top_left,rgba(15,118,110,0.08),transparent_52%)]" />
-      <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div className="max-w-3xl">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#0f766e]">
-            {eyebrow}
-          </p>
-          <h1 className="mt-2 max-w-[14ch] text-[2.1rem] font-semibold tracking-[-0.05em] text-[#0f172a] sm:text-[2.6rem]">
-            {title}
-          </h1>
-          <p className="mt-3 max-w-2xl text-[15px] leading-7 text-[#526072] sm:text-[16px]">
-            {description}
-          </p>
-        </div>
-        {actions ? <div className="flex flex-wrap items-center gap-3 lg:justify-end">{actions}</div> : null}
-      </div>
-    </div>
+    <PageHeader title={title} description={description} actions={actions} className={className} />
   );
 }
 
@@ -56,7 +68,7 @@ export function StatCard({
   return (
     <Card
       padding="md"
-      className={cn("rounded-[26px] border border-[var(--app-surface-border)] bg-white shadow-none", className)}
+      className={cn("rounded-lg border border-[var(--app-surface-border)] bg-white shadow-none", className)}
     >
       <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#8ca0b3]">
         {label}
@@ -83,7 +95,7 @@ export function MiniStat({
   return (
     <div
       className={cn(
-        "rounded-[22px] border border-[var(--app-surface-border)] bg-white px-4 py-4 shadow-none",
+        "rounded-lg border border-[var(--app-surface-border)] bg-white px-4 py-4 shadow-none",
         className
       )}
     >
@@ -108,27 +120,26 @@ export function SectionCard({
   className,
 }: {
   title: string;
-  description: string;
+  description?: string;
   children: ReactNode;
   action?: ReactNode;
   className?: string;
 }) {
   return (
-    <Card
-      padding="md"
-      className={cn("rounded-[28px] border border-[var(--app-surface-border)] bg-white shadow-none", className)}
-    >
-      <div className="flex flex-col gap-3 border-b border-[var(--app-divider)] pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <div className={cn("bg-white", className)}>
+      <div className="flex items-baseline justify-between border-b border-[var(--app-divider)] pb-4">
         <div>
-          <h2 className="text-[1.25rem] font-semibold tracking-[-0.03em] text-[#0f172a]">
+          <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em] text-[#0f172a]">
             {title}
           </h2>
-          <p className="mt-1 text-[14px] leading-6 text-[#617284]">{description}</p>
+          {description ? (
+            <p className="mt-0.5 text-[14px] leading-6 text-[#64748b]">{description}</p>
+          ) : null}
         </div>
         {action}
       </div>
-      <div className="pt-5">{children}</div>
-    </Card>
+      <div className="pt-1">{children}</div>
+    </div>
   );
 }
 
@@ -140,7 +151,7 @@ export function EmptyState({
   body: string;
 }) {
   return (
-    <div className="rounded-[22px] border border-dashed border-[#c7d4e4] bg-[#f7fafc] px-5 py-6">
+    <div className="rounded-lg border border-dashed border-[#c7d4e4] bg-[#f8fafc] px-5 py-6">
       <p className="text-[15px] font-semibold tracking-[-0.02em] text-[#0f172a]">{title}</p>
       <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#617284]">{body}</p>
     </div>
@@ -219,6 +230,23 @@ export function formatDate(value: string | null) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
+export function formatShortDate(value: string | null) {
+  if (!value) {
+    return "—";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
     year: "numeric",
   }).format(date);
 }

@@ -22,6 +22,7 @@ export type CommunityListSummary = {
   name: string;
   unsubscribeSetting: string | null;
   confirmedOptIn: boolean | null;
+  subscriberCount: number | null;
 };
 
 export type CommunityCampaignStatus = "sent" | "draft" | "scheduled";
@@ -40,6 +41,8 @@ export type CommunityCampaignSummary = {
   previewUrl: string | null;
   webVersionUrl: string | null;
   recipientCount: number | null;
+  openRate: number | null;
+  clickRate: number | null;
   tags: string[];
 };
 
