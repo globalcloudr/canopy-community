@@ -4,6 +4,26 @@ Append new sessions at the top. Do not overwrite history.
 
 ---
 
+## 2026-04-10 — Docs aligned to current repo state
+
+Reviewed the repo docs against the actual codebase and updated the product docs to match current behavior.
+
+### What changed
+
+- Updated `README.md` to reflect that native compose/send is now implemented
+- Added `/compose`, template APIs, and newer SQL migrations to the route and setup docs
+- Documented Community-managed templates and the current send workflow
+- Updated `CLAUDE.md` to include `community_templates` and template API behavior
+- Removed stale language that still described compose/send as a future phase
+
+### Notes
+
+- The repo now supports both Campaign Monitor account visibility and native newsletter composition
+- Community templates are first-class repo features and need to be represented in setup docs
+- SQL setup now requires more than the original connection migration
+
+---
+
 ## 2026-04-09 — Native compose, UI redesign, and storage security
 
 Built campaign compose/send, redesigned the UI to match Campaign Monitor's layout, tightened storage security, and fixed Campaign Monitor API response mapping.

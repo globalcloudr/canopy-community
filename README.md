@@ -1,16 +1,19 @@
 # Canopy Community
 
-Canopy Community is the school newsletter product in the Canopy portfolio. It lets Canopy workspaces connect a Campaign Monitor client, review newsletter activity, and prepare for native newsletter creation and sending inside Canopy.
+Canopy Community is the school newsletter product in the Canopy portfolio. It lets Canopy workspaces connect a Campaign Monitor client, create and send newsletters from Canopy, review newsletter activity, and manage reusable templates.
 
 ## Current Scope
 
 - Portal handoff and workspace-aware app shell
-- Dashboard with recent Campaign Monitor activity
-- Campaigns, audiences, templates, and settings pages
+- Dashboard with drafts, sent campaigns, and mailing lists
+- Campaigns, compose, audiences, templates, and settings pages
 - Workspace-scoped Campaign Monitor connection storage
 - Shared master Campaign Monitor API key support with per-workspace `Client ID`
+- Native campaign compose and send flow backed by Campaign Monitor
+- Workspace-scoped reusable templates stored in Supabase
+- Billing-aware send confirmation and scheduled sends
 
-This repo currently focuses on connection, validation, and visibility. Native compose and send flows are still a future phase.
+This repo now includes the first working compose/send flow. Subscriber management and deeper analytics are still future phases.
 
 ## Stack
 
@@ -20,6 +23,7 @@ This repo currently focuses on connection, validation, and visibility. Native co
 - Tailwind CSS v4
 - Supabase
 - Campaign Monitor API
+- `react-email-editor` for the template builder
 - `@canopy/ui` v0.1.4 vendored locally
 
 ## Local Development
@@ -73,13 +77,19 @@ The Settings page validates the connection server-side before saving it.
 
 ## Required Database Setup
 
-Apply the first Community migration before testing real data:
+Apply all Community setup migrations before testing real data:
 
 ```bash
 docs/sql/2026-04-08-cc-001-campaign-monitor-connections.sql
+docs/sql/2026-04-08-cc-002-html-upload-bucket.sql
+docs/sql/2026-04-10-cc-003-community-templates.sql
 ```
 
-This creates the `community_campaign_monitor_connections` table used for workspace connection storage.
+These create:
+
+- `community_campaign_monitor_connections` for workspace connection storage
+- `community-html-uploads` storage bucket for temporary HTML upload handoff
+- `community_templates` for saved reusable templates inside Canopy
 
 ## Routes
 
@@ -87,6 +97,7 @@ Workspace routes:
 
 - `/`
 - `/campaigns`
+- `/compose`
 - `/audiences`
 - `/templates`
 - `/settings`
@@ -97,7 +108,36 @@ API routes:
 - `POST /api/auth/exchange-handoff`
 - `GET /api/launcher-products`
 - `GET /api/community/overview`
+- `POST /api/community/compose`
+- `GET/POST /api/community/templates`
+- `PATCH/DELETE /api/community/templates/:id`
 - `GET/PUT/DELETE /api/integrations/campaign-monitor`
+
+## Compose And Send
+
+Community now supports a native newsletter workflow inside the app.
+
+Current flow:
+
+- open `New campaign`
+- choose or build a template
+- upload or edit newsletter HTML
+- select one or more subscriber lists
+- review estimated send cost
+- save as draft, send immediately, or schedule
+
+Campaigns are still sent through Campaign Monitor. Community is the authoring and workflow layer on top of that account.
+
+## Templates
+
+Community templates are stored in Supabase and managed from the Templates page.
+
+Current template capabilities:
+
+- create a reusable template
+- edit template content in the builder
+- rename, duplicate, and delete templates
+- load a saved template into the compose flow
 
 ## Portal Integration
 
@@ -132,6 +172,7 @@ Before testing production:
 - confirm `NEXT_PUBLIC_APP_URL` matches the deployed Community URL
 - confirm `NEXT_PUBLIC_PORTAL_URL` matches the deployed portal URL
 - confirm `NEXT_PUBLIC_SUPABASE_URL` uses the real `supabase.co` project URL
+- confirm the Community storage bucket and template table migrations have been applied
 - redeploy after any Vercel environment variable change
 
 ## Verification

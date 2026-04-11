@@ -65,6 +65,7 @@ Canopy Community gives school workspaces a Canopy-native place to manage their n
 
 - `docs/sql/2026-04-08-cc-001-campaign-monitor-connections.sql`
 - `docs/sql/2026-04-08-cc-002-html-upload-bucket.sql`
+- `docs/sql/2026-04-10-cc-003-community-templates.sql`
 
 ## Environment Variables
 
@@ -118,6 +119,19 @@ The compose page (`/compose`) handles the full send lifecycle:
    - Delete the HTML file from storage in a `finally` block (always runs)
 6. Draft saves skip the send step and skip `confirmationEmail` validation.
 
+The compose flow can also start from a saved Community template instead of only a raw HTML upload.
+
+## Template Management
+
+Templates are stored in the `community_templates` table and managed from `/templates`.
+
+- `GET /api/community/templates` loads workspace templates
+- `POST /api/community/templates` creates a template
+- `PATCH /api/community/templates/:id` updates name, design JSON, or HTML preview
+- `DELETE /api/community/templates/:id` removes a template
+
+The compose page can load a saved template into the editor for reuse.
+
 ## Storage Security
 
 The `community-html-uploads` Supabase Storage bucket is **private** (`public: false`).
@@ -149,9 +163,6 @@ Portal must include:
 
 The launch-handoff database constraint in Portal must also allow `community_canopy`.
 
-The Community detail page in Portal is defined in:
-`apps/portal/src/app/(portal)/app/products/[slug]/page.tsx` → `CommunityDetailPage`
-
 ## Local Testing Notes
 
 To test the full launch flow locally:
@@ -181,5 +192,5 @@ Opening Community directly without a valid launch/session can redirect back to t
 ## Next Product Phase
 
 - Subscriber management (add/remove/search subscribers within Canopy)
-- Scheduled sending (send at a future date/time rather than immediately)
 - Campaign analytics detail view (per-campaign recipient list, click map)
+- Richer dashboard actions and send workflow polish
