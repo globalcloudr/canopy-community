@@ -251,7 +251,7 @@ function ComposeContent() {
           New campaign
         </h1>
         <p className="mt-1.5 text-[15px] text-[#64748b]">
-          Upload an HTML email file, choose your list, and send.
+          Design your email, start from a template, or upload an HTML file.
         </p>
       </div>
 
@@ -310,7 +310,7 @@ function ComposeContent() {
           <FormSection title="Recipients">
             {lists.length === 0 ? (
               <p className="text-[14px] text-[#64748b]">
-                No mailing lists found. Make sure your Campaign Monitor account is connected in{" "}
+                No mailing list found. Make sure your Client ID is connected in{" "}
                 <a href="/settings" className="text-[#2563eb] hover:underline">Settings</a>.
               </p>
             ) : (
@@ -457,7 +457,7 @@ function ComposeContent() {
               </div>
             ) : null}
             <div className="mt-4">
-              <Field label="Confirmation email" required hint="Campaign Monitor will send a confirmation to this address when the campaign goes out.">
+              <Field label="Confirmation email" required hint="We will send a confirmation to this email address when the campaign goes out.">
                 <Input
                   type="email"
                   value={confirmationEmail}
