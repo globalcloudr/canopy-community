@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@canopy/ui";
 import { cn } from "@canopy/ui";
 import { ProductShell } from "@/app/_components/product-shell";
@@ -200,16 +200,32 @@ function TemplatesContent() {
 
 function TemplateCard({
   template,
+  renaming,
   onEdit,
+  onRename,
+  onRenameSubmit,
   onDuplicate,
   onDeleteRequest,
 }: {
   template: CommunityTemplate;
+  renaming: boolean;
   onEdit: () => void;
+  onRename: () => void;
+  onRenameSubmit: (name: string) => void;
   onDuplicate: () => void;
   onDeleteRequest: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState(template.name);
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (renaming) {
+      setRenameValue(template.name);
+      // Focus the input after render
+      setTimeout(() => renameInputRef.current?.select(), 0);
+    }
+  }, [renaming, template.name]);
 
   return (
     <div className="group relative rounded-lg border border-[#e2e8f0] bg-white transition hover:shadow-md">
@@ -242,7 +258,25 @@ function TemplateCard({
       {/* Info */}
       <div className="flex items-center gap-2 px-3.5 py-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[14px] font-medium text-[#0f172a]">{template.name}</p>
+          {renaming ? (
+            <form
+              onSubmit={(e) => { e.preventDefault(); onRenameSubmit(renameValue); }}
+            >
+              <input
+                ref={renameInputRef}
+                type="text"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onBlur={() => onRenameSubmit(renameValue)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") onRenameSubmit(template.name);
+                }}
+                className="w-full rounded border border-[#2563eb] px-1.5 py-0.5 text-[14px] font-medium text-[#0f172a] outline-none ring-1 ring-[#2563eb]"
+              />
+            </form>
+          ) : (
+            <p className="truncate text-[14px] font-medium text-[#0f172a]">{template.name}</p>
+          )}
           <p className="mt-0.5 text-[12px] text-[#94a3b8]">
             Updated {formatCompactDateTime(template.updatedAt)}
           </p>
@@ -266,6 +300,9 @@ function TemplateCard({
             <>
               <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
               <div className="absolute right-0 z-20 mt-1 w-36 rounded-md border border-[#e2e8f0] bg-white py-1 shadow-lg">
+                <MenuButton onClick={() => { setMenuOpen(false); onRename(); }}>
+                  Rename
+                </MenuButton>
                 <MenuButton onClick={() => { setMenuOpen(false); onEdit(); }}>
                   Edit
                 </MenuButton>
