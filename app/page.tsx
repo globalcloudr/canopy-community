@@ -108,7 +108,7 @@ function DashboardNotice({
       <StatusNotice
         tone="info"
         title="Connect your school account"
-        body="Add your Campaign Monitor connection in Settings to load newsletters, lists, and templates."
+        body="Add your Campaign Monitor connection in Settings to create your first campaign."
         actionHref="/settings"
         actionLabel="Connect account"
       />
