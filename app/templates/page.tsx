@@ -32,6 +32,7 @@ function TemplatesContent() {
   const [editingTemplate, setEditingTemplate] = useState<CommunityTemplate | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   function handleNewTemplate() {
@@ -42,6 +43,22 @@ function TemplatesContent() {
   function handleEditTemplate(template: CommunityTemplate) {
     setEditingTemplate(template);
     setEditorOpen(true);
+  }
+
+  async function handleRename(templateId: string, newName: string) {
+    if (!workspaceId || !newName.trim()) {
+      setRenamingId(null);
+      return;
+    }
+    setActionError(null);
+    try {
+      await updateTemplate(templateId, { workspaceId, name: newName.trim() });
+      refresh();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Failed to rename template.");
+    } finally {
+      setRenamingId(null);
+    }
   }
 
   async function handleDuplicate(template: CommunityTemplate) {
@@ -136,7 +153,10 @@ function TemplatesContent() {
               <TemplateCard
                 key={template.id}
                 template={template}
+                renaming={renamingId === template.id}
                 onEdit={() => handleEditTemplate(template)}
+                onRename={() => setRenamingId(template.id)}
+                onRenameSubmit={(name) => void handleRename(template.id, name)}
                 onDuplicate={() => void handleDuplicate(template)}
                 onDeleteRequest={() => setDeleteConfirmId(template.id)}
               />
