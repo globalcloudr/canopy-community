@@ -1,8 +1,14 @@
 import type {
   CommunityCampaignSummary,
   CommunityListSummary,
-  CommunityTemplateSummary,
 } from "@/lib/community-schema";
+
+type CampaignMonitorTemplateSummary = {
+  templateId: string;
+  name: string;
+  previewUrl: string | null;
+  screenshotUrl: string | null;
+};
 
 const CAMPAIGN_MONITOR_API_BASE_URL =
   process.env.CAMPAIGN_MONITOR_API_BASE_URL?.trim() ||
@@ -249,7 +255,7 @@ export async function getCampaignMonitorLists(
 
 export async function getCampaignMonitorTemplates(
   credentials: CampaignMonitorCredentials
-): Promise<CommunityTemplateSummary[]> {
+): Promise<CampaignMonitorTemplateSummary[]> {
   const payload = await requestJson<CampaignMonitorTemplateRow[]>(
     `/clients/${encodeURIComponent(credentials.clientId)}/templates.json`,
     credentials
@@ -269,7 +275,7 @@ export async function getCampaignMonitorTemplates(
         screenshotUrl: row.ScreenshotURL?.trim() || null,
       };
     })
-    .filter((row): row is CommunityTemplateSummary => row !== null);
+    .filter((row): row is CampaignMonitorTemplateSummary => row !== null);
 }
 
 export async function getCampaignMonitorSentCampaigns(

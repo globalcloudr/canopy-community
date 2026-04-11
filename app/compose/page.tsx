@@ -5,8 +5,10 @@ import { Button, Input, Label } from "@canopy/ui";
 import { cn } from "@canopy/ui";
 import { ProductShell } from "@/app/_components/product-shell";
 import { communityNavItems } from "@/app/_components/community-nav";
-import { useCommunityOverview, useCommunityWorkspaceId } from "@/app/_components/community-data";
+import { useCommunityOverview, useCommunityWorkspaceId, useCommunityTemplates } from "@/app/_components/community-data";
+import { UnlayerEditor } from "@/app/_components/unlayer-editor";
 import { supabase } from "@/lib/supabase-client";
+import type { CommunityTemplate } from "@/lib/community-schema";
 
 export default function ComposePage() {
   return (
@@ -44,6 +46,10 @@ function ComposeContent() {
   const [listIds, setListIds] = useState<string[]>([]);
   const [htmlContent, setHtmlContent] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [designJson, setDesignJson] = useState<Record<string, unknown> | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const { templates: savedTemplates } = useCommunityTemplates();
   const [sendMode, setSendMode] = useState<"immediately" | "schedule">("immediately");
   const [scheduledDate, setScheduledDate] = useState("");
   const [confirmationEmail, setConfirmationEmail] = useState("");
@@ -225,6 +231,7 @@ function ComposeContent() {
               setListIds([]);
               setHtmlContent(null);
               setFileName(null);
+              setDesignJson(null);
               setScheduledDate("");
               setConfirmationEmail("");
               setSendMode("immediately");
@@ -319,39 +326,96 @@ function ComposeContent() {
 
           {/* Email content */}
           <FormSection title="Email content">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".html,.htm"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <div
-              className={cn(
-                "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-10 text-center transition hover:bg-[#f8fafc]",
-                htmlContent ? "border-[#2563eb] bg-[#eff6ff]" : "border-[#cbd5e1]"
-              )}
-              onClick={() => fileInputRef.current?.click()}
-              onKeyDown={(e) => e.key === "Enter" && fileInputRef.current?.click()}
-              role="button"
-              tabIndex={0}
-            >
-              {htmlContent ? (
-                <>
-                  <p className="text-[15px] font-semibold text-[#1d4ed8]">{fileName}</p>
-                  <p className="mt-1 text-[13px] text-[#3b82f6]">Click to replace</p>
-                </>
-              ) : (
-                <>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" className="mb-3 h-8 w-8" aria-hidden="true">
+            {htmlContent ? (
+              <div className={cn(
+                "rounded-lg border-2 border-[#2563eb] bg-[#eff6ff] px-4 py-3"
+              )}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[15px] font-semibold text-[#1d4ed8]">
+                      {fileName ?? "Email designed"}
+                    </p>
+                    <p className="mt-0.5 text-[13px] text-[#3b82f6]">
+                      {designJson ? "Designed in editor" : "Uploaded HTML file"}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    {designJson ? (
+                      <Button variant="secondary" size="sm" onClick={() => setEditorOpen(true)}>
+                        Edit design
+                      </Button>
+                    ) : null}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setHtmlContent(null);
+                        setFileName(null);
+                        setDesignJson(null);
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-3">
+                {/* Design your email */}
+                <button
+                  type="button"
+                  onClick={() => setEditorOpen(true)}
+                  className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-[#cbd5e1] px-4 py-8 text-center transition hover:border-[#2563eb] hover:bg-[#f8fafc]"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5" className="h-7 w-7" aria-hidden="true">
+                    <path d="M12 20h9" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <p className="text-[14px] font-semibold text-[#334155]">Design your email</p>
+                  <p className="text-[12px] text-[#64748b]">Open the drag-and-drop editor</p>
+                </button>
+
+                {/* Start from template */}
+                <button
+                  type="button"
+                  onClick={() => setTemplatePickerOpen(true)}
+                  className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-[#cbd5e1] px-4 py-8 text-center transition hover:border-[#2563eb] hover:bg-[#f8fafc]"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5" className="h-7 w-7" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M3 9h18" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M9 21V9" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <p className="text-[14px] font-semibold text-[#334155]">Start from template</p>
+                  <p className="text-[12px] text-[#64748b]">
+                    {savedTemplates.length > 0
+                      ? `${savedTemplates.length} template${savedTemplates.length === 1 ? "" : "s"} available`
+                      : "No templates saved yet"}
+                  </p>
+                </button>
+
+                {/* Upload HTML */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".html,.htm"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-[#cbd5e1] px-4 py-8 text-center transition hover:border-[#2563eb] hover:bg-[#f8fafc]"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5" className="h-7 w-7" aria-hidden="true">
                     <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" strokeLinecap="round" />
                     <path d="M12 12V4m0 0-3 3m3-3 3 3" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <p className="text-[15px] font-semibold text-[#334155]">Upload HTML file</p>
-                  <p className="mt-1 text-[13px] text-[#64748b]">Click to browse — .html or .htm files only</p>
-                </>
-              )}
-            </div>
+                  <p className="text-[14px] font-semibold text-[#334155]">Upload HTML file</p>
+                  <p className="text-[12px] text-[#64748b]">.html or .htm files</p>
+                </button>
+              </div>
+            )}
           </FormSection>
 
           {/* Send options */}
@@ -523,6 +587,102 @@ function ComposeContent() {
         ) : null}
 
       </form>
+
+      {/* Unlayer editor overlay */}
+      {editorOpen ? (
+        <UnlayerEditor
+          initialDesign={designJson}
+          onSave={(data) => {
+            setDesignJson(data.designJson);
+            setHtmlContent(data.html);
+            setFileName("Email designed");
+            setEditorOpen(false);
+          }}
+          onClose={() => setEditorOpen(false)}
+          saveLabel="Use this design"
+        />
+      ) : null}
+
+      {/* Template picker modal */}
+      {templatePickerOpen ? (
+        <TemplatePicker
+          templates={savedTemplates}
+          onSelect={(template) => {
+            setDesignJson(template.designJson);
+            setTemplatePickerOpen(false);
+            setEditorOpen(true);
+          }}
+          onClose={() => setTemplatePickerOpen(false)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function TemplatePicker({
+  templates,
+  onSelect,
+  onClose,
+}: {
+  templates: CommunityTemplate[];
+  onSelect: (template: CommunityTemplate) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
+      <div className="mx-4 w-full max-w-lg rounded-xl bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-4">
+          <h3 className="text-[16px] font-semibold text-[#0f172a]">Choose a template</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md p-1 text-[#94a3b8] hover:text-[#334155]"
+          >
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5" aria-hidden="true">
+              <path d="m4 4 8 8M12 4l-8 8" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="max-h-[60vh] overflow-y-auto p-4">
+          {templates.length === 0 ? (
+            <p className="py-8 text-center text-[14px] text-[#64748b]">
+              No templates saved yet. Create one from the Templates page first.
+            </p>
+          ) : (
+            <div className="grid gap-3">
+              {templates.map((template) => (
+                <button
+                  key={template.id}
+                  type="button"
+                  onClick={() => onSelect(template)}
+                  className="flex items-center gap-4 rounded-lg border border-[#e2e8f0] p-3 text-left transition hover:border-[#2563eb] hover:bg-[#f8fafc]"
+                >
+                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded border border-[#e2e8f0] bg-[#f8fafc]">
+                    {template.htmlPreview ? (
+                      <iframe
+                        srcDoc={template.htmlPreview}
+                        title={template.name}
+                        className="pointer-events-none absolute left-0 top-0 h-[600px] w-[400px] origin-top-left"
+                        style={{ transform: "scale(0.04)" }}
+                        sandbox=""
+                        tabIndex={-1}
+                      />
+                    ) : (
+                      <span className="flex h-full items-center justify-center text-[9px] text-[#94a3b8]">
+                        Tmpl
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[14px] font-medium text-[#0f172a]">{template.name}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

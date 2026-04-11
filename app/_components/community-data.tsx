@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase-client";
 import { useProductShell } from "@/app/_components/product-shell";
-import type { CommunityConnection, CommunityOverview } from "@/lib/community-schema";
+import type { CommunityConnection, CommunityOverview, CommunityTemplate } from "@/lib/community-schema";
 
 type OverviewState = {
   overview: CommunityOverview | null;
@@ -128,6 +128,104 @@ export function useCommunityOverview(): OverviewState {
     },
   };
 }
+
+// ─── Templates ───────────────────────────────────────────────────────────────
+
+type TemplatesState = {
+  templates: CommunityTemplate[];
+  error: string | null;
+  loading: boolean;
+  refresh: () => void;
+};
+
+export function useCommunityTemplates(): TemplatesState {
+  const { workspaceId, loadingSession } = useCommunityWorkspaceId();
+  const [templates, setTemplates] = useState<CommunityTemplate[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      if (loadingSession) return;
+
+      if (!workspaceId) {
+        setTemplates([]);
+        setError(null);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const payload = await requestJson<{ templates: CommunityTemplate[] }>(
+          `/api/community/templates?workspaceId=${encodeURIComponent(workspaceId)}`
+        );
+
+        if (!cancelled) {
+          setTemplates(payload.templates);
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(loadError instanceof Error ? loadError.message : "Could not load templates.");
+          setTemplates([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void load();
+    return () => { cancelled = true; };
+  }, [workspaceId, loadingSession, refreshKey]);
+
+  return {
+    templates,
+    error,
+    loading,
+    refresh: () => setRefreshKey((v) => v + 1),
+  };
+}
+
+export async function createTemplate(input: {
+  workspaceId: string;
+  name: string;
+  designJson: Record<string, unknown>;
+  htmlPreview: string | null;
+}) {
+  return requestJson<{ template: CommunityTemplate }>(
+    "/api/community/templates",
+    { method: "POST", body: JSON.stringify(input) }
+  );
+}
+
+export async function updateTemplate(
+  templateId: string,
+  input: {
+    workspaceId: string;
+    name?: string;
+    designJson?: Record<string, unknown>;
+    htmlPreview?: string | null;
+  }
+) {
+  return requestJson<{ template: CommunityTemplate }>(
+    `/api/community/templates/${encodeURIComponent(templateId)}`,
+    { method: "PUT", body: JSON.stringify(input) }
+  );
+}
+
+export async function deleteTemplate(workspaceId: string, templateId: string) {
+  return requestJson<{ ok: boolean }>(
+    `/api/community/templates/${encodeURIComponent(templateId)}?workspaceId=${encodeURIComponent(workspaceId)}`,
+    { method: "DELETE" }
+  );
+}
+
+// ─── Campaign Monitor connection ─────────────────────────────────────────────
 
 export async function saveCampaignMonitorConnection(input: {
   workspaceId: string;

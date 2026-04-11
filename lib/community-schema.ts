@@ -10,11 +10,14 @@ export type CommunityConnection = {
   updatedAt: string;
 };
 
-export type CommunityTemplateSummary = {
-  templateId: string;
+export type CommunityTemplate = {
+  id: string;
+  workspaceId: string;
   name: string;
-  previewUrl: string | null;
-  screenshotUrl: string | null;
+  designJson: Record<string, unknown>;
+  htmlPreview: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type CommunityListSummary = {
@@ -71,7 +74,7 @@ export type CommunityOverview = {
     scheduledCampaignCount: number;
   };
   lists: CommunityListSummary[];
-  templates: CommunityTemplateSummary[];
+  templates: CommunityTemplate[];
   sentCampaigns: CommunityCampaignSummary[];
   draftCampaigns: CommunityCampaignSummary[];
   scheduledCampaigns: CommunityCampaignSummary[];

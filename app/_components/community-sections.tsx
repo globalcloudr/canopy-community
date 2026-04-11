@@ -10,7 +10,6 @@ import type {
   CommunityCampaignSummary,
   CommunityConnection,
   CommunityListSummary,
-  CommunityTemplateSummary,
 } from "@/lib/community-schema";
 import {
   CampaignStatusBadge,
@@ -285,57 +284,6 @@ export function AudienceListSection({
   );
 }
 
-export function TemplateListSection({
-  templates,
-  action,
-}: {
-  templates: CommunityTemplateSummary[];
-  action?: React.ReactNode;
-}) {
-  return (
-    <SectionCard
-      title="Newsletter templates"
-      action={action}
-    >
-      {templates.length === 0 ? (
-        <div className="pt-3">
-          <EmptyState
-            title="No templates yet"
-            body="Templates will appear here once they are available in the connected account."
-          />
-        </div>
-      ) : (
-        <div className="divide-y divide-[var(--app-divider)]">
-          {templates.map((template) => (
-            <div key={template.templateId} className="flex items-center gap-4 py-3.5">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#e2e8f0] bg-white">
-                {template.screenshotUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={template.screenshotUrl} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-[10px] uppercase tracking-[0.14em] text-[#94a3b8]">Tmpl</span>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[14px] font-medium text-[#0f172a]">{template.name}</p>
-                <p className="mt-0.5 text-[13px] text-[#64748b]">
-                  Ready to use for future newsletters
-                </p>
-              </div>
-              {template.previewUrl ? (
-                <Button asChild variant="secondary" size="sm">
-                  <a href={template.previewUrl} target="_blank" rel="noreferrer">
-                    Open preview
-                  </a>
-                </Button>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      )}
-    </SectionCard>
-  );
-}
 
 export function DataTimestamp({
   value,

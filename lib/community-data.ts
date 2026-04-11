@@ -8,12 +8,11 @@ import {
   getCampaignMonitorLists,
   getCampaignMonitorScheduledCampaigns,
   getCampaignMonitorSentCampaigns,
-  getCampaignMonitorTemplates,
   scheduleCampaignMonitorCampaign,
   sendCampaignMonitorCampaign,
   type CampaignMonitorApiError,
 } from "@/lib/campaign-monitor";
-import type { CommunityConnection, CommunityOverview } from "@/lib/community-schema";
+import type { CommunityConnection, CommunityOverview, CommunityTemplate } from "@/lib/community-schema";
 
 type CampaignMonitorConnectionRow = {
   workspace_id: string;
@@ -237,7 +236,7 @@ export async function getCommunityOverview(
       account,
       billing,
       listsRaw,
-      templates,
+      templateCount,
       sentCampaignsResult,
       draftCampaigns,
       scheduledCampaigns,
@@ -245,7 +244,7 @@ export async function getCommunityOverview(
       getCampaignMonitorClientDetails(credentials),
       getCampaignMonitorClientBilling(credentials).catch(() => null),
       getCampaignMonitorLists(credentials),
-      getCampaignMonitorTemplates(credentials),
+      getWorkspaceTemplateCount(workspaceId),
       getCampaignMonitorSentCampaigns(credentials),
       getCampaignMonitorDraftCampaigns(credentials),
       getCampaignMonitorScheduledCampaigns(credentials),
@@ -275,13 +274,13 @@ export async function getCommunityOverview(
       account,
       stats: {
         listCount: lists.length,
-        templateCount: templates.length,
+        templateCount,
         sentCampaignCount: sentCampaignsResult.total,
         draftCampaignCount: draftCampaigns.length,
         scheduledCampaignCount: scheduledCampaigns.length,
       },
       lists,
-      templates,
+      templates: [],
       sentCampaigns: sentCampaignsResult.campaigns,
       draftCampaigns,
       scheduledCampaigns,
@@ -319,6 +318,134 @@ export async function getCommunityOverview(
       fetchedAt,
     };
   }
+}
+
+// ─── Template CRUD ───────────────────────────────────────────────────────────
+
+type CommunityTemplateRow = {
+  id: string;
+  workspace_id: string;
+  name: string;
+  design_json: Record<string, unknown>;
+  html_preview: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+function toTemplate(row: CommunityTemplateRow): CommunityTemplate {
+  return {
+    id: row.id,
+    workspaceId: row.workspace_id,
+    name: row.name,
+    designJson: row.design_json,
+    htmlPreview: row.html_preview,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+const TEMPLATE_COLUMNS = "id,workspace_id,name,design_json,html_preview,created_at,updated_at";
+
+export async function getWorkspaceTemplates(workspaceId: string): Promise<CommunityTemplate[]> {
+  const client = getServiceClient();
+  const { data, error } = await client
+    .from("community_templates")
+    .select(TEMPLATE_COLUMNS)
+    .eq("workspace_id", workspaceId)
+    .order("updated_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return ((data as CommunityTemplateRow[]) ?? []).map(toTemplate);
+}
+
+export async function getWorkspaceTemplate(
+  workspaceId: string,
+  templateId: string
+): Promise<CommunityTemplate | null> {
+  const client = getServiceClient();
+  const { data, error } = await client
+    .from("community_templates")
+    .select(TEMPLATE_COLUMNS)
+    .eq("id", templateId)
+    .eq("workspace_id", workspaceId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data ? toTemplate(data as CommunityTemplateRow) : null;
+}
+
+export async function createWorkspaceTemplate(params: {
+  workspaceId: string;
+  name: string;
+  designJson: Record<string, unknown>;
+  htmlPreview: string | null;
+}): Promise<CommunityTemplate> {
+  const client = getServiceClient();
+  const { data, error } = await client
+    .from("community_templates")
+    .insert({
+      workspace_id: params.workspaceId,
+      name: params.name,
+      design_json: params.designJson,
+      html_preview: params.htmlPreview,
+    })
+    .select(TEMPLATE_COLUMNS)
+    .single();
+
+  if (error) throw new Error(error.message);
+  return toTemplate(data as CommunityTemplateRow);
+}
+
+export async function updateWorkspaceTemplate(params: {
+  workspaceId: string;
+  templateId: string;
+  name?: string;
+  designJson?: Record<string, unknown>;
+  htmlPreview?: string | null;
+}): Promise<CommunityTemplate> {
+  const client = getServiceClient();
+  const updates: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+  if (params.name !== undefined) updates.name = params.name;
+  if (params.designJson !== undefined) updates.design_json = params.designJson;
+  if (params.htmlPreview !== undefined) updates.html_preview = params.htmlPreview;
+
+  const { data, error } = await client
+    .from("community_templates")
+    .update(updates)
+    .eq("id", params.templateId)
+    .eq("workspace_id", params.workspaceId)
+    .select(TEMPLATE_COLUMNS)
+    .single();
+
+  if (error) throw new Error(error.message);
+  return toTemplate(data as CommunityTemplateRow);
+}
+
+export async function deleteWorkspaceTemplate(
+  workspaceId: string,
+  templateId: string
+): Promise<void> {
+  const client = getServiceClient();
+  const { error } = await client
+    .from("community_templates")
+    .delete()
+    .eq("id", templateId)
+    .eq("workspace_id", workspaceId);
+
+  if (error) throw new Error(error.message);
+}
+
+async function getWorkspaceTemplateCount(workspaceId: string): Promise<number> {
+  const client = getServiceClient();
+  const { count, error } = await client
+    .from("community_templates")
+    .select("id", { count: "exact", head: true })
+    .eq("workspace_id", workspaceId);
+
+  if (error) throw new Error(error.message);
+  return count ?? 0;
 }
 
 // ─── HTML upload to Supabase Storage ─────────────────────────────────────────
