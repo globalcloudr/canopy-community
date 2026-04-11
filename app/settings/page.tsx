@@ -106,7 +106,7 @@ function SettingsContent() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Settings"
-        description="Add the Campaign Monitor Client ID for this school. If Canopy already has a shared API key, you can leave the API key field blank."
+        description="To connect your account, add the Campaign Monitor Client ID and API key (optional). Contact Akkedis Digital to get your Client ID."
         actions={
           <Button variant="secondary" onClick={() => void refresh()} disabled={loading}>
             {loading ? "Refreshing…" : "Refresh"}
@@ -121,7 +121,7 @@ function SettingsContent() {
       <div className="rounded-lg border border-[var(--app-surface-border)] bg-white p-6">
         <div className="border-b border-[var(--app-divider)] pb-4">
           <h2 className="text-[1.1rem] font-semibold tracking-[-0.02em] text-[#0f172a]">
-            Campaign Monitor connection
+            Account Activation
           </h2>
           <p className="mt-1 max-w-2xl text-[14px] leading-6 text-[#64748b]">
             We check the connection with Campaign Monitor before saving.

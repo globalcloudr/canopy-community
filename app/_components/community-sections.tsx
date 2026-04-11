@@ -34,8 +34,8 @@ export function ConnectionSection({
 }) {
   return (
     <SectionCard
-      title="Campaign Monitor"
-      description="Connect your school's Campaign Monitor account to bring in newsletters, lists, and templates."
+      title="Account Activation"
+      description="Connect your school account and start creating and sending newsletters."
       action={<SecondaryButtonLink href="/settings" label={connection ? "Manage connection" : "Connect account"} />}
     >
       <div className="space-y-4 pt-3">
@@ -59,12 +59,6 @@ export function ConnectionSection({
             <ConnectionFact label="Country" value={connection.country || "Not available"} />
             <ConnectionFact label="Updated" value={formatCompactDateTime(connection.updatedAt)} />
           </div>
-        ) : null}
-        {!connection ? (
-          <EmptyState
-            title="Connect your school account"
-            body="Add the school's Campaign Monitor Client ID in Settings. Once connected, Community will bring in recent sends, mailing lists, and templates."
-          />
         ) : null}
       </div>
     </SectionCard>
