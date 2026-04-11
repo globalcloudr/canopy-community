@@ -192,14 +192,14 @@ function TemplateCard({
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-[#e2e8f0] bg-white transition hover:shadow-md">
+    <div className="group relative rounded-lg border border-[#e2e8f0] bg-white transition hover:shadow-md">
       {/* Thumbnail */}
       <button
         type="button"
         onClick={onEdit}
         className="block w-full cursor-pointer"
       >
-        <div className="relative h-44 w-full overflow-hidden border-b border-[#e2e8f0] bg-[#f8fafc]">
+        <div className="relative h-44 w-full overflow-hidden rounded-t-lg border-b border-[#e2e8f0] bg-[#f8fafc]">
           {template.htmlPreview ? (
             <iframe
               srcDoc={template.htmlPreview}
