@@ -168,7 +168,15 @@ function ComposeContent() {
       const payload = (await response.json()) as { error?: string; campaignId?: string };
 
       if (!response.ok) {
-        throw new Error(payload.error ?? "Failed to send campaign.");
+        const rawError = payload.error ?? "Failed to send campaign.";
+        const isPendingApproval =
+          rawError.toLowerCase().includes("pending approval") ||
+          rawError.toLowerCase().includes("approval");
+        throw new Error(
+          isPendingApproval
+            ? "Your Campaign Monitor account needs approval before it can send campaigns. Log into Campaign Monitor, open the Assistant panel, and click \"Request approval\"."
+            : rawError
+        );
       }
 
       setSuccess(true);
