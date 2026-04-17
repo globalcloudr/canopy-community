@@ -11,7 +11,7 @@ Canopy Community gives school workspaces a Canopy-native place to manage their n
 - Product key: `community_canopy`
 - Local dev URL: `http://localhost:3003`
 - Production URL: `https://canopy-community.vercel.app`
-- Portal: `https://usecanopy.school`
+- Portal: `https://app.usecanopy.school`
 - Shared Supabase project with the rest of Canopy
 
 ## Core User Flow
@@ -76,7 +76,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_APP_URL=http://localhost:3003
-NEXT_PUBLIC_PORTAL_URL=https://usecanopy.school
+NEXT_PUBLIC_PORTAL_URL=https://app.usecanopy.school
 CAMPAIGN_MONITOR_API_KEY=
 ```
 
