@@ -2,6 +2,37 @@
 
 Append new sessions at the top. Do not overwrite history.
 
+## Current Roadmap
+
+Near-term product work:
+
+- Improve the dashboard so it highlights what needs attention and what staff should do next
+- Refine the compose and send workflow for school staff, including clearer draft, schedule, and confirmation states
+- Expand template workflows with better starter-template support and smoother reuse across campaigns
+
+Future phases:
+
+- Subscriber management inside Canopy Community
+- Deeper campaign analytics and per-campaign reporting
+- More polished school-facing workflow guidance across the app
+
+---
+
+## 2026-04-17 — Move roadmap out of README
+
+Adjusted the docs split so `README.md` stays factual and `docs/progress.md` holds the forward-looking roadmap.
+
+### What changed
+
+- Removed the roadmap section from `README.md`
+- Added a persistent `Current Roadmap` section to `docs/progress.md`
+- Corrected the templates route in `README.md` from `PATCH` to `PUT`
+
+### Notes
+
+- `README.md` should describe what exists right now
+- `docs/progress.md` should carry roadmap, open items, and recent decisions
+
 ---
 
 ## 2026-04-10 — Docs aligned to current repo state

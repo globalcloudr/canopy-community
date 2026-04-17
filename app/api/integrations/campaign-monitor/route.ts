@@ -101,6 +101,13 @@ export async function PUT(request: Request) {
       );
     }
 
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message || "Failed to save Campaign Monitor settings." },
+        { status: 500 }
+      );
+    }
+
     return toErrorResponse(error, "Failed to save Campaign Monitor settings.");
   }
 }

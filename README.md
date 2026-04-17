@@ -47,7 +47,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_APP_URL=http://localhost:3003
-NEXT_PUBLIC_PORTAL_URL=https://usecanopy.school
+NEXT_PUBLIC_PORTAL_URL=https://app.usecanopy.school
 CAMPAIGN_MONITOR_API_KEY=
 ```
 
@@ -110,7 +110,7 @@ API routes:
 - `GET /api/community/overview`
 - `POST /api/community/compose`
 - `GET/POST /api/community/templates`
-- `PATCH/DELETE /api/community/templates/:id`
+- `PUT/DELETE /api/community/templates/:id`
 - `GET/PUT/DELETE /api/integrations/campaign-monitor`
 
 ## Compose And Send

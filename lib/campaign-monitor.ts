@@ -175,16 +175,27 @@ async function requestJson<T>(
   credentials: CampaignMonitorCredentials,
   init?: RequestInit
 ): Promise<T> {
-  const response = await fetch(`${CAMPAIGN_MONITOR_API_BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      Accept: "application/json",
-      Authorization: `Basic ${encodeBasicAuth(credentials.apiKey)}`,
-      ...(init?.body ? { "Content-Type": "application/json" } : {}),
-      ...(init?.headers ?? {}),
-    },
-    cache: "no-store",
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${CAMPAIGN_MONITOR_API_BASE_URL}${path}`, {
+      ...init,
+      headers: {
+        Accept: "application/json",
+        Authorization: `Basic ${encodeBasicAuth(credentials.apiKey)}`,
+        ...(init?.body ? { "Content-Type": "application/json" } : {}),
+        ...(init?.headers ?? {}),
+      },
+      cache: "no-store",
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error && error.message.trim()
+        ? `Campaign Monitor could not be reached: ${error.message.trim()}`
+        : "Campaign Monitor could not be reached.";
+
+    throw new CampaignMonitorApiError(message, 502);
+  }
 
   if (!response.ok) {
     await parseError(response);
