@@ -1,4 +1,5 @@
 import type {
+  CampaignAnalytics,
   CommunityCampaignSummary,
   CommunityListSummary,
 } from "@/lib/community-schema";
@@ -473,6 +474,22 @@ type CampaignMonitorCampaignSummaryResponse = {
   Recipients?: number | null;
   UniqueOpened?: number | null;
   Clicks?: number | null;
+  UniqueClicks?: number | null;
+  Bounced?: number | null;
+  Unsubscribed?: number | null;
+  MentionsSpam?: number | null;
+  Forwards?: number | null;
+  Likes?: number | null;
+  Mentions?: number | null;
+  WebVersionURL?: string | null;
+};
+
+type CampaignMonitorClicksSummaryResponse = {
+  Results?: Array<{
+    URL?: string | null;
+    TotalClicks?: number | null;
+    UniqueClicks?: number | null;
+  }>;
 };
 
 export async function getCampaignMonitorCampaignSummary(
@@ -488,5 +505,49 @@ export async function getCampaignMonitorCampaignSummary(
   return {
     openRate: computeRate(normalizeNumber(payload.UniqueOpened), recipients),
     clickRate: computeRate(normalizeNumber(payload.Clicks), recipients),
+  };
+}
+
+export async function getCampaignMonitorCampaignAnalytics(
+  credentials: CampaignMonitorCredentials,
+  campaignId: string
+): Promise<CampaignAnalytics> {
+  const [summary, clicksSummary] = await Promise.all([
+    requestJson<CampaignMonitorCampaignSummaryResponse>(
+      `/campaigns/${encodeURIComponent(campaignId)}/summary.json`,
+      credentials
+    ),
+    requestJson<CampaignMonitorClicksSummaryResponse>(
+      `/campaigns/${encodeURIComponent(campaignId)}/clicks/summary.json`,
+      credentials
+    ).catch(() => ({ Results: [] as CampaignMonitorClicksSummaryResponse["Results"] })),
+  ]);
+
+  const recipients = normalizeNumber(summary.Recipients);
+  const uniqueOpened = normalizeNumber(summary.UniqueOpened);
+  const uniqueClicks = normalizeNumber(summary.UniqueClicks ?? summary.Clicks);
+
+  return {
+    recipients,
+    uniqueOpened,
+    openRate: computeRate(uniqueOpened, recipients),
+    uniqueClicks,
+    clickRate: computeRate(uniqueClicks, recipients),
+    clicksToOpenRate: computeRate(uniqueClicks, uniqueOpened),
+    bounced: normalizeNumber(summary.Bounced),
+    unsubscribed: normalizeNumber(summary.Unsubscribed),
+    spamComplaints: normalizeNumber(summary.MentionsSpam),
+    forwards: normalizeNumber(summary.Forwards),
+    likes: normalizeNumber(summary.Likes),
+    mentions: normalizeNumber(summary.Mentions),
+    topLinks: (clicksSummary.Results ?? [])
+      .filter((r): r is typeof r & { URL: string } => !!r.URL)
+      .slice(0, 10)
+      .map((r) => ({
+        url: r.URL,
+        totalClicks: r.TotalClicks ?? 0,
+        uniqueClicks: r.UniqueClicks ?? 0,
+      })),
+    webVersionUrl: summary.WebVersionURL ?? null,
   };
 }
