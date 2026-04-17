@@ -35,6 +35,72 @@ Adjusted the docs split so `README.md` stays factual and `docs/progress.md` hold
 
 ---
 
+## 2026-04-17 — Bug fixes, UX improvements, Canopy-managed drafts, and campaign analytics
+
+Fixed several production bugs, added missing UX, and built two substantial new features: a Canopy-managed drafts system and a campaign analytics slide-out drawer.
+
+### Bug fixes
+
+**Campaign Monitor connection save error**
+- Root cause: live database had a `NOT NULL` constraint on `api_key` that was not in the migration; inserting a connection without a workspace API key violated it.
+- Fix: added `?? ""` fallback in `upsertCampaignMonitorConnection` and created `docs/sql/2026-04-17-cc-004-fix-api-key-nullable.sql` to drop the constraint.
+
+**"Failed to send campaign" false error after successful send**
+- Root cause: Campaign Monitor's send endpoint returns `204 No Content`; calling `.json()` on an empty body threw a `SyntaxError` which surfaced as a send failure even though the campaign was actually sent.
+- Fix: added 204 / empty-body detection in `requestJson` in `lib/campaign-monitor.ts` before attempting JSON parse.
+
+**Draft names showing "Untitled campaign" on Campaigns page**
+- Root cause: the page was rendering `c.subject` instead of `c.name` for campaign rows. Drafts have a name but an empty subject.
+- Fix: switched all display references on `/campaigns` and `/` to `c.name`.
+
+**Open and click rates showing "—" on dashboard and campaigns page**
+- Root cause: the CM campaigns list endpoint does not include engagement stats; the initial implementation returned `null` for rates.
+- Fix: added a per-campaign fan-out to `GET /campaigns/{id}/summary.json` in `getCommunityOverview` and `getSentCampaignsPaginated`. Fixed the response type — CM summary returns flat `UniqueOpened`/`Clicks`/`Recipients`, not nested objects.
+
+**"Pending approval" error shown as raw CM error message**
+- Fix: compose page detects approval-related error text and replaces it with an actionable message directing the user to the CM Assistant panel.
+
+### New features
+
+**Campaign name field on compose form**
+- Added a required "Campaign name" field (internal, not visible to recipients) above Subject on the compose page.
+- Prevents CM's duplicate-name error and gives drafts a meaningful identifier.
+- Included in the review panel before send.
+
+**Sent campaigns pagination on Campaigns page**
+- Added `useSentCampaigns` hook in `community-data.tsx` with page state.
+- New `GET /api/community/campaigns` route returns 20 campaigns per page.
+- New `SentSectionPaginated` component with Previous/Next controls and total count. Overview tab shows cached data; Sent tab uses paginated fetch.
+
+**Removed broken search box from Audiences page**
+- Search was client-side over an already-small list and added no real value.
+
+**Canopy-managed drafts system**
+- New `community_campaigns` table in Supabase stores draft state locally (SQL: `docs/sql/2026-04-17-cc-005-community-campaigns-drafts.sql`).
+- New draft CRUD routes: `GET/POST /api/community/drafts`, `GET/PATCH/DELETE /api/community/drafts/[id]`.
+- Compose page now saves drafts to Supabase (not Campaign Monitor); creates on first save, updates on subsequent saves, updates the URL to `/compose?draft=<id>`.
+- Opening `/compose?draft=<id>` restores all form fields from the saved draft.
+- Successful send deletes the Supabase draft automatically.
+- Overview fetches draft campaign counts and list from Supabase instead of CM.
+- Dashboard and Campaigns page show Canopy drafts with a "Continue" link back to the compose form.
+- Scheduled campaigns on the Campaigns page separated into their own `ScheduledRow` component.
+
+**Campaign analytics slide-out drawer**
+- Clicking any sent campaign row opens a right-side panel (using `Dialog` from `@canopy/ui`, same pattern as Photovault).
+- Analytics are fetched on demand from `GET /api/community/campaigns/[id]/analytics`.
+- Four sections: Engagement (open rate, click rate, clicks-to-opens, unique counts), Delivery (bounced, unsubscribed, spam complaints), Reactions (forwards, likes, mentions), Top Links (table with total and unique click counts per URL).
+- Footer link to the full report in Campaign Monitor when a web version URL is available.
+- Backed by CM `/campaigns/{id}/summary.json` and `/campaigns/{id}/clicks/summary.json`.
+
+### SQL migrations to run
+
+```
+docs/sql/2026-04-17-cc-004-fix-api-key-nullable.sql
+docs/sql/2026-04-17-cc-005-community-campaigns-drafts.sql
+```
+
+---
+
 ## 2026-04-10 — Docs aligned to current repo state
 
 Reviewed the repo docs against the actual codebase and updated the product docs to match current behavior.

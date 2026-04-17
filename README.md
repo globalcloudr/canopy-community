@@ -5,15 +5,15 @@ Canopy Community is the school newsletter product in the Canopy portfolio. It le
 ## Current Scope
 
 - Portal handoff and workspace-aware app shell
-- Dashboard with drafts, sent campaigns, and mailing lists
+- Dashboard with Canopy drafts, sent campaigns, and mailing lists
 - Campaigns, compose, audiences, templates, and settings pages
 - Workspace-scoped Campaign Monitor connection storage
 - Shared master Campaign Monitor API key support with per-workspace `Client ID`
 - Native campaign compose and send flow backed by Campaign Monitor
+- Campaign name field, billing-aware confirmation, and scheduled sends
 - Workspace-scoped reusable templates stored in Supabase
-- Billing-aware send confirmation and scheduled sends
-
-This repo now includes the first working compose/send flow. Subscriber management and deeper analytics are still future phases.
+- Canopy-managed drafts stored in Supabase — resume from anywhere via `/compose?draft=<id>`
+- Paginated sent campaigns list with per-campaign analytics slide-out drawer
 
 ## Stack
 
@@ -77,19 +77,23 @@ The Settings page validates the connection server-side before saving it.
 
 ## Required Database Setup
 
-Apply all Community setup migrations before testing real data:
+Apply all Community setup migrations in order before testing real data:
 
 ```bash
 docs/sql/2026-04-08-cc-001-campaign-monitor-connections.sql
 docs/sql/2026-04-08-cc-002-html-upload-bucket.sql
 docs/sql/2026-04-10-cc-003-community-templates.sql
+docs/sql/2026-04-17-cc-004-fix-api-key-nullable.sql
+docs/sql/2026-04-17-cc-005-community-campaigns-drafts.sql
 ```
 
-These create:
+These create or patch:
 
-- `community_campaign_monitor_connections` for workspace connection storage
-- `community-html-uploads` storage bucket for temporary HTML upload handoff
-- `community_templates` for saved reusable templates inside Canopy
+- `community_campaign_monitor_connections` — workspace connection storage
+- `community-html-uploads` — private storage bucket for temporary HTML upload handoff to Campaign Monitor
+- `community_templates` — saved reusable templates inside Canopy
+- `api_key` nullable patch — drops the NOT NULL constraint that blocked saving connections without a workspace key override
+- `community_campaigns` — Canopy-managed draft campaign storage (status, content, send metadata)
 
 ## Routes
 
@@ -109,24 +113,30 @@ API routes:
 - `GET /api/launcher-products`
 - `GET /api/community/overview`
 - `POST /api/community/compose`
+- `GET /api/community/campaigns` — paginated sent campaigns
+- `GET /api/community/campaigns/:id/analytics` — per-campaign analytics
+- `GET/POST /api/community/drafts` — Canopy-managed drafts
+- `GET/PATCH/DELETE /api/community/drafts/:id`
 - `GET/POST /api/community/templates`
 - `PUT/DELETE /api/community/templates/:id`
 - `GET/PUT/DELETE /api/integrations/campaign-monitor`
 
 ## Compose And Send
 
-Community now supports a native newsletter workflow inside the app.
+Community supports a full native newsletter workflow inside the app.
 
 Current flow:
 
 - open `New campaign`
-- choose or build a template
-- upload or edit newsletter HTML
+- enter an internal campaign name
+- choose or build a template, or upload HTML
 - select one or more subscriber lists
 - review estimated send cost
-- save as draft, send immediately, or schedule
+- save as draft (stored in Canopy), send immediately, or schedule
 
-Campaigns are still sent through Campaign Monitor. Community is the authoring and workflow layer on top of that account.
+Drafts are stored in Supabase and can be reopened from the Campaigns page via a "Continue" link, which opens `/compose?draft=<id>` and restores all fields. Drafts are automatically deleted when the campaign is sent.
+
+Campaigns are sent through Campaign Monitor. Community is the authoring and workflow layer on top of that account.
 
 ## Templates
 
@@ -138,6 +148,17 @@ Current template capabilities:
 - edit template content in the builder
 - rename, duplicate, and delete templates
 - load a saved template into the compose flow
+
+## Campaign Analytics
+
+Clicking any sent campaign row on the Campaigns page opens a slide-out drawer with:
+
+- **Engagement** — open rate, click rate, clicks-to-opens, unique opens, unique clicks, recipients
+- **Delivery** — bounced, unsubscribed, spam complaints
+- **Reactions** — forwards, likes, mentions
+- **Top Links** — clicked URLs with total and unique click counts
+
+A footer link opens the full report in Campaign Monitor for the graph and engagement score.
 
 ## Portal Integration
 
