@@ -478,16 +478,11 @@ export async function getCampaignMonitorListStats(
   };
 }
 
+// CM summary endpoint returns a flat structure — no nested objects or pre-computed rates.
 type CampaignMonitorCampaignSummaryResponse = {
-  TotalRecipients?: number | null;
-  Opens?: {
-    OpenRate?: number | null;
-    UniqueOpenedCount?: number | null;
-  } | null;
-  Clicks?: {
-    ClickRate?: number | null;
-    UniqueClicksCount?: number | null;
-  } | null;
+  Recipients?: number | null;
+  UniqueOpened?: number | null;
+  Clicks?: number | null;
 };
 
 export async function getCampaignMonitorCampaignSummary(
@@ -499,8 +494,9 @@ export async function getCampaignMonitorCampaignSummary(
     credentials
   );
 
+  const recipients = normalizeNumber(payload.Recipients);
   return {
-    openRate: normalizeNumber(payload.Opens?.OpenRate),
-    clickRate: normalizeNumber(payload.Clicks?.ClickRate),
+    openRate: computeRate(normalizeNumber(payload.UniqueOpened), recipients),
+    clickRate: computeRate(normalizeNumber(payload.Clicks), recipients),
   };
 }
