@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Button, Input } from "@canopy/ui";
+
+import { Button } from "@canopy/ui";
 import { ProductShell } from "@/app/_components/product-shell";
 import { communityNavItems } from "@/app/_components/community-nav";
 import { useCommunityOverview } from "@/app/_components/community-data";
@@ -17,14 +17,7 @@ export default function AudiencesPage() {
 
 function AudiencesContent() {
   const { overview, error, loading, refresh } = useCommunityOverview();
-  const [search, setSearch] = useState("");
   const lists = overview?.lists ?? [];
-
-  const filteredLists = useMemo(() => {
-    if (!search.trim()) return lists;
-    const q = search.toLowerCase();
-    return lists.filter((l) => l.name.toLowerCase().includes(q));
-  }, [lists, search]);
 
   const totalSubscribers = lists.reduce(
     (sum, l) => sum + (l.subscriberCount ?? 0),
@@ -53,16 +46,7 @@ function AudiencesContent() {
 
         {/* Main content */}
         <div className="min-w-0 flex-1">
-          <div className="mb-5">
-            <Input
-              placeholder="Search lists"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="max-w-xs"
-            />
-          </div>
-
-          {filteredLists.length === 0 ? (
+          {lists.length === 0 ? (
             <EmptyState
               title="No lists yet"
               body="Once your school account is connected, mailing lists will appear here."
@@ -78,7 +62,7 @@ function AudiencesContent() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--app-divider)]">
-                {filteredLists.map((list) => (
+                {lists.map((list) => (
                   <tr key={list.listId}>
                     <td className="py-3.5 pr-4">
                       <span className="text-[14px] font-medium text-[#0f172a]">
