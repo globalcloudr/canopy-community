@@ -182,7 +182,7 @@ function DraftRow({ campaign }: { campaign: CommunityCampaignSummary }) {
           rel="noreferrer"
           className="text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
         >
-          {campaign.subject}
+          {campaign.name}
         </a>
       </td>
       <td className="py-3 text-right text-[14px] text-[#64748b]">
@@ -234,10 +234,10 @@ function SentSection({
                     rel="noreferrer"
                     className="text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
                   >
-                    {c.subject}
+                    {c.name}
                   </a>
                 ) : (
-                  <span className="text-[14px] font-medium text-[#0f172a]">{c.subject}</span>
+                  <span className="text-[14px] font-medium text-[#0f172a]">{c.name}</span>
                 )}
               </td>
               <td className="hidden py-3 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
