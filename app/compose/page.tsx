@@ -613,9 +613,15 @@ function ComposeContent() {
         <TemplatePicker
           templates={savedTemplates}
           onSelect={(template) => {
-            setDesignJson(template.designJson);
+            setDesignJson(Object.keys(template.designJson ?? {}).length > 0 ? template.designJson : null);
+            if (template.htmlPreview) {
+              setHtmlContent(template.htmlPreview);
+              setFileName(template.name);
+            }
             setTemplatePickerOpen(false);
-            setEditorOpen(true);
+            if (Object.keys(template.designJson ?? {}).length > 0) {
+              setEditorOpen(true);
+            }
           }}
           onClose={() => setTemplatePickerOpen(false)}
         />
@@ -681,6 +687,9 @@ function TemplatePicker({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[14px] font-medium text-[#0f172a]">{template.name}</p>
+                    <p className="mt-0.5 text-[12px] text-[#64748b]">
+                      {isEditorTemplate(template) ? "Built in editor" : "Uploaded HTML"}
+                    </p>
                   </div>
                 </button>
               ))}
@@ -690,6 +699,10 @@ function TemplatePicker({
       </div>
     </div>
   );
+}
+
+function isEditorTemplate(template: CommunityTemplate) {
+  return Object.keys(template.designJson ?? {}).length > 0;
 }
 
 function FormSection({ title, children }: { title: string; children: React.ReactNode }) {

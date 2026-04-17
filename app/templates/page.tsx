@@ -27,6 +27,7 @@ export default function TemplatesPage() {
 function TemplatesContent() {
   const { workspaceId } = useCommunityWorkspaceId();
   const { templates, error, loading, refresh } = useCommunityTemplates();
+  const uploadInputRef = useRef<HTMLInputElement>(null);
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<CommunityTemplate | null>(null);
@@ -40,7 +41,35 @@ function TemplatesContent() {
     setEditorOpen(true);
   }
 
+  async function handleHtmlUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!workspaceId || !file) return;
+
+    setActionError(null);
+
+    try {
+      const html = await file.text();
+      const name = file.name.replace(/\.(html?|HTML?)$/, "") || "Uploaded template";
+
+      await createTemplate({
+        workspaceId,
+        name,
+        designJson: {},
+        htmlPreview: html,
+      });
+
+      refresh();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Failed to upload template.");
+    } finally {
+      event.target.value = "";
+    }
+  }
+
   function handleEditTemplate(template: CommunityTemplate) {
+    if (!isEditorTemplate(template)) {
+      return;
+    }
     setEditingTemplate(template);
     setEditorOpen(true);
   }
@@ -124,15 +153,42 @@ function TemplatesContent() {
       <div className="flex flex-col gap-6">
         <PageHeader
           title="Templates"
-          description="Create and manage reusable email designs for your newsletters."
+          description="Save reusable newsletter layouts your team can start from again and again."
           actions={
-            <Button variant="primary" onClick={handleNewTemplate}>
-              New template
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <input
+                ref={uploadInputRef}
+                type="file"
+                accept=".html,.htm"
+                className="hidden"
+                onChange={(event) => void handleHtmlUpload(event)}
+              />
+              <Button variant="secondary" onClick={() => uploadInputRef.current?.click()}>
+                Upload HTML
+              </Button>
+              <Button variant="primary" onClick={handleNewTemplate}>
+                New template
+              </Button>
+            </div>
           }
         />
 
-        {error ? <EmptyState title="Could not load templates" body={error} /> : null}
+        <div className="grid gap-3 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-5 py-4 text-[14px] text-[#475569] sm:grid-cols-3">
+          <div>
+            <p className="font-semibold text-[#0f172a]">Build in the editor</p>
+            <p className="mt-1 leading-6">Create drag-and-drop layouts your staff can reuse.</p>
+          </div>
+          <div>
+            <p className="font-semibold text-[#0f172a]">Upload existing HTML</p>
+            <p className="mt-1 leading-6">Bring in approved email layouts you already use today.</p>
+          </div>
+          <div>
+            <p className="font-semibold text-[#0f172a]">Start faster</p>
+            <p className="mt-1 leading-6">Saved templates show up when you create a new campaign.</p>
+          </div>
+        </div>
+
+        {error ? <EmptyState title="We could not load your templates" body={error} /> : null}
 
         {actionError ? (
           <p className="rounded-lg border border-[#fca5a5] bg-[#fef2f2] px-4 py-3 text-[14px] text-[#b91c1c]">
@@ -143,7 +199,7 @@ function TemplatesContent() {
         {!error && !loading && templates.length === 0 ? (
           <EmptyState
             title="No templates yet"
-            body="Create your first template to start designing reusable email layouts."
+            body="Create your first template or upload an HTML file to build your school's template library."
           />
         ) : null}
 
@@ -168,7 +224,7 @@ function TemplatesContent() {
         {deleteConfirmId ? (
           <div className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-5">
             <p className="text-[14px] text-[#334155]">
-              Are you sure you want to delete this template? This cannot be undone.
+              Delete this template from your school's library? This cannot be undone.
             </p>
             <div className="mt-4 flex gap-3">
               <Button
@@ -191,7 +247,7 @@ function TemplatesContent() {
           initialDesign={editingTemplate?.designJson ?? null}
           onSave={(data) => void handleEditorSave(data)}
           onClose={() => { setEditorOpen(false); setEditingTemplate(null); }}
-          saveLabel={editingTemplate ? "Save template" : "Create template"}
+          saveLabel={editingTemplate ? "Save changes" : "Save template"}
         />
       ) : null}
     </>
@@ -216,8 +272,14 @@ function TemplateCard({
   onDeleteRequest: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [renameValue, setRenameValue] = useState(template.name);
   const renameInputRef = useRef<HTMLInputElement>(null);
+  const editable = isEditorTemplate(template);
+  const templateTypeLabel = editable ? "Built in editor" : "Uploaded HTML";
+  const templateTypeTone = editable
+    ? "border-[#dbeafe] bg-[#eff6ff] text-[#1d4ed8]"
+    : "border-[#d1fae5] bg-[#ecfdf5] text-[#047857]";
 
   useEffect(() => {
     if (renaming) {
@@ -228,11 +290,12 @@ function TemplateCard({
   }, [renaming, template.name]);
 
   return (
-    <div className="group relative rounded-lg border border-[#e2e8f0] bg-white transition hover:shadow-md">
+    <>
+    <div className="group relative rounded-lg border border-[#e2e8f0] bg-white transition hover:-translate-y-0.5 hover:shadow-md">
       {/* Thumbnail */}
       <button
         type="button"
-        onClick={onEdit}
+        onClick={() => setPreviewOpen(true)}
         className="block w-full cursor-pointer"
       >
         <div className="relative h-44 w-full overflow-hidden rounded-t-lg border-b border-[#e2e8f0] bg-[#f8fafc]">
@@ -256,7 +319,7 @@ function TemplateCard({
       </button>
 
       {/* Info */}
-      <div className="flex items-center gap-2 px-3.5 py-3">
+      <div className="flex items-start gap-2 px-3.5 py-3">
         <div className="min-w-0 flex-1">
           {renaming ? (
             <form
@@ -277,10 +340,19 @@ function TemplateCard({
           ) : (
             <p className="truncate text-[14px] font-medium text-[#0f172a]">{template.name}</p>
           )}
-          <p className="mt-0.5 text-[12px] text-[#94a3b8]">
-            Updated {formatCompactDateTime(template.updatedAt)}
-          </p>
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            <span className={cn("rounded-full border px-2.5 py-1 text-[11px] font-semibold", templateTypeTone)}>
+              {templateTypeLabel}
+            </span>
+            <span className="text-[12px] text-[#94a3b8]">
+              Updated {formatCompactDateTime(template.updatedAt)}
+            </span>
+          </div>
         </div>
+
+        <Button variant="secondary" size="sm" onClick={() => setPreviewOpen(true)}>
+          Preview
+        </Button>
 
         {/* Actions menu */}
         <div className="relative">
@@ -303,9 +375,11 @@ function TemplateCard({
                 <MenuButton onClick={() => { setMenuOpen(false); onRename(); }}>
                   Rename
                 </MenuButton>
-                <MenuButton onClick={() => { setMenuOpen(false); onEdit(); }}>
-                  Edit
-                </MenuButton>
+                {editable ? (
+                  <MenuButton onClick={() => { setMenuOpen(false); onEdit(); }}>
+                    Edit layout
+                  </MenuButton>
+                ) : null}
                 <MenuButton onClick={() => { setMenuOpen(false); onDuplicate(); }}>
                   Duplicate
                 </MenuButton>
@@ -318,6 +392,14 @@ function TemplateCard({
         </div>
       </div>
     </div>
+      {previewOpen ? (
+        <TemplatePreviewModal
+          template={template}
+          onClose={() => setPreviewOpen(false)}
+          onEdit={editable ? () => { setPreviewOpen(false); onEdit(); } : undefined}
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -342,4 +424,57 @@ function MenuButton({
       {children}
     </button>
   );
+}
+
+function TemplatePreviewModal({
+  template,
+  onClose,
+  onEdit,
+}: {
+  template: CommunityTemplate;
+  onClose: () => void;
+  onEdit?: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
+      <div className="flex h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-4">
+          <div>
+            <h3 className="text-[16px] font-semibold text-[#0f172a]">{template.name}</h3>
+            <p className="mt-1 text-[13px] text-[#64748b]">
+              {isEditorTemplate(template) ? "Built in editor" : "Uploaded HTML"} • Updated {formatCompactDateTime(template.updatedAt)}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {onEdit ? (
+              <Button variant="secondary" onClick={onEdit}>
+                Edit layout
+              </Button>
+            ) : null}
+            <Button variant="secondary" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        </div>
+        <div className="min-h-0 flex-1 overflow-hidden bg-[#f8fafc] p-4">
+          {template.htmlPreview ? (
+            <iframe
+              srcDoc={template.htmlPreview}
+              title={template.name}
+              className="h-full w-full rounded-lg border border-[#e2e8f0] bg-white"
+              sandbox="allow-same-origin"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-[#cbd5e1] bg-white text-[14px] text-[#64748b]">
+              No preview available.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function isEditorTemplate(template: CommunityTemplate) {
+  return Object.keys(template.designJson ?? {}).length > 0;
 }
