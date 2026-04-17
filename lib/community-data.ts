@@ -502,6 +502,36 @@ async function deleteCampaignHtml(storagePath: string): Promise<void> {
   await client.storage.from(HTML_BUCKET).remove([storagePath]);
 }
 
+// ─── Paginated sent campaigns ─────────────────────────────────────────────────
+
+export async function getSentCampaignsPaginated(
+  workspaceId: string,
+  page: number,
+  pageSize: number
+): Promise<{ campaigns: import("@/lib/community-schema").CommunityCampaignSummary[]; total: number; page: number; pageSize: number }> {
+  const connectionRow = await getCampaignMonitorConnection(workspaceId);
+  if (!connectionRow) throw new Error("No Campaign Monitor connection found for this workspace.");
+
+  const apiKey = resolveCampaignMonitorApiKey({ storedApiKey: connectionRow.api_key });
+  if (!apiKey) throw new Error("Campaign Monitor API access is not configured.");
+
+  const credentials = { clientId: connectionRow.client_id, apiKey };
+  const result = await getCampaignMonitorSentCampaigns(credentials, pageSize, page);
+
+  const campaigns = await Promise.all(
+    result.campaigns.map(async (campaign) => {
+      try {
+        const stats = await getCampaignMonitorCampaignSummary(credentials, campaign.id);
+        return { ...campaign, openRate: stats.openRate, clickRate: stats.clickRate };
+      } catch {
+        return campaign;
+      }
+    })
+  );
+
+  return { campaigns, total: result.total, page, pageSize };
+}
+
 // ─── Compose and send campaign ────────────────────────────────────────────────
 
 export type ComposeCampaignParams = {

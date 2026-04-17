@@ -286,12 +286,13 @@ export async function getCampaignMonitorTemplates(
 
 export async function getCampaignMonitorSentCampaigns(
   credentials: CampaignMonitorCredentials,
-  pageSize = 8
+  pageSize = 8,
+  page = 1
 ) {
   const payload = await requestJson<
     CampaignMonitorCampaignRow[] | CampaignMonitorPagedResponse<CampaignMonitorCampaignRow>
   >(
-    `/clients/${encodeURIComponent(credentials.clientId)}/campaigns.json?page=1&pagesize=${pageSize}&orderdirection=desc`,
+    `/clients/${encodeURIComponent(credentials.clientId)}/campaigns.json?page=${page}&pagesize=${pageSize}&orderdirection=desc`,
     credentials
   );
 

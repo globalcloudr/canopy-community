@@ -5,7 +5,7 @@ import { Button, Input } from "@canopy/ui";
 import { cn } from "@canopy/ui";
 import { ProductShell } from "@/app/_components/product-shell";
 import { communityNavItems } from "@/app/_components/community-nav";
-import { useCommunityOverview } from "@/app/_components/community-data";
+import { useCommunityOverview, useSentCampaigns } from "@/app/_components/community-data";
 import { EmptyState, PageHeader, formatShortDate } from "@/app/_components/community-ui";
 import type { CommunityCampaignSummary } from "@/lib/community-schema";
 
@@ -21,15 +21,17 @@ export default function CampaignsPage() {
 
 function CampaignsContent() {
   const { overview, error, loading, refresh } = useCommunityOverview();
+  const sentPaginated = useSentCampaigns();
   const [view, setView] = useState<CampaignView>("overview");
   const [search, setSearch] = useState("");
 
   const drafts = overview?.draftCampaigns ?? [];
-  const sent = overview?.sentCampaigns ?? [];
   const scheduled = overview?.scheduledCampaigns ?? [];
+  // Overview tab uses the cached overview data (first 8); sent tab uses paginated data
+  const overviewSent = overview?.sentCampaigns ?? [];
 
   const filteredDrafts = useFilteredCampaigns(drafts, search);
-  const filteredSent = useFilteredCampaigns(sent, search);
+  const filteredSent = useFilteredCampaigns(overviewSent, search);
   const filteredScheduled = useFilteredCampaigns(scheduled, search);
 
   const viewItems: { key: CampaignView; label: string }[] = [
@@ -117,8 +119,19 @@ function CampaignsContent() {
             <EmptyState title="Nothing scheduled" body="Scheduled newsletters will appear here." />
           ) : null}
 
-          {(view === "overview" || view === "sent") ? (
+          {view === "overview" ? (
             <SentSection campaigns={filteredSent} />
+          ) : null}
+
+          {view === "sent" ? (
+            <SentSectionPaginated
+              campaigns={sentPaginated.campaigns}
+              total={sentPaginated.total}
+              page={sentPaginated.page}
+              pageSize={sentPaginated.pageSize}
+              loading={sentPaginated.loading}
+              onPageChange={sentPaginated.setPage}
+            />
           ) : null}
         </div>
       </div>
@@ -256,6 +269,113 @@ function SentSection({
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function SentSectionPaginated({
+  campaigns,
+  total,
+  page,
+  pageSize,
+  loading,
+  onPageChange,
+}: {
+  campaigns: CommunityCampaignSummary[];
+  total: number;
+  page: number;
+  pageSize: number;
+  loading: boolean;
+  onPageChange: (page: number) => void;
+}) {
+  const totalPages = Math.ceil(total / pageSize);
+
+  return (
+    <div className="mb-8">
+      <div className="mb-1 flex items-baseline justify-between">
+        <h3 className="text-[1rem] font-semibold tracking-[-0.01em] text-[#0f172a]">
+          Sent campaigns
+        </h3>
+        {total > 0 && (
+          <span className="text-[13px] text-[#64748b]">
+            {total.toLocaleString()} total
+          </span>
+        )}
+      </div>
+
+      {loading && campaigns.length === 0 ? (
+        <p className="py-6 text-center text-[14px] text-[#64748b]">Loading…</p>
+      ) : campaigns.length === 0 ? (
+        <EmptyState title="No sent newsletters yet" body="Sent newsletters will appear here once your account is connected." />
+      ) : (
+        <>
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[#64748b]">
+                <th className="py-2.5 font-medium">Campaign</th>
+                <th className="hidden py-2.5 text-right font-medium md:table-cell">Recipients</th>
+                <th className="hidden py-2.5 text-right font-medium md:table-cell">Opened</th>
+                <th className="hidden py-2.5 text-right font-medium md:table-cell">Clicked</th>
+                <th className="py-2.5 text-right font-medium">Sent</th>
+              </tr>
+            </thead>
+            <tbody className={cn("divide-y divide-[var(--app-divider)]", loading ? "opacity-50" : "")}>
+              {campaigns.map((c) => (
+                <tr key={c.id} className="group hover:bg-[#f8fafc]">
+                  <td className="py-3 pr-4">
+                    {c.webVersionUrl ? (
+                      <a
+                        href={c.webVersionUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
+                      >
+                        {c.name}
+                      </a>
+                    ) : (
+                      <span className="text-[14px] font-medium text-[#0f172a]">{c.name}</span>
+                    )}
+                  </td>
+                  <td className="hidden py-3 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
+                    {c.recipientCount?.toLocaleString() ?? "—"}
+                  </td>
+                  <td className="hidden py-3 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
+                    {c.openRate != null ? `${c.openRate}%` : "—"}
+                  </td>
+                  <td className="hidden py-3 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
+                    {c.clickRate != null ? `${c.clickRate}%` : "—"}
+                  </td>
+                  <td className="py-3 text-right text-[14px] text-[#64748b]">
+                    {formatShortDate(c.sentDate)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <Button
+                variant="secondary"
+                disabled={page <= 1 || loading}
+                onClick={() => onPageChange(page - 1)}
+              >
+                Previous
+              </Button>
+              <span className="text-[14px] text-[#64748b]">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="secondary"
+                disabled={page >= totalPages || loading}
+                onClick={() => onPageChange(page + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
