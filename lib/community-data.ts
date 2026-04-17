@@ -109,7 +109,7 @@ export async function upsertCampaignMonitorConnection(params: {
       {
         workspace_id: params.workspaceId,
         client_id: params.clientId,
-        api_key: params.apiKey,
+        api_key: params.apiKey ?? "",
         auth_type: "api_key",
         account_name: params.accountName,
         country: params.country,

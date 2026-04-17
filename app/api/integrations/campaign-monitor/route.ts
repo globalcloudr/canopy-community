@@ -101,6 +101,16 @@ export async function PUT(request: Request) {
       );
     }
 
+    // Surface fetch/network errors and Supabase errors so the client can
+    // show something actionable instead of a generic failure message.
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      console.error(error);
+      return NextResponse.json(
+        { error: "Could not reach Campaign Monitor. Check the server network connection and try again." },
+        { status: 502 }
+      );
+    }
+
     return toErrorResponse(error, "Failed to save Campaign Monitor settings.");
   }
 }
