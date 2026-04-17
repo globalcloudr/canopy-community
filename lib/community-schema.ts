@@ -64,6 +64,29 @@ export type CommunityDraft = {
   updatedAt: string;
 };
 
+export type CampaignAnalyticsLink = {
+  url: string;
+  totalClicks: number;
+  uniqueClicks: number;
+};
+
+export type CampaignAnalytics = {
+  recipients: number | null;
+  uniqueOpened: number | null;
+  openRate: number | null;
+  uniqueClicks: number | null;
+  clickRate: number | null;
+  clicksToOpenRate: number | null;
+  bounced: number | null;
+  unsubscribed: number | null;
+  spamComplaints: number | null;
+  forwards: number | null;
+  likes: number | null;
+  mentions: number | null;
+  topLinks: CampaignAnalyticsLink[];
+  webVersionUrl: string | null;
+};
+
 export type CommunityBilling = {
   credits: number | null;
   canPurchaseCredits: boolean;

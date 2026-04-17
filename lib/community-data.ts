@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import {
   createCampaignMonitorCampaign,
+  getCampaignMonitorCampaignAnalytics,
   getCampaignMonitorCampaignSummary,
   getCampaignMonitorClientBilling,
   getCampaignMonitorClientDetails,
@@ -13,7 +14,7 @@ import {
   sendCampaignMonitorCampaign,
   type CampaignMonitorApiError,
 } from "@/lib/campaign-monitor";
-import type { CommunityConnection, CommunityDraft, CommunityOverview, CommunityTemplate } from "@/lib/community-schema";
+import type { CampaignAnalytics, CommunityConnection, CommunityDraft, CommunityOverview, CommunityTemplate } from "@/lib/community-schema";
 
 type CampaignMonitorConnectionRow = {
   workspace_id: string;
@@ -762,4 +763,20 @@ export async function composeCampaign(params: ComposeCampaignParams) {
     // 4. Always delete the HTML file from storage — CM has already fetched it
     await deleteCampaignHtml(storagePath).catch(() => null);
   }
+}
+
+// ─── Campaign analytics ───────────────────────────────────────────────────────
+
+export async function getCampaignAnalytics(
+  workspaceId: string,
+  campaignId: string
+): Promise<CampaignAnalytics> {
+  const connectionRow = await getCampaignMonitorConnection(workspaceId);
+  if (!connectionRow) throw new Error("No Campaign Monitor connection found for this workspace.");
+
+  const apiKey = resolveCampaignMonitorApiKey({ storedApiKey: connectionRow.api_key });
+  if (!apiKey) throw new Error("Campaign Monitor API access is not configured.");
+
+  const credentials = { clientId: connectionRow.client_id, apiKey };
+  return getCampaignMonitorCampaignAnalytics(credentials, campaignId);
 }
