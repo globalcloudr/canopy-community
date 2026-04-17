@@ -13,7 +13,7 @@ import {
   deleteTemplate,
 } from "@/app/_components/community-data";
 import { UnlayerEditor } from "@/app/_components/unlayer-editor";
-import { PageHeader, EmptyState, formatCompactDateTime } from "@/app/_components/community-ui";
+import { PageHeader, EmptyState, formatCompactDateTime, formatShortDate } from "@/app/_components/community-ui";
 import type { CommunityTemplate } from "@/lib/community-schema";
 
 export default function TemplatesPage() {
@@ -319,8 +319,9 @@ function TemplateCard({
       </button>
 
       {/* Info */}
-      <div className="flex items-start gap-2 px-3.5 py-3">
-        <div className="min-w-0 flex-1">
+      <div className="space-y-3 px-3.5 py-3">
+        <div className="flex items-start gap-2">
+          <div className="min-w-0 flex-1">
           {renaming ? (
             <form
               onSubmit={(e) => { e.preventDefault(); onRenameSubmit(renameValue); }}
@@ -338,57 +339,67 @@ function TemplateCard({
               />
             </form>
           ) : (
-            <p className="truncate text-[14px] font-medium text-[#0f172a]">{template.name}</p>
+            <p className="overflow-hidden text-[14px] font-medium leading-5 text-[#0f172a] [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
+              {template.name}
+            </p>
           )}
-          <div className="mt-1.5 flex flex-wrap items-center gap-2">
-            <span className={cn("rounded-full border px-2.5 py-1 text-[11px] font-semibold", templateTypeTone)}>
-              {templateTypeLabel}
-            </span>
-            <span className="text-[12px] text-[#94a3b8]">
-              Updated {formatCompactDateTime(template.updatedAt)}
-            </span>
+          </div>
+
+          {/* Actions menu */}
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              className="rounded-md p-1.5 text-[#94a3b8] transition hover:bg-[#f1f5f9] hover:text-[#334155]"
+            >
+              <svg viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4" aria-hidden="true">
+                <circle cx="8" cy="3" r="1.5" />
+                <circle cx="8" cy="8" r="1.5" />
+                <circle cx="8" cy="13" r="1.5" />
+              </svg>
+            </button>
+
+            {menuOpen ? (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                <div className="absolute right-0 z-20 mt-1 w-36 rounded-md border border-[#e2e8f0] bg-white py-1 shadow-lg">
+                  <MenuButton onClick={() => { setMenuOpen(false); onRename(); }}>
+                    Rename
+                  </MenuButton>
+                  {editable ? (
+                    <MenuButton onClick={() => { setMenuOpen(false); onEdit(); }}>
+                      Edit layout
+                    </MenuButton>
+                  ) : null}
+                  <MenuButton onClick={() => { setMenuOpen(false); onDuplicate(); }}>
+                    Duplicate
+                  </MenuButton>
+                  <MenuButton onClick={() => { setMenuOpen(false); onDeleteRequest(); }} destructive>
+                    Delete
+                  </MenuButton>
+                </div>
+              </>
+            ) : null}
           </div>
         </div>
 
-        <Button variant="secondary" size="sm" onClick={() => setPreviewOpen(true)}>
-          Preview
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={cn("inline-flex whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-semibold", templateTypeTone)}>
+            {templateTypeLabel}
+          </span>
+        </div>
 
-        {/* Actions menu */}
-        <div className="relative">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[12px] text-[#94a3b8]">
+            Updated {formatShortDate(template.updatedAt)}
+          </span>
           <button
             type="button"
-            onClick={() => setMenuOpen((v) => !v)}
-            className="rounded-md p-1.5 text-[#94a3b8] transition hover:bg-[#f1f5f9] hover:text-[#334155]"
+            onClick={() => setPreviewOpen(true)}
+            className="shrink-0 rounded-md border border-[#d9e3ef] px-3 py-1.5 text-[13px] font-medium text-[#334155] transition hover:border-[#bfd3ea] hover:bg-[#f8fafc]"
           >
-            <svg viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4" aria-hidden="true">
-              <circle cx="8" cy="3" r="1.5" />
-              <circle cx="8" cy="8" r="1.5" />
-              <circle cx="8" cy="13" r="1.5" />
-            </svg>
+            Preview
           </button>
-
-          {menuOpen ? (
-            <>
-              <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-              <div className="absolute right-0 z-20 mt-1 w-36 rounded-md border border-[#e2e8f0] bg-white py-1 shadow-lg">
-                <MenuButton onClick={() => { setMenuOpen(false); onRename(); }}>
-                  Rename
-                </MenuButton>
-                {editable ? (
-                  <MenuButton onClick={() => { setMenuOpen(false); onEdit(); }}>
-                    Edit layout
-                  </MenuButton>
-                ) : null}
-                <MenuButton onClick={() => { setMenuOpen(false); onDuplicate(); }}>
-                  Duplicate
-                </MenuButton>
-                <MenuButton onClick={() => { setMenuOpen(false); onDeleteRequest(); }} destructive>
-                  Delete
-                </MenuButton>
-              </div>
-            </>
-          ) : null}
         </div>
       </div>
     </div>
