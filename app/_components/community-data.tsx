@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase-client";
 import { useProductShell } from "@/app/_components/product-shell";
-import type { CommunityConnection, CommunityOverview, CommunityTemplate } from "@/lib/community-schema";
+import type { CommunityConnection, CommunityOverview, CommunityTemplate, CommunityCampaignSummary } from "@/lib/community-schema";
 
 type OverviewState = {
   overview: CommunityOverview | null;
@@ -248,4 +248,59 @@ export async function removeCampaignMonitorConnection(workspaceId: string) {
       method: "DELETE",
     }
   );
+}
+
+type SentCampaignsState = {
+  campaigns: CommunityCampaignSummary[];
+  total: number;
+  page: number;
+  pageSize: number;
+  loading: boolean;
+  error: string | null;
+  setPage: (page: number) => void;
+};
+
+export function useSentCampaigns(): SentCampaignsState {
+  const { workspaceId } = useCommunityWorkspaceId();
+  const [page, setPage] = useState(1);
+  const [campaigns, setCampaigns] = useState<CommunityCampaignSummary[]>([]);
+  const [total, setTotal] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async (targetPage: number) => {
+    if (!workspaceId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await requestJson<{
+        campaigns: CommunityCampaignSummary[];
+        total: number;
+        page: number;
+        pageSize: number;
+      }>(
+        `/api/community/campaigns?workspaceId=${encodeURIComponent(workspaceId)}&page=${targetPage}`
+      );
+      setCampaigns(result.campaigns);
+      setTotal(result.total);
+      setPage(result.page);
+      setPageSize(result.pageSize);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load campaigns.");
+    } finally {
+      setLoading(false);
+    }
+  }, [workspaceId]);
+
+  useEffect(() => {
+    void load(page);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [load]);
+
+  const handleSetPage = useCallback((newPage: number) => {
+    void load(newPage);
+  }, [load]);
+
+  return { campaigns, total, page, pageSize, loading, error, setPage: handleSetPage };
 }
