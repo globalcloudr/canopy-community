@@ -306,8 +306,6 @@ export async function getCampaignMonitorDraftCampaigns(
     credentials
   );
 
-  console.log("[CM drafts raw]", JSON.stringify(payload.map((r) => ({ CampaignID: r.CampaignID, Name: r.Name, Subject: r.Subject }))));
-
   return payload
     .map((row) => toCampaignSummary(row, "draft"))
     .filter((row): row is CommunityCampaignSummary => row !== null);
