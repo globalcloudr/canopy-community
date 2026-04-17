@@ -204,7 +204,7 @@ function TemplatesContent() {
         ) : null}
 
         {templates.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(250px,1fr))]">
             {templates.map((template) => (
               <TemplateCard
                 key={template.id}
@@ -298,7 +298,7 @@ function TemplateCard({
         onClick={() => setPreviewOpen(true)}
         className="block w-full cursor-pointer"
       >
-        <div className="relative h-44 w-full overflow-hidden rounded-t-lg border-b border-[#e2e8f0] bg-[#f8fafc]">
+        <div className="relative h-36 w-full overflow-hidden rounded-t-lg border-b border-[#e2e8f0] bg-[#f8fafc]">
           {template.htmlPreview ? (
             <iframe
               srcDoc={template.htmlPreview}
