@@ -49,6 +49,21 @@ export type CommunityCampaignSummary = {
   tags: string[];
 };
 
+export type CommunityDraft = {
+  id: string;
+  workspaceId: string;
+  name: string;
+  subject: string;
+  fromName: string;
+  fromEmail: string;
+  replyTo: string;
+  listIds: string[];
+  htmlContent: string | null;
+  designJson: Record<string, unknown> | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type CommunityBilling = {
   credits: number | null;
   canPurchaseCredits: boolean;
@@ -76,7 +91,7 @@ export type CommunityOverview = {
   lists: CommunityListSummary[];
   templates: CommunityTemplate[];
   sentCampaigns: CommunityCampaignSummary[];
-  draftCampaigns: CommunityCampaignSummary[];
+  draftCampaigns: CommunityDraft[];
   scheduledCampaigns: CommunityCampaignSummary[];
   billing: CommunityBilling | null;
   fetchedAt: string;

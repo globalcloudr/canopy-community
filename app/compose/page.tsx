@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button, Input, Label } from "@canopy/ui";
 import { cn } from "@canopy/ui";
 import { ProductShell } from "@/app/_components/product-shell";
@@ -8,12 +9,14 @@ import { communityNavItems } from "@/app/_components/community-nav";
 import { useCommunityOverview, useCommunityWorkspaceId, useCommunityTemplates } from "@/app/_components/community-data";
 import { UnlayerEditor } from "@/app/_components/unlayer-editor";
 import { supabase } from "@/lib/supabase-client";
-import type { CommunityTemplate } from "@/lib/community-schema";
+import type { CommunityDraft, CommunityTemplate } from "@/lib/community-schema";
 
 export default function ComposePage() {
   return (
     <ProductShell activeNav="compose" navItems={communityNavItems}>
-      <ComposeContent />
+      <Suspense>
+        <ComposeContent />
+      </Suspense>
     </ProductShell>
   );
 }
@@ -24,13 +27,52 @@ function ComposeContent() {
   const lists = overview?.lists ?? [];
   const userEmail = overview?.connection?.accountName ?? "";
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [draftId, setDraftId] = useState<string | null>(null);
   const [campaignName, setCampaignName] = useState("");
   const [subject, setSubject] = useState("");
   const [fromName, setFromName] = useState("");
   const [fromEmail, setFromEmail] = useState("");
   const [replyTo, setReplyTo] = useState("");
+
+  // Load draft from ?draft=<id> URL param once workspaceId is available.
+  const draftLoaded = useRef(false);
+  useEffect(() => {
+    if (draftLoaded.current) return;
+    if (!workspaceId) return;
+    const id = searchParams.get("draft");
+    if (!id) return;
+    draftLoaded.current = true;
+    void (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        if (!token) return;
+        const res = await fetch(`/api/community/drafts/${id}?workspaceId=${workspaceId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const payload = (await res.json()) as { draft?: CommunityDraft };
+        const draft = payload.draft;
+        if (!draft) return;
+        setDraftId(draft.id);
+        setCampaignName(draft.name);
+        setSubject(draft.subject);
+        setFromName(draft.fromName);
+        setFromEmail(draft.fromEmail);
+        setReplyTo(draft.replyTo);
+        setListIds(draft.listIds);
+        if (draft.htmlContent) setHtmlContent(draft.htmlContent);
+        if (draft.designJson) setDesignJson(draft.designJson);
+      } catch {
+        // silently ignore draft load errors
+      }
+    })();
+  }, [workspaceId, searchParams]);
 
   // Pre-populate sender fields from the most recent sent campaign once overview loads.
   // The fromEmail will be the school's CM-assigned sending address (e.g. info@ditnld.createsend7.com).
@@ -94,7 +136,7 @@ function ComposeContent() {
   }
 
   async function handleSaveAsDraft() {
-    if (!workspaceId || !htmlContent) return;
+    if (!workspaceId) return;
 
     setSavingDraft(true);
     setError(null);
@@ -104,29 +146,40 @@ function ComposeContent() {
       const token = data.session?.access_token;
       if (!token) throw new Error("Your session has expired. Please sign in again.");
 
-      const response = await fetch("/api/community/compose", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          workspaceId,
-          name: campaignName,
-          subject,
-          fromName,
-          fromEmail,
-          replyTo,
-          listIds,
-          htmlContent,
-          draft: true,
-        }),
-      });
+      const body = {
+        workspaceId,
+        name: campaignName,
+        subject,
+        fromName,
+        fromEmail,
+        replyTo,
+        listIds,
+        htmlContent,
+        designJson,
+      };
 
-      const payload = (await response.json()) as { error?: string; campaignId?: string };
-
-      if (!response.ok) {
-        throw new Error(payload.error ?? "Failed to save draft.");
+      if (draftId) {
+        // Update existing Supabase draft
+        const response = await fetch(`/api/community/drafts/${draftId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify(body),
+        });
+        const payload = (await response.json()) as { error?: string };
+        if (!response.ok) throw new Error(payload.error ?? "Failed to update draft.");
+      } else {
+        // Create new Supabase draft
+        const response = await fetch("/api/community/drafts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify(body),
+        });
+        const payload = (await response.json()) as { error?: string; draft?: CommunityDraft };
+        if (!response.ok) throw new Error(payload.error ?? "Failed to save draft.");
+        if (payload.draft) {
+          setDraftId(payload.draft.id);
+          router.replace(`/compose?draft=${payload.draft.id}`);
+        }
       }
 
       setSavedAsDraft(true);
@@ -182,6 +235,22 @@ function ComposeContent() {
         );
       }
 
+      // Delete the Supabase draft now that the campaign has been sent.
+      if (draftId) {
+        try {
+          const { data: sessionData } = await supabase.auth.getSession();
+          const draftToken = sessionData.session?.access_token;
+          if (draftToken) {
+            await fetch(`/api/community/drafts/${draftId}?workspaceId=${workspaceId}`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${draftToken}` },
+            });
+          }
+        } catch {
+          // Non-critical — draft cleanup failure doesn't affect the sent campaign.
+        }
+      }
+
       setSuccess(true);
     } catch (err) {
       setConfirming(false);
@@ -199,14 +268,14 @@ function ComposeContent() {
             Draft saved
           </h1>
           <p className="mt-1.5 text-[15px] text-[#64748b]">
-            Your campaign has been saved as a draft in Campaign Monitor. You can find it in your Campaigns page.
+            Your campaign has been saved as a draft. You can find it in your Campaigns page.
           </p>
         </div>
         <div className="flex gap-3">
           <Button asChild variant="primary">
             <a href="/campaigns">View campaigns</a>
           </Button>
-          <Button variant="secondary" onClick={() => setSavedAsDraft(false)}>
+          <Button variant="secondary" onClick={() => { setSavedAsDraft(false); setError(null); }}>
             Keep editing
           </Button>
         </div>
@@ -235,6 +304,8 @@ function ComposeContent() {
             variant="secondary"
             onClick={() => {
               setSuccess(false);
+              setDraftId(null);
+              setCampaignName("");
               setSubject("");
               setFromName("");
               setFromEmail("");
@@ -246,6 +317,7 @@ function ComposeContent() {
               setScheduledDate("");
               setConfirmationEmail("");
               setSendMode("immediately");
+              router.replace("/compose");
             }}
           >
             Send another
@@ -587,7 +659,7 @@ function ComposeContent() {
                 </Button>
               </div>
               <p className="text-[13px] text-[#64748b]">
-                Drafts in Campaign Monitor still need a subject, sender details, at least one mailing list, and email content before they can be saved.
+                Drafts are saved in Canopy and can be reopened from the Campaigns page to continue editing.
               </p>
             </div>
           )}

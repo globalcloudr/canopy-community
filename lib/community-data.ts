@@ -13,7 +13,7 @@ import {
   sendCampaignMonitorCampaign,
   type CampaignMonitorApiError,
 } from "@/lib/campaign-monitor";
-import type { CommunityConnection, CommunityOverview, CommunityTemplate } from "@/lib/community-schema";
+import type { CommunityConnection, CommunityDraft, CommunityOverview, CommunityTemplate } from "@/lib/community-schema";
 
 type CampaignMonitorConnectionRow = {
   workspace_id: string;
@@ -247,7 +247,7 @@ export async function getCommunityOverview(
       getCampaignMonitorLists(credentials),
       getWorkspaceTemplateCount(workspaceId),
       getCampaignMonitorSentCampaigns(credentials),
-      getCampaignMonitorDraftCampaigns(credentials),
+      getWorkspaceDrafts(workspaceId),
       getCampaignMonitorScheduledCampaigns(credentials),
     ]);
 
@@ -500,6 +500,158 @@ async function uploadCampaignHtmlForSend(params: {
 async function deleteCampaignHtml(storagePath: string): Promise<void> {
   const client = getServiceClient();
   await client.storage.from(HTML_BUCKET).remove([storagePath]);
+}
+
+// ─── Campaign drafts (Canopy-managed) ────────────────────────────────────────
+
+type CommunityDraftRow = {
+  id: string;
+  workspace_id: string;
+  name: string;
+  subject: string;
+  from_name: string;
+  from_email: string;
+  reply_to: string;
+  list_ids: string[];
+  html_content: string | null;
+  design_json: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+};
+
+function toDraft(row: CommunityDraftRow): CommunityDraft {
+  return {
+    id: row.id,
+    workspaceId: row.workspace_id,
+    name: row.name,
+    subject: row.subject,
+    fromName: row.from_name,
+    fromEmail: row.from_email,
+    replyTo: row.reply_to,
+    listIds: row.list_ids ?? [],
+    htmlContent: row.html_content ?? null,
+    designJson: row.design_json ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+const DRAFT_SELECT =
+  "id,workspace_id,name,subject,from_name,from_email,reply_to,list_ids,html_content,design_json,created_at,updated_at";
+
+export async function getWorkspaceDrafts(workspaceId: string): Promise<CommunityDraft[]> {
+  const client = getServiceClient();
+  const { data, error } = await client
+    .from("community_campaigns")
+    .select(DRAFT_SELECT)
+    .eq("workspace_id", workspaceId)
+    .eq("status", "draft")
+    .order("updated_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return (data as CommunityDraftRow[]).map(toDraft);
+}
+
+export async function getWorkspaceDraft(id: string, workspaceId: string): Promise<CommunityDraft | null> {
+  const client = getServiceClient();
+  const { data, error } = await client
+    .from("community_campaigns")
+    .select(DRAFT_SELECT)
+    .eq("id", id)
+    .eq("workspace_id", workspaceId)
+    .eq("status", "draft")
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") return null; // not found
+    throw new Error(error.message);
+  }
+  return toDraft(data as CommunityDraftRow);
+}
+
+export async function createWorkspaceDraft(params: {
+  workspaceId: string;
+  name: string;
+  subject: string;
+  fromName: string;
+  fromEmail: string;
+  replyTo: string;
+  listIds: string[];
+  htmlContent: string | null;
+  designJson: Record<string, unknown> | null;
+}): Promise<CommunityDraft> {
+  const client = getServiceClient();
+  const now = new Date().toISOString();
+  const { data, error } = await client
+    .from("community_campaigns")
+    .insert({
+      workspace_id: params.workspaceId,
+      name: params.name,
+      subject: params.subject,
+      from_name: params.fromName,
+      from_email: params.fromEmail,
+      reply_to: params.replyTo,
+      list_ids: params.listIds,
+      html_content: params.htmlContent,
+      design_json: params.designJson,
+      status: "draft",
+      created_at: now,
+      updated_at: now,
+    })
+    .select(DRAFT_SELECT)
+    .single();
+
+  if (error) throw new Error(error.message);
+  return toDraft(data as CommunityDraftRow);
+}
+
+export async function updateWorkspaceDraft(
+  id: string,
+  workspaceId: string,
+  params: Partial<{
+    name: string;
+    subject: string;
+    fromName: string;
+    fromEmail: string;
+    replyTo: string;
+    listIds: string[];
+    htmlContent: string | null;
+    designJson: Record<string, unknown> | null;
+  }>
+): Promise<CommunityDraft> {
+  const client = getServiceClient();
+  const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (params.name !== undefined) updates.name = params.name;
+  if (params.subject !== undefined) updates.subject = params.subject;
+  if (params.fromName !== undefined) updates.from_name = params.fromName;
+  if (params.fromEmail !== undefined) updates.from_email = params.fromEmail;
+  if (params.replyTo !== undefined) updates.reply_to = params.replyTo;
+  if (params.listIds !== undefined) updates.list_ids = params.listIds;
+  if (params.htmlContent !== undefined) updates.html_content = params.htmlContent;
+  if (params.designJson !== undefined) updates.design_json = params.designJson;
+
+  const { data, error } = await client
+    .from("community_campaigns")
+    .update(updates)
+    .eq("id", id)
+    .eq("workspace_id", workspaceId)
+    .eq("status", "draft")
+    .select(DRAFT_SELECT)
+    .single();
+
+  if (error) throw new Error(error.message);
+  return toDraft(data as CommunityDraftRow);
+}
+
+export async function deleteWorkspaceDraft(id: string, workspaceId: string): Promise<void> {
+  const client = getServiceClient();
+  const { error } = await client
+    .from("community_campaigns")
+    .delete()
+    .eq("id", id)
+    .eq("workspace_id", workspaceId);
+
+  if (error) throw new Error(error.message);
 }
 
 // ─── Paginated sent campaigns ─────────────────────────────────────────────────
