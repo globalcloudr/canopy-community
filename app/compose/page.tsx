@@ -26,6 +26,7 @@ function ComposeContent() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [campaignName, setCampaignName] = useState("");
   const [subject, setSubject] = useState("");
   const [fromName, setFromName] = useState("");
   const [fromEmail, setFromEmail] = useState("");
@@ -111,6 +112,7 @@ function ComposeContent() {
         },
         body: JSON.stringify({
           workspaceId,
+          name: campaignName,
           subject,
           fromName,
           fromEmail,
@@ -154,6 +156,7 @@ function ComposeContent() {
         },
         body: JSON.stringify({
           workspaceId,
+          name: campaignName,
           subject,
           fromName,
           fromEmail,
@@ -271,11 +274,19 @@ function ComposeContent() {
           {/* Campaign details */}
           <FormSection title="Campaign details">
             <div className="grid gap-4">
+              <Field label="Campaign name" required hint="Internal name for this campaign — not visible to recipients.">
+                <Input
+                  value={campaignName}
+                  onChange={(e) => setCampaignName(e.target.value)}
+                  placeholder="e.g. April 2026 Newsletter"
+                  required
+                />
+              </Field>
               <Field label="Subject line" required>
                 <Input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="e.g. March 2026 Newsletter"
+                  placeholder="e.g. Big news from San Mateo ACE!"
                   required
                 />
               </Field>
@@ -488,6 +499,7 @@ function ComposeContent() {
             <div className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-5">
               <h3 className="text-[15px] font-semibold text-[#0f172a]">Review before sending</h3>
               <div className="mt-4 grid gap-3">
+                <ConfirmRow label="Campaign name" value={campaignName} />
                 <ConfirmRow label="Subject" value={subject} />
                 <ConfirmRow label="From" value={`${fromName} <${fromEmail}>`} />
                 <ConfirmRow
@@ -558,14 +570,14 @@ function ComposeContent() {
                 <Button
                   type="submit"
                   variant="primary"
-                  disabled={savingDraft || !htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo || !confirmationEmail || (sendMode === "schedule" && !scheduledDate)}
+                  disabled={savingDraft || !campaignName || !htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo || !confirmationEmail || (sendMode === "schedule" && !scheduledDate)}
                 >
                   {sendMode === "schedule" ? "Review and schedule" : "Review and send"}
                 </Button>
                 <Button
                   type="button"
                   variant="secondary"
-                  disabled={savingDraft || !htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo}
+                  disabled={savingDraft || !campaignName || !htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo}
                   onClick={() => void handleSaveAsDraft()}
                 >
                   {savingDraft ? "Saving…" : "Save as draft"}
