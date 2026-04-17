@@ -190,6 +190,12 @@ async function requestJson<T>(
     await parseError(response);
   }
 
+  // Some CM endpoints (send, schedule) return 204 No Content with an empty body.
+  // Attempting to parse an empty body as JSON throws a SyntaxError.
+  if (response.status === 204 || response.headers.get("content-length") === "0") {
+    return undefined as T;
+  }
+
   return response.json() as Promise<T>;
 }
 
