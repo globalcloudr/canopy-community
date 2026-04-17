@@ -239,56 +239,60 @@ function SentRows({
   }
 
   return (
-    <div className="divide-y divide-[var(--app-divider)]">
-      {visible.map((campaign) => (
-        <div key={campaign.id} className="flex items-center gap-4 py-4">
-          {/* Thumbnail */}
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded border border-[#e2e8f0] bg-[#f8fafc]">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" className="h-4 w-4" aria-hidden="true">
-              <rect x="3" y="5" width="18" height="14" rx="2" />
-              <path d="m6 9 6 4 6-4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-
-          {/* Name + date */}
-          <div className="min-w-0 flex-1">
-            {campaign.webVersionUrl ? (
-              <a
-                href={campaign.webVersionUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="block truncate text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
-              >
-                {campaign.name || campaign.subject}
-              </a>
-            ) : (
-              <p className="truncate text-[14px] font-medium text-[#0f172a]">
-                {campaign.name || campaign.subject}
-              </p>
-            )}
-            <p className="mt-0.5 text-[13px] text-[#64748b]">
-              Sent {formatShortDate(campaign.sentDate)}
-            </p>
-          </div>
-
-          {/* Stats — stacked number + label */}
-          <div className="hidden shrink-0 items-center gap-8 md:flex">
-            <StatBlock value={campaign.recipientCount?.toLocaleString() ?? "—"} label="Recipients" />
-            <StatBlock value={campaign.openRate != null ? `${campaign.openRate}%` : "—"} label="Opened" />
-            <StatBlock value={campaign.clickRate != null ? `${campaign.clickRate}%` : "—"} label="Clicked" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function StatBlock({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="text-right">
-      <p className="text-[14px] font-medium text-[#0f172a]">{value}</p>
-      <p className="text-[12px] text-[#64748b]">{label}</p>
-    </div>
+    <table className="w-full">
+      <thead>
+        <tr className="border-b border-[var(--app-divider)]">
+          <th className="pb-2 text-left text-[12px] font-medium text-[#94a3b8]">Campaign</th>
+          <th className="hidden pb-2 text-right text-[12px] font-medium text-[#94a3b8] md:table-cell">Recipients</th>
+          <th className="hidden pb-2 text-right text-[12px] font-medium text-[#94a3b8] md:table-cell">Opened</th>
+          <th className="hidden pb-2 text-right text-[12px] font-medium text-[#94a3b8] md:table-cell">Clicked</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-[var(--app-divider)]">
+        {visible.map((campaign) => (
+          <tr key={campaign.id}>
+            <td className="py-3 pr-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-[#e2e8f0] bg-[#f8fafc]">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" className="h-4 w-4" aria-hidden="true">
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="m6 9 6 4 6-4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  {campaign.webVersionUrl ? (
+                    <a
+                      href={campaign.webVersionUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block truncate text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
+                    >
+                      {campaign.name || campaign.subject}
+                    </a>
+                  ) : (
+                    <p className="truncate text-[14px] font-medium text-[#0f172a]">
+                      {campaign.name || campaign.subject}
+                    </p>
+                  )}
+                  <p className="mt-0.5 text-[13px] text-[#64748b]">
+                    Sent {formatShortDate(campaign.sentDate)}
+                  </p>
+                </div>
+              </div>
+            </td>
+            <td className="hidden py-3 pr-6 text-right text-[14px] text-[#334155] md:table-cell">
+              {campaign.recipientCount?.toLocaleString() ?? "—"}
+            </td>
+            <td className="hidden py-3 pr-6 text-right text-[14px] text-[#334155] md:table-cell">
+              {campaign.openRate != null ? `${campaign.openRate}%` : "—"}
+            </td>
+            <td className="hidden py-3 text-right text-[14px] text-[#334155] md:table-cell">
+              {campaign.clickRate != null ? `${campaign.clickRate}%` : "—"}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 

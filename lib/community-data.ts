@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import {
   createCampaignMonitorCampaign,
+  getCampaignMonitorCampaignSummary,
   getCampaignMonitorClientBilling,
   getCampaignMonitorClientDetails,
   getCampaignMonitorDraftCampaigns,
@@ -250,17 +251,29 @@ export async function getCommunityOverview(
       getCampaignMonitorScheduledCampaigns(credentials),
     ]);
 
-    // Fan out per-list stats to get subscriber counts; individual failures fall back to null
-    const lists = await Promise.all(
-      listsRaw.map(async (list) => {
-        try {
-          const stats = await getCampaignMonitorListStats(credentials, list.listId);
-          return { ...list, subscriberCount: stats.totalActiveSubscribers };
-        } catch {
-          return list;
-        }
-      })
-    );
+    // Fan out per-list stats and per-campaign stats in parallel; individual failures fall back gracefully
+    const [lists, sentCampaigns] = await Promise.all([
+      Promise.all(
+        listsRaw.map(async (list) => {
+          try {
+            const stats = await getCampaignMonitorListStats(credentials, list.listId);
+            return { ...list, subscriberCount: stats.totalActiveSubscribers };
+          } catch {
+            return list;
+          }
+        })
+      ),
+      Promise.all(
+        sentCampaignsResult.campaigns.map(async (campaign) => {
+          try {
+            const stats = await getCampaignMonitorCampaignSummary(credentials, campaign.id);
+            return { ...campaign, openRate: stats.openRate, clickRate: stats.clickRate };
+          } catch {
+            return campaign;
+          }
+        })
+      ),
+    ]);
 
     return {
       connection: {
@@ -281,7 +294,7 @@ export async function getCommunityOverview(
       },
       lists,
       templates: [],
-      sentCampaigns: sentCampaignsResult.campaigns,
+      sentCampaigns,
       draftCampaigns,
       scheduledCampaigns,
       billing,

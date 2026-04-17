@@ -477,3 +477,30 @@ export async function getCampaignMonitorListStats(
     totalActiveSubscribers: normalizeNumber(payload.TotalActiveSubscribers),
   };
 }
+
+type CampaignMonitorCampaignSummaryResponse = {
+  TotalRecipients?: number | null;
+  Opens?: {
+    OpenRate?: number | null;
+    UniqueOpenedCount?: number | null;
+  } | null;
+  Clicks?: {
+    ClickRate?: number | null;
+    UniqueClicksCount?: number | null;
+  } | null;
+};
+
+export async function getCampaignMonitorCampaignSummary(
+  credentials: CampaignMonitorCredentials,
+  campaignId: string
+): Promise<{ openRate: number | null; clickRate: number | null }> {
+  const payload = await requestJson<CampaignMonitorCampaignSummaryResponse>(
+    `/campaigns/${encodeURIComponent(campaignId)}/summary.json`,
+    credentials
+  );
+
+  return {
+    openRate: normalizeNumber(payload.Opens?.OpenRate),
+    clickRate: normalizeNumber(payload.Clicks?.ClickRate),
+  };
+}
