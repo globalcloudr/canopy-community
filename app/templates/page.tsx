@@ -204,7 +204,7 @@ function TemplatesContent() {
         ) : null}
 
         {templates.length > 0 ? (
-          <div className="flex flex-wrap gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {templates.map((template) => (
               <TemplateCard
                 key={template.id}
@@ -291,7 +291,7 @@ function TemplateCard({
 
   return (
     <>
-    <div className="group relative w-[290px] max-w-full rounded-lg border border-[#e2e8f0] bg-white transition hover:-translate-y-0.5 hover:shadow-md">
+    <div className="group relative w-full max-w-full rounded-lg border border-[#e2e8f0] bg-white transition hover:-translate-y-0.5 hover:shadow-md">
       {/* Thumbnail */}
       <button
         type="button"
