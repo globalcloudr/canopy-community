@@ -7,7 +7,7 @@ import { ProductShell } from "@/app/_components/product-shell";
 import { communityNavItems } from "@/app/_components/community-nav";
 import { useCommunityOverview, useSentCampaigns } from "@/app/_components/community-data";
 import { EmptyState, PageHeader, formatShortDate } from "@/app/_components/community-ui";
-import type { CommunityCampaignSummary } from "@/lib/community-schema";
+import type { CommunityCampaignSummary, CommunityDraft } from "@/lib/community-schema";
 
 type CampaignView = "overview" | "drafts" | "sent" | "scheduled";
 
@@ -96,7 +96,7 @@ function CampaignsContent() {
 
           {/* Campaign sections based on view */}
           {(view === "overview" || view === "drafts") && filteredDrafts.length > 0 ? (
-            <CampaignSection title="Recent drafts" columnLabel="Edited">
+            <CampaignSection title="Recent drafts" columnLabel="Edited" withAction>
               {filteredDrafts.map((c) => (
                 <DraftRow key={c.id} campaign={c} />
               ))}
@@ -110,7 +110,7 @@ function CampaignsContent() {
           {(view === "overview" || view === "scheduled") && filteredScheduled.length > 0 ? (
             <CampaignSection title="Scheduled" columnLabel="Scheduled for">
               {filteredScheduled.map((c) => (
-                <DraftRow key={c.id} campaign={c} />
+                <ScheduledRow key={c.id} campaign={c} />
               ))}
             </CampaignSection>
           ) : null}
@@ -139,13 +139,13 @@ function CampaignsContent() {
   );
 }
 
-function useFilteredCampaigns(campaigns: CommunityCampaignSummary[], search: string) {
+function useFilteredCampaigns<T extends { name: string; subject?: string }>(campaigns: T[], search: string): T[] {
   return useMemo(() => {
     if (!search.trim()) return campaigns;
     const q = search.toLowerCase();
     return campaigns.filter(
       (c) =>
-        c.subject.toLowerCase().includes(q) ||
+        (c.subject?.toLowerCase().includes(q) ?? false) ||
         c.name.toLowerCase().includes(q)
     );
   }, [campaigns, search]);
@@ -154,10 +154,12 @@ function useFilteredCampaigns(campaigns: CommunityCampaignSummary[], search: str
 function CampaignSection({
   title,
   columnLabel,
+  withAction,
   children,
 }: {
   title: string;
   columnLabel: string;
+  withAction?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -170,6 +172,7 @@ function CampaignSection({
           <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[#64748b]">
             <th className="py-2.5 font-medium">Campaign</th>
             <th className="py-2.5 text-right font-medium">{columnLabel}</th>
+            {withAction ? <th className="py-2.5 pl-4" /> : null}
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--app-divider)]">{children}</tbody>
@@ -178,14 +181,31 @@ function CampaignSection({
   );
 }
 
-function DraftRow({ campaign }: { campaign: CommunityCampaignSummary }) {
-  const dateValue =
-    campaign.status === "scheduled"
-      ? campaign.scheduledDate
-      : campaign.createdDate;
+function DraftRow({ campaign }: { campaign: CommunityDraft }) {
+  return (
+    <tr className="group hover:bg-[#f8fafc]">
+      <td className="py-3 pr-4">
+        <span className="text-[14px] font-medium text-[#0f172a]">
+          {campaign.name || "Untitled draft"}
+        </span>
+      </td>
+      <td className="py-3 text-right text-[14px] text-[#64748b]">
+        {formatShortDate(campaign.updatedAt)}
+      </td>
+      <td className="py-3 pl-4 text-right">
+        <a
+          href={`/compose?draft=${campaign.id}`}
+          className="text-[13px] font-medium text-[#2563eb] hover:underline"
+        >
+          Continue
+        </a>
+      </td>
+    </tr>
+  );
+}
 
+function ScheduledRow({ campaign }: { campaign: CommunityCampaignSummary }) {
   const href = campaign.previewUrl ?? "https://app.createsend.com";
-
   return (
     <tr className="group hover:bg-[#f8fafc]">
       <td className="py-3 pr-4">
@@ -199,7 +219,7 @@ function DraftRow({ campaign }: { campaign: CommunityCampaignSummary }) {
         </a>
       </td>
       <td className="py-3 text-right text-[14px] text-[#64748b]">
-        {formatShortDate(dateValue)}
+        {formatShortDate(campaign.scheduledDate)}
       </td>
     </tr>
   );

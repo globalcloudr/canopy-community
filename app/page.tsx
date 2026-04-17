@@ -9,6 +9,7 @@ import { useProductShell } from "@/app/_components/product-shell";
 import type {
   CommunityCampaignSummary,
   CommunityConnection,
+  CommunityDraft,
   CommunityListSummary,
 } from "@/lib/community-schema";
 
@@ -185,7 +186,7 @@ function DashboardSection({
 function DraftRows({
   campaigns,
 }: {
-  campaigns: CommunityCampaignSummary[];
+  campaigns: CommunityDraft[];
 }) {
   const visible = campaigns.slice(0, 3);
 
@@ -209,12 +210,18 @@ function DraftRows({
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-[14px] font-medium text-[#0f172a]">
-              {campaign.name || campaign.subject}
+              {campaign.name || "Untitled draft"}
             </p>
             <p className="mt-0.5 text-[13px] text-[#64748b]">
-              Last edited {formatShortDate(campaign.createdDate)}
+              Last edited {formatShortDate(campaign.updatedAt)}
             </p>
           </div>
+          <a
+            href={`/compose?draft=${campaign.id}`}
+            className="shrink-0 text-[13px] font-medium text-[#2563eb] hover:underline"
+          >
+            Continue
+          </a>
         </div>
       ))}
     </div>
