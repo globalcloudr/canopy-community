@@ -204,7 +204,7 @@ function TemplatesContent() {
         ) : null}
 
         {templates.length > 0 ? (
-          <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(250px,1fr))]">
+          <div className="grid justify-start gap-4 [grid-template-columns:repeat(auto-fill,minmax(0,320px))]">
             {templates.map((template) => (
               <TemplateCard
                 key={template.id}
