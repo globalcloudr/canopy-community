@@ -545,25 +545,30 @@ function ComposeContent() {
               </div>
             </div>
           ) : (
-            <div className="flex flex-wrap items-center gap-3">
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={savingDraft || !htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo || !confirmationEmail || (sendMode === "schedule" && !scheduledDate)}
-              >
-                {sendMode === "schedule" ? "Review and schedule" : "Review and send"}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={savingDraft || !htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo}
-                onClick={() => void handleSaveAsDraft()}
-              >
-                {savingDraft ? "Saving…" : "Save as draft"}
-              </Button>
-              <Button asChild variant="secondary">
-                <a href="/campaigns">Cancel</a>
-              </Button>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={savingDraft || !htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo || !confirmationEmail || (sendMode === "schedule" && !scheduledDate)}
+                >
+                  {sendMode === "schedule" ? "Review and schedule" : "Review and send"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={savingDraft || !htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo}
+                  onClick={() => void handleSaveAsDraft()}
+                >
+                  {savingDraft ? "Saving…" : "Save as draft"}
+                </Button>
+                <Button asChild variant="secondary">
+                  <a href="/campaigns">Cancel</a>
+                </Button>
+              </div>
+              <p className="text-[13px] text-[#64748b]">
+                Drafts in Campaign Monitor still need a subject, sender details, at least one mailing list, and email content before they can be saved.
+              </p>
             </div>
           )}
         </div>

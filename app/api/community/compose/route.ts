@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { composeCampaign } from "@/lib/community-data";
+import { CampaignMonitorApiError } from "@/lib/campaign-monitor";
 import { requireWorkspaceAccess, toErrorResponse } from "@/lib/server-auth";
 
 export async function POST(request: Request) {
+  let isDraft = false;
+
   try {
     const body = (await request.json()) as {
       workspaceId?: string;
@@ -31,6 +34,8 @@ export async function POST(request: Request) {
       confirmationEmail,
       draft,
     } = body;
+
+    isDraft = body.draft === true;
 
     if (!workspaceId) {
       return NextResponse.json({ error: "workspaceId is required." }, { status: 400 });
@@ -70,11 +75,29 @@ export async function POST(request: Request) {
       htmlContent,
       scheduledDate: scheduledDate ?? null,
       confirmationEmail: confirmationEmail?.trim() ?? "",
-      draft: draft === true,
+      draft: isDraft,
     });
 
     return NextResponse.json({ campaignId: result.campaignId });
   } catch (error) {
-    return toErrorResponse(error, "Failed to send campaign.");
+    if (error instanceof CampaignMonitorApiError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status >= 400 && error.status < 500 ? error.status : 400 }
+      );
+    }
+
+    if (error instanceof Error) {
+      const userSafeMessages = new Set([
+        "No Campaign Monitor connection found for this workspace.",
+        "Campaign Monitor API key is not configured.",
+      ]);
+
+      if (userSafeMessages.has(error.message)) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+    }
+
+    return toErrorResponse(error, isDraft ? "Failed to save draft." : "Failed to send campaign.");
   }
 }
