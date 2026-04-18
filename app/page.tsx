@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { Button, cn } from "@canopy/ui";
 import { ProductShell } from "@/app/_components/product-shell";
 import { communityNavItems } from "@/app/_components/community-nav";
-import { useCommunityOverview } from "@/app/_components/community-data";
+import { useCommunityOverview, useCommunityWorkspaceId } from "@/app/_components/community-data";
 import { EmptyState, formatShortDate, formatCompactDateTime } from "@/app/_components/community-ui";
 import { useProductShell } from "@/app/_components/product-shell";
+import { CampaignAnalyticsDrawer } from "@/app/_components/campaign-analytics-drawer";
 import type {
   CommunityCampaignSummary,
   CommunityConnection,
@@ -23,7 +25,9 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const { overview, error, loading, refresh } = useCommunityOverview();
+  const { workspaceId } = useCommunityWorkspaceId();
   const { activeWorkspace } = useProductShell();
+  const [selectedCampaign, setSelectedCampaign] = useState<CommunityCampaignSummary | null>(null);
 
   const draftCount = overview?.stats.draftCampaignCount ?? 0;
   const scheduledCount = overview?.stats.scheduledCampaignCount ?? 0;
@@ -70,7 +74,7 @@ function DashboardContent() {
         actionHref="/campaigns"
         actionLabel="See all sent campaigns"
       >
-        <SentRows campaigns={overview?.sentCampaigns ?? []} />
+        <SentRows campaigns={overview?.sentCampaigns ?? []} onSelect={setSelectedCampaign} />
       </DashboardSection>
 
       {/* Lists */}
@@ -81,6 +85,12 @@ function DashboardContent() {
       >
         <ListRows lists={overview?.lists ?? []} />
       </DashboardSection>
+
+      <CampaignAnalyticsDrawer
+        campaign={selectedCampaign}
+        workspaceId={workspaceId}
+        onClose={() => setSelectedCampaign(null)}
+      />
     </div>
   );
 }
@@ -232,8 +242,10 @@ function DraftRows({
 
 function SentRows({
   campaigns,
+  onSelect,
 }: {
   campaigns: CommunityCampaignSummary[];
+  onSelect: (c: CommunityCampaignSummary) => void;
 }) {
   const visible = campaigns.slice(0, 3);
 
@@ -257,7 +269,11 @@ function SentRows({
       </thead>
       <tbody className="divide-y divide-[var(--app-divider)]">
         {visible.map((campaign) => (
-          <tr key={campaign.id}>
+          <tr
+            key={campaign.id}
+            className="group cursor-pointer hover:bg-[#f8fafc]"
+            onClick={() => onSelect(campaign)}
+          >
             <td className="py-3 pr-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-[#e2e8f0] bg-[#f8fafc]">
@@ -267,20 +283,9 @@ function SentRows({
                   </svg>
                 </div>
                 <div className="min-w-0">
-                  {campaign.webVersionUrl ? (
-                    <a
-                      href={campaign.webVersionUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block truncate text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
-                    >
-                      {campaign.name || campaign.subject}
-                    </a>
-                  ) : (
-                    <p className="truncate text-[14px] font-medium text-[#0f172a]">
-                      {campaign.name || campaign.subject}
-                    </p>
-                  )}
+                  <p className="truncate text-[14px] font-medium text-[#0f172a] group-hover:text-[#2563eb]">
+                    {campaign.name || campaign.subject}
+                  </p>
                   <p className="mt-0.5 text-[13px] text-[#64748b]">
                     Sent {formatShortDate(campaign.sentDate)}
                   </p>
