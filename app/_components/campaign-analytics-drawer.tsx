@@ -196,17 +196,17 @@ export function CampaignAnalyticsDrawer({
               ) : null}
             </div>
 
+            {/* Share modal — inside the dialog so Radix focus trap doesn't block it */}
+            {sharing && campaign?.webVersionUrl ? (
+              <ShareCampaignModal
+                url={campaign.webVersionUrl}
+                onClose={() => setSharing(false)}
+              />
+            ) : null}
+
           </aside>
         </DialogContent>
       </Dialog>
-
-      {/* Share modal — rendered outside the drawer dialog to avoid nesting issues */}
-      {sharing && campaign?.webVersionUrl ? (
-        <ShareCampaignModal
-          url={campaign.webVersionUrl}
-          onClose={() => setSharing(false)}
-        />
-      ) : null}
     </>
   );
 }
