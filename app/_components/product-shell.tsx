@@ -5,6 +5,9 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  AppShellContent,
+  AppShellFrame,
+  AppShellSidebar,
   AppSidebarPanel,
   AppSidebarPanelBody,
   AppSidebarSection,
@@ -426,10 +429,8 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
         />
 
         {/* Main layout */}
-        <div className="md:grid md:h-[calc(100vh-3.5rem)] md:grid-cols-[296px_minmax(0,1fr)]">
-
-          {/* Sidebar */}
-          <aside className="hidden border-r border-[var(--app-divider)] bg-transparent md:block">
+        <AppShellFrame className="md:grid-cols-[296px_minmax(0,1fr)]">
+          <AppShellSidebar>
             <div className="flex h-full flex-col">
 
             {/* Workspace lockup */}
@@ -504,21 +505,18 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
               </AppSidebarPanelBody>
             </AppSidebarPanel>
             </div>
-          </aside>
+          </AppShellSidebar>
 
-          {/* Content */}
-          <div className="min-w-0 overflow-y-auto bg-white">
-            <div className="mx-auto w-full max-w-[1080px] px-6 py-8 sm:px-8 lg:px-10">
-              {loadingSession ? (
-                <div className="py-12 text-center">
-                  <BodyText muted>Loading workspace…</BodyText>
-                </div>
-              ) : (
-                children
-              )}
-            </div>
-          </div>
-        </div>
+          <AppShellContent className="bg-white" containerClassName="max-w-[1080px] px-6 py-8 sm:px-8 lg:px-10">
+            {loadingSession ? (
+              <div className="py-12 text-center">
+                <BodyText muted>Loading workspace…</BodyText>
+              </div>
+            ) : (
+              children
+            )}
+          </AppShellContent>
+        </AppShellFrame>
       </main>
     </ProductShellContext.Provider>
   );
