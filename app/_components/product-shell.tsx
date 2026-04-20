@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  AppSidebarSectionLabel,
   AppWorkspaceSwitcher,
   BodyText,
   CanopyHeader,
@@ -479,9 +480,7 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
             {/* Nav */}
             <nav className="px-4 py-6">
               <div className="rounded-[28px] bg-transparent px-4 py-4">
-                <p className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8ea0b7]">
-                  Navigation
-                </p>
+                <AppSidebarSectionLabel>Navigation</AppSidebarSectionLabel>
                 <div className="space-y-1.5">
                   {navItems.map((item) => {
                     const Icon = item.icon;
