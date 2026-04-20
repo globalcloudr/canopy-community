@@ -5,15 +5,12 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  AppWorkspaceSwitcher,
   BodyText,
   CanopyHeader,
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
   sidebarNavItemClass,
   cn,
 } from "@canopy/ui";
@@ -41,7 +38,6 @@ import { readStoredWorkspaceId, writeStoredWorkspaceId } from "@/lib/workspace-c
 
 // ─── Product identity ─────────────────────────────────────────────────────────
 const PRODUCT_NAME = "Canopy Community";
-const PRODUCT_COLOR = "#0f766e";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL ?? "https://app.usecanopy.school";
@@ -101,14 +97,6 @@ export function useProductShell() {
 
 function navClass(active: boolean) {
   return sidebarNavItemClass(active);
-}
-
-function ChevronDown({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
-      <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
 }
 
 // ─── Session helpers ──────────────────────────────────────────────────────────
@@ -442,71 +430,51 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
             <div className="flex h-full flex-col">
 
             {/* Workspace lockup */}
-            <div className="mx-4 mt-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="flex w-full items-center gap-4 rounded-[28px] bg-transparent px-6 py-6 text-left transition hover:bg-white/28"
-                  >
-                    <div
-                      className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-[1.05rem] font-semibold tracking-[-0.02em] text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]"
-                      style={{
-                        background: `linear-gradient(135deg, ${PRODUCT_COLOR} 0%, #1d4ed8 100%)`,
-                      }}
+            <AppWorkspaceSwitcher
+              leading={
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[var(--radius-soft)] bg-[var(--accent)] text-[1.05rem] font-semibold tracking-[-0.02em] text-white shadow-[var(--shadow-sm)]">
+                  {loadingSession ? "…" : orgInitials}
+                </div>
+              }
+              title={activeOrg?.name ?? (loadingSession ? "Loading…" : "No workspace")}
+              subtitle={PRODUCT_NAME}
+              menuLabel={activeOrg?.name ?? "Workspace"}
+            >
+              <DropdownMenuGroup>
+                {launcherItems.map((item) =>
+                  "portal" in item ? (
+                    <DropdownMenuItem
+                      key={item.key}
+                      onSelect={(e) => { e.preventDefault(); void returnToPortal(); }}
                     >
-                      {loadingSession ? "…" : orgInitials}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[15px] font-semibold leading-5 tracking-[-0.02em] text-[#0f172a]">
-                        {activeOrg?.name ?? (loadingSession ? "Loading…" : "No workspace")}
-                      </p>
-                      <p className="mt-0.5 text-[13px] text-[#6f7e90]">{PRODUCT_NAME}</p>
-                    </div>
-                    <ChevronDown className="h-4 w-4 shrink-0 text-[#94a3b8]" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-72 bg-white">
-                  <DropdownMenuLabel className="text-[#94a3b8]">
-                    {activeOrg?.name ?? "Workspace"}
-                  </DropdownMenuLabel>
-                  <DropdownMenuGroup>
-                    {launcherItems.map((item) =>
-                      "portal" in item ? (
-                        <DropdownMenuItem
-                          key={item.key}
-                          onSelect={(e) => { e.preventDefault(); void returnToPortal(); }}
-                        >
-                          {item.label}
-                          {returningToPortal && (
-                            <span className="ml-auto text-[11px] text-[var(--text-muted)]">opening…</span>
-                          )}
-                        </DropdownMenuItem>
-                      ) : "productKey" in item ? (
-                        <DropdownMenuItem
-                          key={item.key}
-                          onSelect={(e) => { e.preventDefault(); void launchProduct(item.productKey!); }}
-                        >
-                          {item.label}
-                          {launchingProductKey === item.productKey && (
-                            <span className="ml-auto text-[11px] text-[var(--text-muted)]">opening…</span>
-                          )}
-                        </DropdownMenuItem>
-                      ) : null
-                    )}
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onSelect={(e) => { e.preventDefault(); void returnToPortal(); }}
-                  >
-                    Back to portal home
-                    {returningToPortal && (
-                      <span className="ml-auto text-[11px] text-[var(--text-muted)]">opening…</span>
-                    )}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                      {item.label}
+                      {returningToPortal && (
+                        <span className="ml-auto text-[11px] text-[var(--text-muted)]">opening…</span>
+                      )}
+                    </DropdownMenuItem>
+                  ) : "productKey" in item ? (
+                    <DropdownMenuItem
+                      key={item.key}
+                      onSelect={(e) => { e.preventDefault(); void launchProduct(item.productKey!); }}
+                    >
+                      {item.label}
+                      {launchingProductKey === item.productKey && (
+                        <span className="ml-auto text-[11px] text-[var(--text-muted)]">opening…</span>
+                      )}
+                    </DropdownMenuItem>
+                  ) : null
+                )}
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={(e) => { e.preventDefault(); void returnToPortal(); }}
+              >
+                Back to portal home
+                {returningToPortal && (
+                  <span className="ml-auto text-[11px] text-[var(--text-muted)]">opening…</span>
+                )}
+              </DropdownMenuItem>
+            </AppWorkspaceSwitcher>
 
             {/* Nav */}
             <nav className="px-4 py-6">
