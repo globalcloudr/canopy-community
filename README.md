@@ -28,8 +28,12 @@ Canopy Community is the school newsletter product in the Canopy portfolio. It le
 
 ## Shared UI
 
-- Community now uses the shared `@canopy/ui` shell frame for the outer app layout
-- Core Canopy app fonts are loaded from `@canopy/ui` via `canopyFontVariables`
+- Community is part of the unified Canopy design system consuming `@canopy/ui` v0.1.10
+- All Canopy products (PhotoVault, Stories, Reach, Create, Community, Portal) now use shared design tokens and components
+- Design tokens: `--ink`, `--ink-2`, `--faint`, `--text-muted`, `--foreground`, `--surface`, `--surface-muted`, `--accent`, `--rule`, `--border` — replacing hardcoded hex colors across all products
+- Community uses the shared shell frame (`AppShellFrame`, `AppShellSidebar`, `AppShellContent`)
+- Core Canopy app fonts (Plus Jakarta Sans, Maven Pro, Source Serif 4) are loaded from `@canopy/ui` via `canopyFontVariables` — one shared font stack across all products
+- Sidebar uses standardized `AppSidebarPanel`, `AppSidebarSection`, and `border-l-2` left-border nav indicators matching other products
 - The shared design-system source of truth remains `canopy-platform/packages/ui`
 
 ## Local Development

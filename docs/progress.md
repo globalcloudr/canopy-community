@@ -2,6 +2,34 @@
 
 Append new sessions at the top. Do not overwrite history.
 
+## 2026-04-20 — Design system alignment pass across all products
+
+All Canopy products (photovault, canopy-stories, canopy-reach, canopy-create, canopy-community, canopy-platform portal) are now fully on the shared `@globalcloudr/canopy-ui` design system.
+
+### Design tokens unified
+- Replaced hardcoded hex colors with CSS design tokens (`--ink`, `--ink-2`, `--faint`, `--text-muted`, `--foreground`, `--surface`, `--surface-muted`, `--accent`, `--rule`, `--border`) across 50+ files
+- Per-product accent classes: `.product-community` following the same pattern
+
+### Product switcher — Canopy Community accessible from all products
+- Added `community_canopy` to launcher products list in every product
+- Updated each product's `/api/launcher-products` to include Community when entitled
+- "Canopy Community" now appears in product switching dropdowns across Portal, PhotoVault, Stories, Reach, Create
+- Community shell marks itself as "current" in the product switcher when accessed from Community itself
+
+### Shared design system components
+- Community shell uses: `AppShellFrame`, `AppShellSidebar`, `AppShellContent`
+- Sidebar uses: `AppSidebarPanel`, `AppSidebarSection`, `sidebarNavItemClass(active)` with `border-l-2` left-border nav items
+- Workspace switcher via `AppWorkspaceSwitcher` matching all other products
+- Core Canopy fonts owned by `@canopy/ui` via `canopyFontVariables` — Plus Jakarta Sans, Maven Pro, Source Serif 4
+
+### Verification
+- `npm run build` passed
+- Sidebar structure aligns with other products
+- Product switching functional from all products
+- No regressions in compose, send, or analytics workflows
+
+---
+
 ## Current Roadmap
 
 Near-term product work:
