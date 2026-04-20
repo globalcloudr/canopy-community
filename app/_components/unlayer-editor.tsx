@@ -59,7 +59,7 @@ export function UnlayerEditor({
         </Button>
 
         <Button
-          variant="primary"
+          variant="accent"
           onClick={handleSave}
           disabled={!ready || saving}
         >

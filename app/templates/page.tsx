@@ -166,7 +166,7 @@ function TemplatesContent() {
               <Button variant="secondary" onClick={() => uploadInputRef.current?.click()}>
                 Upload HTML
               </Button>
-              <Button variant="primary" onClick={handleNewTemplate}>
+              <Button variant="accent" onClick={handleNewTemplate}>
                 New template
               </Button>
             </div>
@@ -228,7 +228,7 @@ function TemplatesContent() {
             </p>
             <div className="mt-4 flex gap-3">
               <Button
-                variant="primary"
+                variant="accent"
                 onClick={() => void handleDelete(deleteConfirmId)}
                 className="bg-[#dc2626] hover:bg-[#b91c1c]"
               >

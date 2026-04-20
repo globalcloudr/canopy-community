@@ -53,7 +53,7 @@ function CampaignsContent() {
             <Button variant="secondary" onClick={() => void refresh()} disabled={loading}>
               {loading ? "Refreshing…" : "Refresh"}
             </Button>
-            <Button asChild variant="primary">
+            <Button asChild variant="accent">
               <a href="/compose">Create a campaign</a>
             </Button>
           </>

@@ -272,7 +272,7 @@ function ComposeContent() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button asChild variant="primary">
+          <Button asChild variant="accent">
             <a href="/campaigns">View campaigns</a>
           </Button>
           <Button variant="secondary" onClick={() => { setSavedAsDraft(false); setError(null); }}>
@@ -616,7 +616,7 @@ function ComposeContent() {
               <div className="mt-5 flex items-center gap-3">
                 <Button
                   type="button"
-                  variant="primary"
+                  variant="accent"
                   disabled={sending}
                   onClick={() => void handleConfirmSend()}
                 >
@@ -641,7 +641,7 @@ function ComposeContent() {
               <div className="flex flex-wrap items-center gap-3">
                 <Button
                   type="submit"
-                  variant="primary"
+                  variant="accent"
                   disabled={savingDraft || !campaignName || !htmlContent || listIds.length === 0 || !subject || !fromName || !fromEmail || !replyTo || !confirmationEmail || (sendMode === "schedule" && !scheduledDate)}
                 >
                   {sendMode === "schedule" ? "Review and schedule" : "Review and send"}
