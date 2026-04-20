@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, cn } from "@globalcloudr/canopy-ui";
+import { Button, cn, DashboardHero } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
 import { communityNavItems } from "@/app/_components/community-nav";
 import { useCommunityOverview, useCommunityWorkspaceId } from "@/app/_components/community-data";
@@ -34,23 +34,16 @@ function DashboardContent() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Welcome header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-[1.85rem] font-semibold tracking-[-0.03em] text-[var(--ink)] sm:text-[2.1rem]">
-            Welcome back
-          </h1>
-          {(draftCount > 0 || scheduledCount > 0) ? (
-            <p className="mt-1.5 text-[15px] text-[var(--text-muted)]">
-              {draftCount > 0 ? `You have ${draftCount} draft campaign${draftCount === 1 ? "" : "s"} in progress.` : null}
-              {scheduledCount > 0 ? ` ${scheduledCount} scheduled.` : null}
-            </p>
-          ) : null}
-        </div>
-        <Button asChild variant="primary">
-          <a href="/compose">Create campaign</a>
-        </Button>
-      </div>
+      <DashboardHero
+        eyebrow="Canopy Community"
+        headline="Welcome back"
+        subheading={[
+          draftCount > 0 ? `You have ${draftCount} draft campaign${draftCount === 1 ? "" : "s"} in progress.` : null,
+          scheduledCount > 0 ? `${scheduledCount} scheduled.` : null,
+        ].filter(Boolean).join(" ") || undefined}
+        ctaLabel="Create campaign"
+        ctaHref="/compose"
+      />
 
       <DashboardNotice
         connection={overview?.connection ?? null}
