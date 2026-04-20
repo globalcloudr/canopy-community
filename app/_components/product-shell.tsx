@@ -7,7 +7,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import {
   AppSidebarPanel,
   AppSidebarPanelBody,
-  AppSidebarSectionLabel,
+  AppSidebarSection,
   AppWorkspaceSwitcher,
   BodyText,
   CanopyHeader,
@@ -482,8 +482,7 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
             {/* Nav */}
             <AppSidebarPanel>
               <AppSidebarPanelBody>
-                <AppSidebarSectionLabel>Navigation</AppSidebarSectionLabel>
-                <div className="space-y-1.5">
+                <AppSidebarSection label="Navigation">
                   {navItems.map((item) => {
                     const Icon = item.icon;
                     return (
@@ -501,7 +500,7 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
                       </Link>
                     );
                   })}
-                </div>
+                </AppSidebarSection>
               </AppSidebarPanelBody>
             </AppSidebarPanel>
             </div>
