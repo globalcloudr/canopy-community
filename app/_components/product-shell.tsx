@@ -5,6 +5,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  AppSidebarPanel,
+  AppSidebarPanelBody,
   AppSidebarSectionLabel,
   AppWorkspaceSwitcher,
   BodyText,
@@ -478,8 +480,8 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
             </AppWorkspaceSwitcher>
 
             {/* Nav */}
-            <nav className="px-4 py-6">
-              <div className="rounded-[28px] bg-transparent px-4 py-4">
+            <AppSidebarPanel>
+              <AppSidebarPanelBody>
                 <AppSidebarSectionLabel>Navigation</AppSidebarSectionLabel>
                 <div className="space-y-1.5">
                   {navItems.map((item) => {
@@ -500,8 +502,8 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
                     );
                   })}
                 </div>
-              </div>
-            </nav>
+              </AppSidebarPanelBody>
+            </AppSidebarPanel>
             </div>
           </aside>
 
