@@ -51,7 +51,7 @@ const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL ?? "https://app.usecanopy.
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type OrgOption = { id: string; name: string; slug: string };
-type LauncherProductKey = "photovault" | "stories_canopy" | "reach_canopy";
+type LauncherProductKey = "photovault" | "stories_canopy" | "reach_canopy" | "community_canopy";
 
 type AppSessionPayload = {
   user: { id: string; email: string; displayName: string };
@@ -198,7 +198,7 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
         const payload = (await response.json()) as { products?: LauncherProductKey[] };
         setLauncherProductKeys(
           (payload.products ?? []).filter((v): v is LauncherProductKey =>
-            v === "photovault" || v === "stories_canopy" || v === "reach_canopy"
+            v === "photovault" || v === "stories_canopy" || v === "reach_canopy" || v === "community_canopy"
           )
         );
       } catch {
@@ -372,6 +372,7 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
 
   const launcherItems = [
     { key: "portal", label: "Canopy Portal", portal: true as const },
+    { key: "community_canopy", label: "Canopy Community", current: true as const },
     ...(launcherProductKeys.includes("photovault")
       ? [{ key: "photovault", label: "PhotoVault", productKey: "photovault" as const }]
       : []),
@@ -455,6 +456,11 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
                       {returningToPortal && (
                         <span className="ml-auto text-[11px] text-[var(--text-muted)]">opening…</span>
                       )}
+                    </DropdownMenuItem>
+                  ) : "current" in item ? (
+                    <DropdownMenuItem key={item.key} disabled>
+                      {item.label}
+                      <span className="ml-auto text-[11px] text-[var(--text-muted)]">current</span>
                     </DropdownMenuItem>
                   ) : "productKey" in item ? (
                     <DropdownMenuItem
