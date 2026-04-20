@@ -1,7 +1,7 @@
 "use client";
 
 
-import { Button } from "@canopy/ui";
+import { Button } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
 import { communityNavItems } from "@/app/_components/community-nav";
 import { useCommunityOverview } from "@/app/_components/community-data";

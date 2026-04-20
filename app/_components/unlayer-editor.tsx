@@ -2,7 +2,7 @@
 
 import { useRef, useCallback, useState } from "react";
 import dynamic from "next/dynamic";
-import { Button } from "@canopy/ui";
+import { Button } from "@globalcloudr/canopy-ui";
 import type { EditorRef } from "react-email-editor";
 
 const EmailEditor = dynamic(() => import("react-email-editor"), { ssr: false });

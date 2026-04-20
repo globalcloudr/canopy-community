@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { Alert, AlertDescription, AlertTitle, Badge, Button, Card } from "@canopy/ui";
-import { cn } from "@canopy/ui";
+import { Alert, AlertDescription, AlertTitle, Badge, Button, Card } from "@globalcloudr/canopy-ui";
+import { cn } from "@globalcloudr/canopy-ui";
 import type { CommunityCampaignSummary } from "@/lib/community-schema";
 
 export function PageHeader({

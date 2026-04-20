@@ -5,7 +5,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@canopy/ui";
+} from "@globalcloudr/canopy-ui";
 import type {
   CommunityCampaignSummary,
   CommunityConnection,

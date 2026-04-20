@@ -24,7 +24,13 @@ Canopy Community is the school newsletter product in the Canopy portfolio. It le
 - Supabase
 - Campaign Monitor API
 - `react-email-editor` for the template builder
-- `@canopy/ui` v0.1.4 vendored locally
+- `@canopy/ui` v0.1.10 vendored locally
+
+## Shared UI
+
+- Community now uses the shared `@canopy/ui` shell frame for the outer app layout
+- Core Canopy app fonts are loaded from `@canopy/ui` via `canopyFontVariables`
+- The shared design-system source of truth remains `canopy-platform/packages/ui`
 
 ## Local Development
 

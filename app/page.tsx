@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, cn } from "@canopy/ui";
+import { Button, cn } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
 import { communityNavItems } from "@/app/_components/community-nav";
 import { useCommunityOverview, useCommunityWorkspaceId } from "@/app/_components/community-data";

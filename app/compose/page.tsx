@@ -2,8 +2,8 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Button, Input, Label } from "@canopy/ui";
-import { cn } from "@canopy/ui";
+import { Button, Input, Label } from "@globalcloudr/canopy-ui";
+import { cn } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
 import { communityNavItems } from "@/app/_components/community-nav";
 import { useCommunityOverview, useCommunityWorkspaceId, useCommunityTemplates } from "@/app/_components/community-data";

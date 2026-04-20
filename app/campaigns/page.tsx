@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Button, Input } from "@canopy/ui";
-import { cn } from "@canopy/ui";
+import { Button, Input } from "@globalcloudr/canopy-ui";
+import { cn } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
 import { communityNavItems } from "@/app/_components/community-nav";
 import { useCommunityOverview, useCommunityWorkspaceId, useSentCampaigns } from "@/app/_components/community-data";

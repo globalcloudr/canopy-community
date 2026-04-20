@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@canopy/ui";
+import { Dialog, DialogContent, DialogTitle } from "@globalcloudr/canopy-ui";
 import { formatShortDate } from "@/app/_components/community-ui";
 import { supabase } from "@/lib/supabase-client";
 import type { CampaignAnalytics, CommunityCampaignSummary } from "@/lib/community-schema";
