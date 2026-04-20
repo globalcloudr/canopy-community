@@ -120,10 +120,10 @@ function SettingsContent() {
 
       <div className="rounded-lg border border-[var(--app-surface-border)] bg-white p-6">
         <div className="border-b border-[var(--app-divider)] pb-4">
-          <h2 className="text-[1.1rem] font-semibold tracking-[-0.02em] text-[#0f172a]">
+          <h2 className="text-[1.1rem] font-semibold tracking-[-0.02em] text-[var(--ink)]">
             Account Activation
           </h2>
-          <p className="mt-1 max-w-2xl text-[14px] leading-6 text-[#64748b]">
+          <p className="mt-1 max-w-2xl text-[14px] leading-6 text-[var(--text-muted)]">
             We check the connection with Campaign Monitor before saving.
             {sharedApiKeyConfigured
               ? " A shared Canopy API key is already set up, so the API key field below is optional."

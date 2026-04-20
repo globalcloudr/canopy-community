@@ -18,11 +18,11 @@ export function PageHeader({
     <div className={cn("pb-6", className)}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-[1.75rem] font-semibold tracking-[-0.03em] text-[#0f172a] sm:text-[2rem]">
+          <h1 className="text-[1.75rem] font-semibold tracking-[-0.03em] text-[var(--ink)] sm:text-[2rem]">
             {title}
           </h1>
           {description ? (
-            <p className="mt-1.5 max-w-2xl text-[15px] leading-6 text-[#64748b]">
+            <p className="mt-1.5 max-w-2xl text-[15px] leading-6 text-[var(--text-muted)]">
               {description}
             </p>
           ) : null}
@@ -73,10 +73,10 @@ export function StatCard({
       <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#8ca0b3]">
         {label}
       </p>
-      <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[#0f172a]">
+      <p className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[var(--ink)]">
         {value}
       </p>
-      <p className="mt-2 text-[14px] leading-6 text-[#617284]">{hint}</p>
+      <p className="mt-2 text-[14px] leading-6 text-[var(--text-muted)]">{hint}</p>
     </Card>
   );
 }
@@ -103,11 +103,11 @@ export function MiniStat({
         {label}
       </p>
       <div className="mt-2 flex items-end gap-2">
-        <p className="text-[1.75rem] font-semibold tracking-[-0.05em] text-[#0f172a]">
+        <p className="text-[1.75rem] font-semibold tracking-[-0.05em] text-[var(--ink)]">
           {value}
         </p>
       </div>
-      {hint ? <p className="mt-1 text-[13px] leading-5 text-[#617284]">{hint}</p> : null}
+      {hint ? <p className="mt-1 text-[13px] leading-5 text-[var(--text-muted)]">{hint}</p> : null}
     </div>
   );
 }
@@ -129,11 +129,11 @@ export function SectionCard({
     <div className={cn("bg-white", className)}>
       <div className="flex items-baseline justify-between border-b border-[var(--app-divider)] pb-4">
         <div>
-          <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em] text-[#0f172a]">
+          <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em] text-[var(--ink)]">
             {title}
           </h2>
           {description ? (
-            <p className="mt-0.5 text-[14px] leading-6 text-[#64748b]">{description}</p>
+            <p className="mt-0.5 text-[14px] leading-6 text-[var(--text-muted)]">{description}</p>
           ) : null}
         </div>
         {action}
@@ -151,9 +151,9 @@ export function EmptyState({
   body: string;
 }) {
   return (
-    <div className="rounded-lg border border-dashed border-[#c7d4e4] bg-[#f8fafc] px-5 py-6">
-      <p className="text-[15px] font-semibold tracking-[-0.02em] text-[#0f172a]">{title}</p>
-      <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#617284]">{body}</p>
+    <div className="rounded-lg border border-dashed border-[var(--rule)] bg-[var(--surface-muted)] px-5 py-6">
+      <p className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--ink)]">{title}</p>
+      <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[var(--text-muted)]">{body}</p>
     </div>
   );
 }
@@ -183,7 +183,7 @@ export function ConnectionBadge({
   return connected ? (
     <Badge className="border-[#bfdbd5] bg-[#ecfdf5] text-[#0f766e]">Connected</Badge>
   ) : (
-    <Badge className="border-[#e2e8f0] bg-[#f8fafc] text-[#64748b]">Not connected</Badge>
+    <Badge className="border-[var(--rule)] bg-[var(--surface-muted)] text-[var(--text-muted)]">Not connected</Badge>
   );
 }
 
@@ -200,7 +200,7 @@ export function CampaignStatusBadge({
     return <Badge className="border-[#fed7aa] bg-[#fff7ed] text-[#c2410c]">Scheduled</Badge>;
   }
 
-  return <Badge className="border-[#dbeafe] bg-[#eff6ff] text-[#1d4ed8]">Draft</Badge>;
+  return <Badge className="border-[#dbeafe] bg-[#eff6ff] text-[var(--accent)]">Draft</Badge>;
 }
 
 export function SecondaryButtonLink({

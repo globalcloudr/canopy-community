@@ -37,11 +37,11 @@ function DashboardContent() {
       {/* Welcome header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-[1.85rem] font-semibold tracking-[-0.03em] text-[#0f172a] sm:text-[2.1rem]">
+          <h1 className="text-[1.85rem] font-semibold tracking-[-0.03em] text-[var(--ink)] sm:text-[2.1rem]">
             Welcome back
           </h1>
           {(draftCount > 0 || scheduledCount > 0) ? (
-            <p className="mt-1.5 text-[15px] text-[#64748b]">
+            <p className="mt-1.5 text-[15px] text-[var(--text-muted)]">
               {draftCount > 0 ? `You have ${draftCount} draft campaign${draftCount === 1 ? "" : "s"} in progress.` : null}
               {scheduledCount > 0 ? ` ${scheduledCount} scheduled.` : null}
             </p>
@@ -148,12 +148,12 @@ function StatusNotice({
         "flex flex-col gap-3 rounded-lg border px-5 py-4 sm:flex-row sm:items-center sm:justify-between",
         tone === "warning"
           ? "border-[#f3d9a2] bg-[#fffaf0]"
-          : "border-[#d9e5f3] bg-[#f8fbff]"
+          : "border-[var(--rule)] bg-[var(--surface-muted)]"
       )}
     >
       <div>
-        <p className="text-[15px] font-semibold tracking-[-0.02em] text-[#0f172a]">{title}</p>
-        <p className="mt-1 text-[14px] leading-6 text-[#617284]">{body}</p>
+        <p className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--ink)]">{title}</p>
+        <p className="mt-1 text-[14px] leading-6 text-[var(--text-muted)]">{body}</p>
       </div>
       <Button asChild variant="secondary">
         <a href={actionHref}>{actionLabel}</a>
@@ -176,12 +176,12 @@ function DashboardSection({
   return (
     <section>
       <div className="flex items-baseline justify-between border-b border-[var(--app-divider)] pb-3">
-        <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em] text-[#0f172a]">
+        <h2 className="text-[1.15rem] font-semibold tracking-[-0.02em] text-[var(--ink)]">
           {title}
         </h2>
         <a
           href={actionHref}
-          className="text-[14px] font-medium text-[#3568b8] transition hover:text-[#1d4ed8]"
+          className="text-[14px] font-medium text-[var(--accent)] transition hover:text-[var(--accent)]"
         >
           {actionLabel}
         </a>
@@ -212,23 +212,23 @@ function DraftRows({
     <div className="divide-y divide-[var(--app-divider)]">
       {visible.map((campaign) => (
         <div key={campaign.id} className="flex items-center gap-4 py-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded border border-[#e2e8f0] bg-[#f8fafc]">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" className="h-4 w-4" aria-hidden="true">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded border border-[var(--rule)] bg-[var(--surface-muted)]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--faint)" strokeWidth="1.5" className="h-4 w-4" aria-hidden="true">
               <rect x="3" y="5" width="18" height="14" rx="2" />
               <path d="m6 9 6 4 6-4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[14px] font-medium text-[#0f172a]">
+            <p className="truncate text-[14px] font-medium text-[var(--ink)]">
               {campaign.name || "Untitled draft"}
             </p>
-            <p className="mt-0.5 text-[13px] text-[#64748b]">
+            <p className="mt-0.5 text-[13px] text-[var(--text-muted)]">
               Last edited {formatShortDate(campaign.updatedAt)}
             </p>
           </div>
           <a
             href={`/compose?draft=${campaign.id}`}
-            className="shrink-0 text-[13px] font-medium text-[#2563eb] hover:underline"
+            className="shrink-0 text-[13px] font-medium text-[var(--accent)] hover:underline"
           >
             Continue
           </a>
@@ -261,44 +261,44 @@ function SentRows({
     <table className="w-full">
       <thead>
         <tr className="border-b border-[var(--app-divider)]">
-          <th className="pb-2 text-left text-[12px] font-medium text-[#94a3b8]">Campaign</th>
-          <th className="hidden pb-2 text-right text-[12px] font-medium text-[#94a3b8] md:table-cell">Recipients</th>
-          <th className="hidden pb-2 text-right text-[12px] font-medium text-[#94a3b8] md:table-cell">Opened</th>
-          <th className="hidden pb-2 text-right text-[12px] font-medium text-[#94a3b8] md:table-cell">Clicked</th>
+          <th className="pb-2 text-left text-[12px] font-medium text-[var(--faint)]">Campaign</th>
+          <th className="hidden pb-2 text-right text-[12px] font-medium text-[var(--faint)] md:table-cell">Recipients</th>
+          <th className="hidden pb-2 text-right text-[12px] font-medium text-[var(--faint)] md:table-cell">Opened</th>
+          <th className="hidden pb-2 text-right text-[12px] font-medium text-[var(--faint)] md:table-cell">Clicked</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-[var(--app-divider)]">
         {visible.map((campaign) => (
           <tr
             key={campaign.id}
-            className="group cursor-pointer hover:bg-[#f8fafc]"
+            className="group cursor-pointer hover:bg-[var(--surface-muted)]"
             onClick={() => onSelect(campaign)}
           >
             <td className="py-3 pr-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-[#e2e8f0] bg-[#f8fafc]">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" className="h-4 w-4" aria-hidden="true">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-[var(--rule)] bg-[var(--surface-muted)]">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="var(--faint)" strokeWidth="1.5" className="h-4 w-4" aria-hidden="true">
                     <rect x="3" y="5" width="18" height="14" rx="2" />
                     <path d="m6 9 6 4 6-4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-[14px] font-medium text-[#0f172a] group-hover:text-[#2563eb]">
+                  <p className="truncate text-[14px] font-medium text-[var(--ink)] group-hover:text-[var(--accent)]">
                     {campaign.name || campaign.subject}
                   </p>
-                  <p className="mt-0.5 text-[13px] text-[#64748b]">
+                  <p className="mt-0.5 text-[13px] text-[var(--text-muted)]">
                     Sent {formatShortDate(campaign.sentDate)}
                   </p>
                 </div>
               </div>
             </td>
-            <td className="hidden py-3 pr-6 text-right text-[14px] text-[#334155] md:table-cell">
+            <td className="hidden py-3 pr-6 text-right text-[14px] text-[var(--ink-2)] md:table-cell">
               {campaign.recipientCount?.toLocaleString() ?? "—"}
             </td>
-            <td className="hidden py-3 pr-6 text-right text-[14px] text-[#334155] md:table-cell">
+            <td className="hidden py-3 pr-6 text-right text-[14px] text-[var(--ink-2)] md:table-cell">
               {campaign.openRate != null ? `${campaign.openRate}%` : "—"}
             </td>
-            <td className="hidden py-3 text-right text-[14px] text-[#334155] md:table-cell">
+            <td className="hidden py-3 text-right text-[14px] text-[var(--ink-2)] md:table-cell">
               {campaign.clickRate != null ? `${campaign.clickRate}%` : "—"}
             </td>
           </tr>
@@ -334,17 +334,17 @@ function ListRows({
         <a
           key={list.listId}
           href="/audiences"
-          className="flex items-center justify-between py-4 hover:bg-[#f8fafc] -mx-4 px-4 transition-colors"
+          className="flex items-center justify-between py-4 hover:bg-[var(--surface-muted)] -mx-4 px-4 transition-colors"
         >
-          <p className="truncate text-[14px] font-medium text-[#0f172a]">
+          <p className="truncate text-[14px] font-medium text-[var(--ink)]">
             {list.name}
           </p>
           {list.subscriberCount != null ? (
             <div className="ml-4 shrink-0 text-right">
-              <p className="text-[14px] font-medium text-[#0f172a]">
+              <p className="text-[14px] font-medium text-[var(--ink)]">
                 {list.subscriberCount.toLocaleString()}
               </p>
-              <p className="text-[12px] text-[#64748b]">Subscribers</p>
+              <p className="text-[12px] text-[var(--text-muted)]">Subscribers</p>
             </div>
           ) : null}
         </a>

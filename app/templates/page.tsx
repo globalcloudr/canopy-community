@@ -173,17 +173,17 @@ function TemplatesContent() {
           }
         />
 
-        <div className="grid gap-3 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-5 py-4 text-[14px] text-[#475569] sm:grid-cols-3">
+        <div className="grid gap-3 rounded-lg border border-[var(--rule)] bg-[var(--surface-muted)] px-5 py-4 text-[14px] text-[#475569] sm:grid-cols-3">
           <div>
-            <p className="font-semibold text-[#0f172a]">Build in the editor</p>
+            <p className="font-semibold text-[var(--ink)]">Build in the editor</p>
             <p className="mt-1 leading-6">Create drag-and-drop layouts your staff can reuse.</p>
           </div>
           <div>
-            <p className="font-semibold text-[#0f172a]">Upload existing HTML</p>
+            <p className="font-semibold text-[var(--ink)]">Upload existing HTML</p>
             <p className="mt-1 leading-6">Bring in approved email layouts you already use today.</p>
           </div>
           <div>
-            <p className="font-semibold text-[#0f172a]">Start faster</p>
+            <p className="font-semibold text-[var(--ink)]">Start faster</p>
             <p className="mt-1 leading-6">Saved templates show up when you create a new campaign.</p>
           </div>
         </div>
@@ -222,8 +222,8 @@ function TemplatesContent() {
 
         {/* Delete confirmation */}
         {deleteConfirmId ? (
-          <div className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-5">
-            <p className="text-[14px] text-[#334155]">
+          <div className="rounded-lg border border-[var(--rule)] bg-[var(--surface-muted)] p-5">
+            <p className="text-[14px] text-[var(--ink-2)]">
               Delete this template from your school's library? This cannot be undone.
             </p>
             <div className="mt-4 flex gap-3">
@@ -278,7 +278,7 @@ function TemplateCard({
   const editable = isEditorTemplate(template);
   const templateTypeLabel = editable ? "Built in editor" : "Uploaded HTML";
   const templateTypeTone = editable
-    ? "border-[#dbeafe] bg-[#eff6ff] text-[#1d4ed8]"
+    ? "border-[#dbeafe] bg-[#eff6ff] text-[var(--accent)]"
     : "border-[#d1fae5] bg-[#ecfdf5] text-[#047857]";
 
   useEffect(() => {
@@ -291,14 +291,14 @@ function TemplateCard({
 
   return (
     <>
-    <div className="group relative w-full max-w-full rounded-lg border border-[#e2e8f0] bg-white transition hover:-translate-y-0.5 hover:shadow-md">
+    <div className="group relative w-full max-w-full rounded-lg border border-[var(--rule)] bg-white transition hover:-translate-y-0.5 hover:shadow-md">
       {/* Thumbnail */}
       <button
         type="button"
         onClick={() => setPreviewOpen(true)}
         className="block w-full cursor-pointer"
       >
-        <div className="relative h-36 w-full overflow-hidden rounded-t-lg border-b border-[#e2e8f0] bg-[#f8fafc]">
+        <div className="relative h-36 w-full overflow-hidden rounded-t-lg border-b border-[var(--rule)] bg-[var(--surface-muted)]">
           {template.htmlPreview ? (
             <iframe
               srcDoc={template.htmlPreview}
@@ -310,7 +310,7 @@ function TemplateCard({
             />
           ) : (
             <div className="flex h-full items-center justify-center">
-              <span className="text-[12px] uppercase tracking-[0.14em] text-[#94a3b8]">
+              <span className="text-[12px] uppercase tracking-[0.14em] text-[var(--faint)]">
                 No preview
               </span>
             </div>
@@ -335,11 +335,11 @@ function TemplateCard({
                 onKeyDown={(e) => {
                   if (e.key === "Escape") onRenameSubmit(template.name);
                 }}
-                className="w-full rounded border border-[#2563eb] px-1.5 py-0.5 text-[14px] font-medium text-[#0f172a] outline-none ring-1 ring-[#2563eb]"
+                className="w-full rounded border border-[var(--accent)] px-1.5 py-0.5 text-[14px] font-medium text-[var(--ink)] outline-none ring-1 ring-[var(--accent)]"
               />
             </form>
           ) : (
-            <p className="overflow-hidden text-[14px] font-medium leading-5 text-[#0f172a] [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
+            <p className="overflow-hidden text-[14px] font-medium leading-5 text-[var(--ink)] [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical]">
               {template.name}
             </p>
           )}
@@ -350,7 +350,7 @@ function TemplateCard({
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
-              className="rounded-md p-1.5 text-[#94a3b8] transition hover:bg-[#f1f5f9] hover:text-[#334155]"
+              className="rounded-md p-1.5 text-[var(--faint)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--ink-2)]"
             >
               <svg viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4" aria-hidden="true">
                 <circle cx="8" cy="3" r="1.5" />
@@ -362,7 +362,7 @@ function TemplateCard({
             {menuOpen ? (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 z-20 mt-1 w-36 rounded-md border border-[#e2e8f0] bg-white py-1 shadow-lg">
+                <div className="absolute right-0 z-20 mt-1 w-36 rounded-md border border-[var(--rule)] bg-white py-1 shadow-lg">
                   <MenuButton onClick={() => { setMenuOpen(false); onRename(); }}>
                     Rename
                   </MenuButton>
@@ -390,13 +390,13 @@ function TemplateCard({
         </div>
 
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[12px] text-[#94a3b8]">
+          <span className="text-[12px] text-[var(--faint)]">
             Updated {formatShortDate(template.updatedAt)}
           </span>
           <button
             type="button"
             onClick={() => setPreviewOpen(true)}
-            className="shrink-0 rounded-md border border-[#d9e3ef] px-3 py-1.5 text-[13px] font-medium text-[#334155] transition hover:border-[#bfd3ea] hover:bg-[#f8fafc]"
+            className="shrink-0 rounded-md border border-[var(--rule)] px-3 py-1.5 text-[13px] font-medium text-[var(--ink-2)] transition hover:border-[var(--rule)] hover:bg-[var(--surface-muted)]"
           >
             Preview
           </button>
@@ -428,8 +428,8 @@ function MenuButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "w-full px-3 py-1.5 text-left text-[13px] transition hover:bg-[#f1f5f9]",
-        destructive ? "text-[#dc2626]" : "text-[#334155]"
+        "w-full px-3 py-1.5 text-left text-[13px] transition hover:bg-[var(--surface-muted)]",
+        destructive ? "text-[#dc2626]" : "text-[var(--ink-2)]"
       )}
     >
       {children}
@@ -449,10 +449,10 @@ function TemplatePreviewModal({
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
       <div className="flex h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-4">
+        <div className="flex items-center justify-between border-b border-[var(--rule)] px-5 py-4">
           <div>
-            <h3 className="text-[16px] font-semibold text-[#0f172a]">{template.name}</h3>
-            <p className="mt-1 text-[13px] text-[#64748b]">
+            <h3 className="text-[16px] font-semibold text-[var(--ink)]">{template.name}</h3>
+            <p className="mt-1 text-[13px] text-[var(--text-muted)]">
               {isEditorTemplate(template) ? "Built in editor" : "Uploaded HTML"} • Updated {formatCompactDateTime(template.updatedAt)}
             </p>
           </div>
@@ -467,16 +467,16 @@ function TemplatePreviewModal({
             </Button>
           </div>
         </div>
-        <div className="min-h-0 flex-1 overflow-hidden bg-[#f8fafc] p-4">
+        <div className="min-h-0 flex-1 overflow-hidden bg-[var(--surface-muted)] p-4">
           {template.htmlPreview ? (
             <iframe
               srcDoc={template.htmlPreview}
               title={template.name}
-              className="h-full w-full rounded-lg border border-[#e2e8f0] bg-white"
+              className="h-full w-full rounded-lg border border-[var(--rule)] bg-white"
               sandbox="allow-same-origin"
             />
           ) : (
-            <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-[#cbd5e1] bg-white text-[14px] text-[#64748b]">
+            <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-[var(--rule)] bg-white text-[14px] text-[var(--text-muted)]">
               No preview available.
             </div>
           )}

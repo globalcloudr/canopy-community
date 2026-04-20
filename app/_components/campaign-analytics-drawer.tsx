@@ -56,18 +56,18 @@ export function CampaignAnalyticsDrawer({
   return (
     <>
       <Dialog open={!!campaign} onOpenChange={(open) => { if (!open) onClose(); }}>
-        <DialogContent className="left-auto right-0 top-0 h-screen max-h-screen w-full translate-x-0 translate-y-0 overflow-hidden rounded-none border-l border-[#e2e8f0] p-0 shadow-xl sm:max-w-xl">
+        <DialogContent className="left-auto right-0 top-0 h-screen max-h-screen w-full translate-x-0 translate-y-0 overflow-hidden rounded-none border-l border-[var(--rule)] p-0 shadow-xl sm:max-w-xl">
           <aside className="flex h-full flex-col bg-white">
 
             {/* Header */}
-            <div className="shrink-0 border-b border-[#e2e8f0] px-6 py-5">
+            <div className="shrink-0 border-b border-[var(--rule)] px-6 py-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <DialogTitle className="truncate text-[16px] font-semibold text-[#0f172a]">
+                  <DialogTitle className="truncate text-[16px] font-semibold text-[var(--ink)]">
                     {campaign?.name ?? "Campaign"}
                   </DialogTitle>
                   {campaign?.sentDate ? (
-                    <p className="mt-0.5 text-[13px] text-[#64748b]">
+                    <p className="mt-0.5 text-[13px] text-[var(--text-muted)]">
                       Sent {formatShortDate(campaign.sentDate)}
                       {campaign.recipientCount != null
                         ? ` · ${campaign.recipientCount.toLocaleString()} recipients`
@@ -78,7 +78,7 @@ export function CampaignAnalyticsDrawer({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="mt-0.5 shrink-0 rounded-md p-1 text-[#94a3b8] transition hover:text-[#334155] focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
+                  className="mt-0.5 shrink-0 rounded-md p-1 text-[var(--faint)] transition hover:text-[var(--ink-2)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                   aria-label="Close"
                 >
                   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5" aria-hidden="true">
@@ -94,7 +94,7 @@ export function CampaignAnalyticsDrawer({
                     href={campaign.webVersionUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-md border border-[#e2e8f0] bg-white px-3 py-1.5 text-[13px] font-medium text-[#334155] transition hover:border-[#cbd5e1] hover:bg-[#f8fafc]"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--rule)] bg-white px-3 py-1.5 text-[13px] font-medium text-[var(--ink-2)] transition hover:border-[var(--rule)] hover:bg-[var(--surface-muted)]"
                   >
                     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3.5 w-3.5" aria-hidden="true">
                       <path d="M6 3H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-3" strokeLinecap="round" strokeLinejoin="round" />
@@ -105,7 +105,7 @@ export function CampaignAnalyticsDrawer({
                   <button
                     type="button"
                     onClick={() => setSharing(true)}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-[#e2e8f0] bg-white px-3 py-1.5 text-[13px] font-medium text-[#334155] transition hover:border-[#cbd5e1] hover:bg-[#f8fafc]"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--rule)] bg-white px-3 py-1.5 text-[13px] font-medium text-[var(--ink-2)] transition hover:border-[var(--rule)] hover:bg-[var(--surface-muted)]"
                   >
                     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3.5 w-3.5" aria-hidden="true">
                       <circle cx="12" cy="3" r="1.5" />
@@ -123,7 +123,7 @@ export function CampaignAnalyticsDrawer({
             <div className="flex-1 overflow-y-auto px-6 py-6">
               {loading ? (
                 <div className="flex h-40 items-center justify-center">
-                  <p className="text-[14px] text-[#64748b]">Loading analytics…</p>
+                  <p className="text-[14px] text-[var(--text-muted)]">Loading analytics…</p>
                 </div>
               ) : error ? (
                 <p className="rounded-lg border border-[#fca5a5] bg-[#fef2f2] px-4 py-3 text-[14px] text-[#b91c1c]">
@@ -160,31 +160,31 @@ export function CampaignAnalyticsDrawer({
 
                   {analytics.topLinks.length > 0 ? (
                     <AnalyticsSection title="Top links">
-                      <div className="overflow-hidden rounded-lg border border-[#e2e8f0]">
+                      <div className="overflow-hidden rounded-lg border border-[var(--rule)]">
                         <table className="w-full text-[13px]">
                           <thead>
-                            <tr className="border-b border-[#e2e8f0] bg-[#f8fafc] text-left text-[#64748b]">
+                            <tr className="border-b border-[var(--rule)] bg-[var(--surface-muted)] text-left text-[var(--text-muted)]">
                               <th className="px-3 py-2 font-medium">URL</th>
                               <th className="px-3 py-2 text-right font-medium">Clicks</th>
                               <th className="px-3 py-2 text-right font-medium">Unique</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-[#e2e8f0]">
+                          <tbody className="divide-y divide-[var(--rule)]">
                             {analytics.topLinks.map((link, i) => (
-                              <tr key={i} className="hover:bg-[#f8fafc]">
+                              <tr key={i} className="hover:bg-[var(--surface-muted)]">
                                 <td className="max-w-[220px] truncate px-3 py-2">
                                   <a
                                     href={link.url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-[#2563eb] hover:underline"
+                                    className="text-[var(--accent)] hover:underline"
                                     title={link.url}
                                   >
                                     {truncateUrl(link.url)}
                                   </a>
                                 </td>
-                                <td className="px-3 py-2 text-right text-[#334155]">{link.totalClicks}</td>
-                                <td className="px-3 py-2 text-right text-[#334155]">{link.uniqueClicks}</td>
+                                <td className="px-3 py-2 text-right text-[var(--ink-2)]">{link.totalClicks}</td>
+                                <td className="px-3 py-2 text-right text-[var(--ink-2)]">{link.uniqueClicks}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -243,12 +243,12 @@ function ShareCampaignModal({ url, onClose }: { url: string; onClose: () => void
       {/* Modal card */}
       <div className="relative w-full max-w-md rounded-xl bg-white shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#e2e8f0] px-6 py-5">
-          <h3 className="text-[16px] font-semibold text-[#0f172a]">Share this campaign</h3>
+        <div className="flex items-center justify-between border-b border-[var(--rule)] px-6 py-5">
+          <h3 className="text-[16px] font-semibold text-[var(--ink)]">Share this campaign</h3>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-[#94a3b8] transition hover:text-[#334155]"
+            className="rounded-md p-1 text-[var(--faint)] transition hover:text-[var(--ink-2)]"
             aria-label="Close"
           >
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5" aria-hidden="true">
@@ -259,19 +259,19 @@ function ShareCampaignModal({ url, onClose }: { url: string; onClose: () => void
 
         {/* Body */}
         <div className="px-6 py-5">
-          <p className="text-[14px] text-[#64748b]">
+          <p className="text-[14px] text-[var(--text-muted)]">
             Share this campaign with friends and we'll show you the results.
           </p>
 
           {/* URL + copy */}
-          <div className="mt-4 flex items-center gap-0 overflow-hidden rounded-lg border border-[#e2e8f0]">
-            <span className="min-w-0 flex-1 truncate px-3 py-2.5 font-mono text-[12px] text-[#334155]">
+          <div className="mt-4 flex items-center gap-0 overflow-hidden rounded-lg border border-[var(--rule)]">
+            <span className="min-w-0 flex-1 truncate px-3 py-2.5 font-mono text-[12px] text-[var(--ink-2)]">
               {url}
             </span>
             <button
               type="button"
               onClick={handleCopy}
-              className="shrink-0 border-l border-[#e2e8f0] px-4 py-2.5 text-[13px] font-semibold text-[#2563eb] transition hover:bg-[#eff6ff] focus:outline-none"
+              className="shrink-0 border-l border-[var(--rule)] px-4 py-2.5 text-[13px] font-semibold text-[var(--accent)] transition hover:bg-[var(--surface-muted)] focus:outline-none"
             >
               {copied ? "Copied!" : "Copy"}
             </button>
@@ -283,7 +283,7 @@ function ShareCampaignModal({ url, onClose }: { url: string; onClose: () => void
               href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}`}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 rounded-lg border border-[#e2e8f0] px-4 py-2.5 text-center text-[13px] font-medium text-[#334155] transition hover:border-[#cbd5e1] hover:bg-[#f8fafc]"
+              className="flex-1 rounded-lg border border-[var(--rule)] px-4 py-2.5 text-center text-[13px] font-medium text-[var(--ink-2)] transition hover:border-[var(--rule)] hover:bg-[var(--surface-muted)]"
             >
               Share on X
             </a>
@@ -291,7 +291,7 @@ function ShareCampaignModal({ url, onClose }: { url: string; onClose: () => void
               href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 rounded-lg border border-[#e2e8f0] px-4 py-2.5 text-center text-[13px] font-medium text-[#334155] transition hover:border-[#cbd5e1] hover:bg-[#f8fafc]"
+              className="flex-1 rounded-lg border border-[var(--rule)] px-4 py-2.5 text-center text-[13px] font-medium text-[var(--ink-2)] transition hover:border-[var(--rule)] hover:bg-[var(--surface-muted)]"
             >
               Share on Facebook
             </a>
@@ -307,7 +307,7 @@ function ShareCampaignModal({ url, onClose }: { url: string; onClose: () => void
 function AnalyticsSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h4 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[#64748b]">
+      <h4 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
         {title}
       </h4>
       {children}
@@ -317,9 +317,9 @@ function AnalyticsSection({ title, children }: { title: string; children: React.
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3">
-      <p className="text-[12px] text-[#64748b]">{label}</p>
-      <p className="mt-1 text-[20px] font-semibold tracking-tight text-[#0f172a]">{value}</p>
+    <div className="rounded-lg border border-[var(--rule)] bg-[var(--surface-muted)] px-4 py-3">
+      <p className="text-[12px] text-[var(--text-muted)]">{label}</p>
+      <p className="mt-1 text-[20px] font-semibold tracking-tight text-[var(--ink)]">{value}</p>
     </div>
   );
 }

@@ -65,7 +65,7 @@ function CampaignsContent() {
       <div className="flex flex-col gap-6 md:flex-row">
         {/* Sidebar filter panel */}
         <aside className="shrink-0 md:w-44">
-          <p className="mb-2 text-[13px] font-semibold text-[#334155]">View by</p>
+          <p className="mb-2 text-[13px] font-semibold text-[var(--ink-2)]">View by</p>
           <nav className="flex flex-row gap-1 md:flex-col">
             {viewItems.map((item) => (
               <button
@@ -75,8 +75,8 @@ function CampaignsContent() {
                 className={cn(
                   "rounded-md px-3 py-1.5 text-left text-[14px] font-medium transition",
                   view === item.key
-                    ? "text-[#2563eb]"
-                    : "text-[#64748b] hover:text-[#334155]"
+                    ? "text-[var(--accent)]"
+                    : "text-[var(--text-muted)] hover:text-[var(--ink-2)]"
                 )}
               >
                 {item.label}
@@ -174,12 +174,12 @@ function CampaignSection({
 }) {
   return (
     <div className="mb-8">
-      <h3 className="mb-1 text-[1rem] font-semibold tracking-[-0.01em] text-[#0f172a]">
+      <h3 className="mb-1 text-[1rem] font-semibold tracking-[-0.01em] text-[var(--ink)]">
         {title}
       </h3>
       <table className="w-full">
         <thead>
-          <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[#64748b]">
+          <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[var(--text-muted)]">
             <th className="py-2.5 font-medium">Campaign</th>
             <th className="py-2.5 text-right font-medium">{columnLabel}</th>
             {withAction ? <th className="py-2.5 pl-4" /> : null}
@@ -193,19 +193,19 @@ function CampaignSection({
 
 function DraftRow({ campaign }: { campaign: CommunityDraft }) {
   return (
-    <tr className="group hover:bg-[#f8fafc]">
+    <tr className="group hover:bg-[var(--surface-muted)]">
       <td className="py-3 pr-4">
-        <span className="text-[14px] font-medium text-[#0f172a]">
+        <span className="text-[14px] font-medium text-[var(--ink)]">
           {campaign.name || "Untitled draft"}
         </span>
       </td>
-      <td className="py-3 text-right text-[14px] text-[#64748b]">
+      <td className="py-3 text-right text-[14px] text-[var(--text-muted)]">
         {formatShortDate(campaign.updatedAt)}
       </td>
       <td className="py-3 pl-4 text-right">
         <a
           href={`/compose?draft=${campaign.id}`}
-          className="text-[13px] font-medium text-[#2563eb] hover:underline"
+          className="text-[13px] font-medium text-[var(--accent)] hover:underline"
         >
           Continue
         </a>
@@ -217,18 +217,18 @@ function DraftRow({ campaign }: { campaign: CommunityDraft }) {
 function ScheduledRow({ campaign }: { campaign: CommunityCampaignSummary }) {
   const href = campaign.previewUrl ?? "https://app.createsend.com";
   return (
-    <tr className="group hover:bg-[#f8fafc]">
+    <tr className="group hover:bg-[var(--surface-muted)]">
       <td className="py-3 pr-4">
         <a
           href={href}
           target="_blank"
           rel="noreferrer"
-          className="text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
+          className="text-[14px] font-medium text-[var(--ink)] hover:text-[var(--accent)] hover:underline"
         >
           {campaign.name}
         </a>
       </td>
-      <td className="py-3 text-right text-[14px] text-[#64748b]">
+      <td className="py-3 text-right text-[14px] text-[var(--text-muted)]">
         {formatShortDate(campaign.scheduledDate)}
       </td>
     </tr>
@@ -237,7 +237,7 @@ function ScheduledRow({ campaign }: { campaign: CommunityCampaignSummary }) {
 
 function SentTableHeaders() {
   return (
-    <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[#64748b]">
+    <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[var(--text-muted)]">
       <th className="py-2.5 font-medium">Campaign</th>
       <th className="hidden py-2.5 text-right font-medium md:table-cell">Recipients</th>
       <th className="hidden py-2.5 text-right font-medium md:table-cell">Opened</th>
@@ -250,24 +250,24 @@ function SentTableHeaders() {
 function SentRow({ c, onSelect }: { c: CommunityCampaignSummary; onSelect: (c: CommunityCampaignSummary) => void }) {
   return (
     <tr
-      className="group cursor-pointer hover:bg-[#f8fafc]"
+      className="group cursor-pointer hover:bg-[var(--surface-muted)]"
       onClick={() => onSelect(c)}
     >
       <td className="py-3 pr-4">
-        <span className="text-[14px] font-medium text-[#0f172a] group-hover:text-[#2563eb]">
+        <span className="text-[14px] font-medium text-[var(--ink)] group-hover:text-[var(--accent)]">
           {c.name}
         </span>
       </td>
-      <td className="hidden py-3 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
+      <td className="hidden py-3 pr-4 text-right text-[14px] text-[var(--ink-2)] md:table-cell">
         {c.recipientCount?.toLocaleString() ?? "—"}
       </td>
-      <td className="hidden py-3 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
+      <td className="hidden py-3 pr-4 text-right text-[14px] text-[var(--ink-2)] md:table-cell">
         {c.openRate != null ? `${c.openRate}%` : "—"}
       </td>
-      <td className="hidden py-3 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
+      <td className="hidden py-3 pr-4 text-right text-[14px] text-[var(--ink-2)] md:table-cell">
         {c.clickRate != null ? `${c.clickRate}%` : "—"}
       </td>
-      <td className="py-3 text-right text-[14px] text-[#64748b]">
+      <td className="py-3 text-right text-[14px] text-[var(--text-muted)]">
         {formatShortDate(c.sentDate)}
       </td>
     </tr>
@@ -284,7 +284,7 @@ function SentSection({
   if (campaigns.length === 0) {
     return (
       <div className="mb-8">
-        <h3 className="mb-3 text-[1rem] font-semibold tracking-[-0.01em] text-[#0f172a]">
+        <h3 className="mb-3 text-[1rem] font-semibold tracking-[-0.01em] text-[var(--ink)]">
           Recently sent
         </h3>
         <EmptyState title="No sent newsletters yet" body="Sent newsletters will appear here once your account is connected." />
@@ -294,7 +294,7 @@ function SentSection({
 
   return (
     <div className="mb-8">
-      <h3 className="mb-1 text-[1rem] font-semibold tracking-[-0.01em] text-[#0f172a]">
+      <h3 className="mb-1 text-[1rem] font-semibold tracking-[-0.01em] text-[var(--ink)]">
         Recently sent
       </h3>
       <table className="w-full">
@@ -329,18 +329,18 @@ function SentSectionPaginated({
   return (
     <div className="mb-8">
       <div className="mb-1 flex items-baseline justify-between">
-        <h3 className="text-[1rem] font-semibold tracking-[-0.01em] text-[#0f172a]">
+        <h3 className="text-[1rem] font-semibold tracking-[-0.01em] text-[var(--ink)]">
           Sent campaigns
         </h3>
         {total > 0 && (
-          <span className="text-[13px] text-[#64748b]">
+          <span className="text-[13px] text-[var(--text-muted)]">
             {total.toLocaleString()} total
           </span>
         )}
       </div>
 
       {loading && campaigns.length === 0 ? (
-        <p className="py-6 text-center text-[14px] text-[#64748b]">Loading…</p>
+        <p className="py-6 text-center text-[14px] text-[var(--text-muted)]">Loading…</p>
       ) : campaigns.length === 0 ? (
         <EmptyState title="No sent newsletters yet" body="Sent newsletters will appear here once your account is connected." />
       ) : (
@@ -361,7 +361,7 @@ function SentSectionPaginated({
               >
                 Previous
               </Button>
-              <span className="text-[14px] text-[#64748b]">
+              <span className="text-[14px] text-[var(--text-muted)]">
                 Page {page} of {totalPages}
               </span>
               <Button

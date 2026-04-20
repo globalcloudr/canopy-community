@@ -44,12 +44,12 @@ export function ConnectionSection({
           <ConnectionBadge connected={Boolean(connection)} />
           {connection?.accountName ? (
             <p className="text-[14px] text-[#526072]">
-              Connected account: <span className="font-medium text-[#0f172a]">{connection.accountName}</span>
+              Connected account: <span className="font-medium text-[var(--ink)]">{connection.accountName}</span>
             </p>
           ) : null}
           {connection?.lastValidatedAt ? (
             <p className="text-[14px] text-[#526072]">
-              Last checked: <span className="font-medium text-[#0f172a]">{formatCompactDateTime(connection.lastValidatedAt)}</span>
+              Last checked: <span className="font-medium text-[var(--ink)]">{formatCompactDateTime(connection.lastValidatedAt)}</span>
             </p>
           ) : null}
         </div>
@@ -67,9 +67,9 @@ export function ConnectionSection({
 
 function ConnectionFact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-[var(--app-divider)] bg-[#f8fafc] px-4 py-3">
+    <div className="rounded-lg border border-[var(--app-divider)] bg-[var(--surface-muted)] px-4 py-3">
       <p className="text-[12px] font-semibold uppercase tracking-[0.15em] text-[#8ca0b3]">{label}</p>
-      <p className="mt-1.5 text-[15px] font-medium text-[#0f172a]">{value}</p>
+      <p className="mt-1.5 text-[15px] font-medium text-[var(--ink)]">{value}</p>
     </div>
   );
 }
@@ -98,7 +98,7 @@ export function CampaignTable({
       ) : (
         <table className="w-full">
           <thead>
-            <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[#64748b]">
+            <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[var(--text-muted)]">
               <th className="py-3 pr-4 font-medium">Campaign</th>
               <th className="hidden py-3 pr-4 text-right font-medium md:table-cell">Recipients</th>
               <th className="hidden py-3 pr-4 text-right font-medium md:table-cell">Opened</th>
@@ -113,7 +113,7 @@ export function CampaignTable({
             {campaigns.map((campaign) => {
               const primaryUrl = campaign.webVersionUrl ?? campaign.previewUrl;
               return (
-                <tr key={campaign.id} className="group hover:bg-[#f8fafc]">
+                <tr key={campaign.id} className="group hover:bg-[var(--surface-muted)]">
                   <td className="py-3.5 pr-4">
                     <div className="flex items-center gap-3">
                       <CampaignStatusBadge status={campaign.status} />
@@ -122,32 +122,32 @@ export function CampaignTable({
                           href={primaryUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-[14px] font-medium text-[#0f172a] hover:text-[#2563eb] hover:underline"
+                          className="text-[14px] font-medium text-[var(--ink)] hover:text-[var(--accent)] hover:underline"
                         >
                           {campaign.subject}
                         </a>
                       ) : (
-                        <span className="text-[14px] font-medium text-[#0f172a]">
+                        <span className="text-[14px] font-medium text-[var(--ink)]">
                           {campaign.subject}
                         </span>
                       )}
                     </div>
-                    <p className="mt-0.5 text-[13px] text-[#64748b] md:hidden">
+                    <p className="mt-0.5 text-[13px] text-[var(--text-muted)] md:hidden">
                       {campaign.fromName || "School newsletter"} &middot; {getCampaignTimingLabel(campaign)}
                     </p>
                   </td>
-                  <td className="hidden py-3.5 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
+                  <td className="hidden py-3.5 pr-4 text-right text-[14px] text-[var(--ink-2)] md:table-cell">
                     {campaign.recipientCount !== null
                       ? campaign.recipientCount.toLocaleString()
                       : "—"}
                   </td>
-                  <td className="hidden py-3.5 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
+                  <td className="hidden py-3.5 pr-4 text-right text-[14px] text-[var(--ink-2)] md:table-cell">
                     {campaign.openRate != null ? `${campaign.openRate}%` : "—"}
                   </td>
-                  <td className="hidden py-3.5 pr-4 text-right text-[14px] text-[#334155] md:table-cell">
+                  <td className="hidden py-3.5 pr-4 text-right text-[14px] text-[var(--ink-2)] md:table-cell">
                     {campaign.clickRate != null ? `${campaign.clickRate}%` : "—"}
                   </td>
-                  <td className="py-3.5 pr-4 text-right text-[14px] text-[#64748b]">
+                  <td className="py-3.5 pr-4 text-right text-[14px] text-[var(--text-muted)]">
                     {formatShortDate(campaign.sentDate ?? campaign.createdDate)}
                   </td>
                   <td className="py-3.5">
@@ -184,7 +184,7 @@ function CampaignActionsMenu({ campaign }: { campaign: CommunityCampaignSummary 
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="flex h-7 w-7 items-center justify-center rounded text-[#94a3b8] opacity-0 transition hover:bg-[#e2e8f0] hover:text-[#334155] group-hover:opacity-100"
+          className="flex h-7 w-7 items-center justify-center rounded text-[var(--faint)] opacity-0 transition hover:bg-[var(--rule)] hover:text-[var(--ink-2)] group-hover:opacity-100"
           aria-label="Campaign actions"
         >
           <svg viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
@@ -241,7 +241,7 @@ export function AudienceListSection({
       ) : (
         <table className="w-full">
           <thead>
-            <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[#64748b]">
+            <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[var(--text-muted)]">
               <th className="py-3 pr-4 font-medium">List name</th>
               <th className="hidden py-3 pr-4 font-medium md:table-cell">Opt-in</th>
               <th className="hidden py-3 pr-4 font-medium md:table-cell">Unsubscribe</th>
@@ -252,19 +252,19 @@ export function AudienceListSection({
             {lists.map((list) => (
               <tr key={list.listId}>
                 <td className="py-3.5 pr-4">
-                  <span className="text-[14px] font-medium text-[#0f172a]">{list.name}</span>
+                  <span className="text-[14px] font-medium text-[var(--ink)]">{list.name}</span>
                 </td>
-                <td className="hidden py-3.5 pr-4 text-[14px] text-[#334155] md:table-cell">
+                <td className="hidden py-3.5 pr-4 text-[14px] text-[var(--ink-2)] md:table-cell">
                   {typeof list.confirmedOptIn === "boolean"
                     ? list.confirmedOptIn
                       ? "Confirmed"
                       : "Single"
                     : "—"}
                 </td>
-                <td className="hidden py-3.5 pr-4 text-[14px] text-[#334155] md:table-cell">
+                <td className="hidden py-3.5 pr-4 text-[14px] text-[var(--ink-2)] md:table-cell">
                   {list.unsubscribeSetting ?? "—"}
                 </td>
-                <td className="py-3.5 text-right text-[14px] font-medium text-[#334155]">
+                <td className="py-3.5 text-right text-[14px] font-medium text-[var(--ink-2)]">
                   {typeof list.subscriberCount === "number"
                     ? list.subscriberCount.toLocaleString()
                     : "—"}

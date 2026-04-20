@@ -48,7 +48,7 @@ export function UnlayerEditor({
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-white">
       {/* Toolbar */}
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-[#e2e8f0] px-4">
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-[var(--rule)] px-4">
         <Button variant="secondary" onClick={onClose} disabled={saving}>
           <span className="flex items-center gap-1.5">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4" aria-hidden="true">

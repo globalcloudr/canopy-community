@@ -264,10 +264,10 @@ function ComposeContent() {
     return (
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-[1.85rem] font-semibold tracking-[-0.03em] text-[#0f172a]">
+          <h1 className="text-[1.85rem] font-semibold tracking-[-0.03em] text-[var(--ink)]">
             Draft saved
           </h1>
-          <p className="mt-1.5 text-[15px] text-[#64748b]">
+          <p className="mt-1.5 text-[15px] text-[var(--text-muted)]">
             Your campaign has been saved as a draft. You can find it in your Campaigns page.
           </p>
         </div>
@@ -287,10 +287,10 @@ function ComposeContent() {
     return (
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-[1.85rem] font-semibold tracking-[-0.03em] text-[#0f172a]">
+          <h1 className="text-[1.85rem] font-semibold tracking-[-0.03em] text-[var(--ink)]">
             Campaign sent!
           </h1>
-          <p className="mt-1.5 text-[15px] text-[#64748b]">
+          <p className="mt-1.5 text-[15px] text-[var(--text-muted)]">
             {sendMode === "schedule"
               ? "Your campaign has been scheduled. You'll receive a confirmation email when it goes out."
               : "Your campaign is on its way. You'll receive a confirmation email shortly."}
@@ -330,10 +330,10 @@ function ComposeContent() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-[1.85rem] font-semibold tracking-[-0.03em] text-[#0f172a]">
+        <h1 className="text-[1.85rem] font-semibold tracking-[-0.03em] text-[var(--ink)]">
           New campaign
         </h1>
-        <p className="mt-1.5 text-[15px] text-[#64748b]">
+        <p className="mt-1.5 text-[15px] text-[var(--text-muted)]">
           Design your email, start from a template, or upload an HTML file.
         </p>
       </div>
@@ -400,9 +400,9 @@ function ComposeContent() {
           {/* Recipients */}
           <FormSection title="Recipients">
             {lists.length === 0 ? (
-              <p className="text-[14px] text-[#64748b]">
+              <p className="text-[14px] text-[var(--text-muted)]">
                 No mailing list found. Make sure your Client ID is connected in{" "}
-                <a href="/settings" className="text-[#2563eb] hover:underline">Settings</a>.
+                <a href="/settings" className="text-[var(--accent)] hover:underline">Settings</a>.
               </p>
             ) : (
               <Field label="Mailing lists" required>
@@ -419,11 +419,11 @@ function ComposeContent() {
           <FormSection title="Email content">
             {htmlContent ? (
               <div className={cn(
-                "rounded-lg border-2 border-[#2563eb] bg-[#eff6ff] px-4 py-3"
+                "rounded-lg border-2 border-[var(--accent)] bg-[var(--surface-muted)] px-4 py-3"
               )}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[15px] font-semibold text-[#1d4ed8]">
+                    <p className="text-[15px] font-semibold text-[var(--accent)]">
                       {fileName ?? "Email designed"}
                     </p>
                     <p className="mt-0.5 text-[13px] text-[#3b82f6]">
@@ -456,29 +456,29 @@ function ComposeContent() {
                 <button
                   type="button"
                   onClick={() => setEditorOpen(true)}
-                  className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-[#cbd5e1] px-4 py-8 text-center transition hover:border-[#2563eb] hover:bg-[#f8fafc]"
+                  className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-[var(--rule)] px-4 py-8 text-center transition hover:border-[var(--accent)] hover:bg-[var(--surface-muted)]"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5" className="h-7 w-7" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" className="h-7 w-7" aria-hidden="true">
                     <path d="M12 20h9" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <p className="text-[14px] font-semibold text-[#334155]">Design your email</p>
-                  <p className="text-[12px] text-[#64748b]">Open the drag-and-drop editor</p>
+                  <p className="text-[14px] font-semibold text-[var(--ink-2)]">Design your email</p>
+                  <p className="text-[12px] text-[var(--text-muted)]">Open the drag-and-drop editor</p>
                 </button>
 
                 {/* Start from template */}
                 <button
                   type="button"
                   onClick={() => setTemplatePickerOpen(true)}
-                  className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-[#cbd5e1] px-4 py-8 text-center transition hover:border-[#2563eb] hover:bg-[#f8fafc]"
+                  className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-[var(--rule)] px-4 py-8 text-center transition hover:border-[var(--accent)] hover:bg-[var(--surface-muted)]"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5" className="h-7 w-7" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" className="h-7 w-7" aria-hidden="true">
                     <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M3 9h18" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M9 21V9" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <p className="text-[14px] font-semibold text-[#334155]">Start from template</p>
-                  <p className="text-[12px] text-[#64748b]">
+                  <p className="text-[14px] font-semibold text-[var(--ink-2)]">Start from template</p>
+                  <p className="text-[12px] text-[var(--text-muted)]">
                     {savedTemplates.length > 0
                       ? `${savedTemplates.length} template${savedTemplates.length === 1 ? "" : "s"} available`
                       : "No templates saved yet"}
@@ -496,14 +496,14 @@ function ComposeContent() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-[#cbd5e1] px-4 py-8 text-center transition hover:border-[#2563eb] hover:bg-[#f8fafc]"
+                  className="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed border-[var(--rule)] px-4 py-8 text-center transition hover:border-[var(--accent)] hover:bg-[var(--surface-muted)]"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5" className="h-7 w-7" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" className="h-7 w-7" aria-hidden="true">
                     <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" strokeLinecap="round" />
                     <path d="M12 12V4m0 0-3 3m3-3 3 3" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <p className="text-[14px] font-semibold text-[#334155]">Upload HTML file</p>
-                  <p className="text-[12px] text-[#64748b]">.html or .htm files</p>
+                  <p className="text-[14px] font-semibold text-[var(--ink-2)]">Upload HTML file</p>
+                  <p className="text-[12px] text-[var(--text-muted)]">.html or .htm files</p>
                 </button>
               </div>
             )}
@@ -519,9 +519,9 @@ function ComposeContent() {
                   value="immediately"
                   checked={sendMode === "immediately"}
                   onChange={() => setSendMode("immediately")}
-                  className="accent-[#2563eb]"
+                  className="accent-[var(--accent)]"
                 />
-                <span className="text-[14px] font-medium text-[#334155]">Send immediately</span>
+                <span className="text-[14px] font-medium text-[var(--ink-2)]">Send immediately</span>
               </label>
               <label className="flex cursor-pointer items-center gap-2">
                 <input
@@ -530,9 +530,9 @@ function ComposeContent() {
                   value="schedule"
                   checked={sendMode === "schedule"}
                   onChange={() => setSendMode("schedule")}
-                  className="accent-[#2563eb]"
+                  className="accent-[var(--accent)]"
                 />
-                <span className="text-[14px] font-medium text-[#334155]">Schedule</span>
+                <span className="text-[14px] font-medium text-[var(--ink-2)]">Schedule</span>
               </label>
             </div>
             {sendMode === "schedule" ? (
@@ -568,8 +568,8 @@ function ComposeContent() {
 
           {/* Confirmation panel */}
           {confirming ? (
-            <div className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-5">
-              <h3 className="text-[15px] font-semibold text-[#0f172a]">Review before sending</h3>
+            <div className="rounded-lg border border-[var(--rule)] bg-[var(--surface-muted)] p-5">
+              <h3 className="text-[15px] font-semibold text-[var(--ink)]">Review before sending</h3>
               <div className="mt-4 grid gap-3">
                 <ConfirmRow label="Campaign name" value={campaignName} />
                 <ConfirmRow label="Subject" value={subject} />
@@ -658,7 +658,7 @@ function ComposeContent() {
                   <a href="/campaigns">Cancel</a>
                 </Button>
               </div>
-              <p className="text-[13px] text-[#64748b]">
+              <p className="text-[13px] text-[var(--text-muted)]">
                 Drafts are saved in Canopy and can be reopened from the Campaigns page to continue editing.
               </p>
             </div>
@@ -668,8 +668,8 @@ function ComposeContent() {
         {/* Right column — preview */}
         {htmlContent ? (
           <div className="shrink-0 lg:w-[420px]">
-            <p className="mb-2 text-[13px] font-semibold text-[#334155]">Preview</p>
-            <div className="overflow-hidden rounded-lg border border-[#e2e8f0] bg-white">
+            <p className="mb-2 text-[13px] font-semibold text-[var(--ink-2)]">Preview</p>
+            <div className="overflow-hidden rounded-lg border border-[var(--rule)] bg-white">
               <iframe
                 srcDoc={htmlContent}
                 title="Email preview"
@@ -677,7 +677,7 @@ function ComposeContent() {
                 sandbox="allow-same-origin"
               />
             </div>
-            <p className="mt-2 text-[12px] text-[#94a3b8]">
+            <p className="mt-2 text-[12px] text-[var(--faint)]">
               Scroll inside the preview to see the full email.
             </p>
           </div>
@@ -734,12 +734,12 @@ function TemplatePicker({
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
       <div className="mx-4 w-full max-w-lg rounded-xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-[#e2e8f0] px-5 py-4">
-          <h3 className="text-[16px] font-semibold text-[#0f172a]">Choose a template</h3>
+        <div className="flex items-center justify-between border-b border-[var(--rule)] px-5 py-4">
+          <h3 className="text-[16px] font-semibold text-[var(--ink)]">Choose a template</h3>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-[#94a3b8] hover:text-[#334155]"
+            className="rounded-md p-1 text-[var(--faint)] hover:text-[var(--ink-2)]"
           >
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5" aria-hidden="true">
               <path d="m4 4 8 8M12 4l-8 8" strokeLinecap="round" />
@@ -749,7 +749,7 @@ function TemplatePicker({
 
         <div className="max-h-[60vh] overflow-y-auto p-4">
           {templates.length === 0 ? (
-            <p className="py-8 text-center text-[14px] text-[#64748b]">
+            <p className="py-8 text-center text-[14px] text-[var(--text-muted)]">
               No templates saved yet. Create one from the Templates page first.
             </p>
           ) : (
@@ -759,9 +759,9 @@ function TemplatePicker({
                   key={template.id}
                   type="button"
                   onClick={() => onSelect(template)}
-                  className="flex items-center gap-4 rounded-lg border border-[#e2e8f0] p-3 text-left transition hover:border-[#2563eb] hover:bg-[#f8fafc]"
+                  className="flex items-center gap-4 rounded-lg border border-[var(--rule)] p-3 text-left transition hover:border-[var(--accent)] hover:bg-[var(--surface-muted)]"
                 >
-                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded border border-[#e2e8f0] bg-[#f8fafc]">
+                  <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded border border-[var(--rule)] bg-[var(--surface-muted)]">
                     {template.htmlPreview ? (
                       <iframe
                         srcDoc={template.htmlPreview}
@@ -772,14 +772,14 @@ function TemplatePicker({
                         tabIndex={-1}
                       />
                     ) : (
-                      <span className="flex h-full items-center justify-center text-[9px] text-[#94a3b8]">
+                      <span className="flex h-full items-center justify-center text-[9px] text-[var(--faint)]">
                         Tmpl
                       </span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14px] font-medium text-[#0f172a]">{template.name}</p>
-                    <p className="mt-0.5 text-[12px] text-[#64748b]">
+                    <p className="truncate text-[14px] font-medium text-[var(--ink)]">{template.name}</p>
+                    <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">
                       {isEditorTemplate(template) ? "Built in editor" : "Uploaded HTML"}
                     </p>
                   </div>
@@ -800,7 +800,7 @@ function isEditorTemplate(template: CommunityTemplate) {
 function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h2 className="mb-4 border-b border-[var(--app-divider)] pb-2 text-[1rem] font-semibold tracking-[-0.01em] text-[#0f172a]">
+      <h2 className="mb-4 border-b border-[var(--app-divider)] pb-2 text-[1rem] font-semibold tracking-[-0.01em] text-[var(--ink)]">
         {title}
       </h2>
       {children}
@@ -839,40 +839,40 @@ function ListMultiSelect({
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "flex w-full items-center justify-between rounded-md border px-3 py-2 text-[14px] transition focus:outline-none focus:ring-2 focus:ring-[#2563eb]",
-          open ? "border-[#2563eb] ring-2 ring-[#2563eb]" : "border-[#e2e8f0]",
-          selected.length === 0 ? "text-[#94a3b8]" : "text-[#0f172a]"
+          "flex w-full items-center justify-between rounded-md border px-3 py-2 text-[14px] transition focus:outline-none focus:ring-2 focus:ring-[var(--accent)]",
+          open ? "border-[var(--accent)] ring-2 ring-[var(--accent)]" : "border-[var(--rule)]",
+          selected.length === 0 ? "text-[var(--faint)]" : "text-[var(--ink)]"
         )}
       >
         <span>{triggerLabel}</span>
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4 shrink-0 text-[#94a3b8]">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-4 w-4 shrink-0 text-[var(--faint)]">
           <path d="m4 6 4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
       {open ? (
-        <div className="absolute z-20 mt-1 w-full rounded-md border border-[#e2e8f0] bg-white shadow-md">
+        <div className="absolute z-20 mt-1 w-full rounded-md border border-[var(--rule)] bg-white shadow-md">
           {/* Select all row */}
-          <label className="flex cursor-pointer items-center gap-3 border-b border-[#e2e8f0] px-3 py-2.5 hover:bg-[#f8fafc]">
+          <label className="flex cursor-pointer items-center gap-3 border-b border-[var(--rule)] px-3 py-2.5 hover:bg-[var(--surface-muted)]">
             <input
               type="checkbox"
-              className="accent-[#2563eb]"
+              className="accent-[var(--accent)]"
               checked={allSelected}
               ref={(el) => { if (el) el.indeterminate = someSelected; }}
               onChange={(e) => onChange(e.target.checked ? lists.map((l) => l.listId) : [])}
             />
-            <span className="text-[13px] font-semibold text-[#334155]">All lists</span>
-            <span className="ml-auto text-[12px] text-[#94a3b8]">
+            <span className="text-[13px] font-semibold text-[var(--ink-2)]">All lists</span>
+            <span className="ml-auto text-[12px] text-[var(--faint)]">
               {lists.reduce((s, l) => s + (l.subscriberCount ?? 0), 0).toLocaleString()} subscribers
             </span>
           </label>
 
           {/* Individual lists */}
           {lists.map((list) => (
-            <label key={list.listId} className="flex cursor-pointer items-center gap-3 px-3 py-2 hover:bg-[#f8fafc]">
+            <label key={list.listId} className="flex cursor-pointer items-center gap-3 px-3 py-2 hover:bg-[var(--surface-muted)]">
               <input
                 type="checkbox"
-                className="accent-[#2563eb]"
+                className="accent-[var(--accent)]"
                 checked={selected.includes(list.listId)}
                 onChange={(e) =>
                   onChange(
@@ -882,9 +882,9 @@ function ListMultiSelect({
                   )
                 }
               />
-              <span className="min-w-0 flex-1 truncate text-[13px] text-[#0f172a]">{list.name}</span>
+              <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--ink)]">{list.name}</span>
               {list.subscriberCount != null ? (
-                <span className="ml-auto shrink-0 text-[12px] text-[#94a3b8]">
+                <span className="ml-auto shrink-0 text-[12px] text-[var(--faint)]">
                   {list.subscriberCount.toLocaleString()}
                 </span>
               ) : null}
@@ -892,8 +892,8 @@ function ListMultiSelect({
           ))}
 
           {/* Footer */}
-          <div className="flex items-center justify-between border-t border-[#e2e8f0] px-3 py-2">
-            <span className="text-[12px] text-[#64748b]">
+          <div className="flex items-center justify-between border-t border-[var(--rule)] px-3 py-2">
+            <span className="text-[12px] text-[var(--text-muted)]">
               {selected.length === 0
                 ? "No lists selected"
                 : `${totalSelected.toLocaleString()} recipients`}
@@ -901,7 +901,7 @@ function ListMultiSelect({
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="text-[12px] font-medium text-[#2563eb] hover:underline"
+              className="text-[12px] font-medium text-[var(--accent)] hover:underline"
             >
               Done
             </button>
@@ -911,7 +911,7 @@ function ListMultiSelect({
 
       {/* Recipient count hint below the trigger */}
       {selected.length > 0 && !open ? (
-        <p className="mt-1.5 text-[13px] text-[#64748b]">
+        <p className="mt-1.5 text-[13px] text-[var(--text-muted)]">
           {totalSelected.toLocaleString()} recipients across {selected.length} list{selected.length === 1 ? "" : "s"}
         </p>
       ) : null}
@@ -930,11 +930,11 @@ function ConfirmRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-[var(--app-divider)] pb-2 last:border-0 last:pb-0">
-      <span className="shrink-0 text-[13px] text-[#64748b]">{label}</span>
+      <span className="shrink-0 text-[13px] text-[var(--text-muted)]">{label}</span>
       <span
         className={cn(
           "text-right text-[14px] font-medium",
-          highlight === "warning" ? "text-[#b91c1c]" : "text-[#0f172a]"
+          highlight === "warning" ? "text-[#b91c1c]" : "text-[var(--ink)]"
         )}
       >
         {value}
@@ -960,7 +960,7 @@ function Field({
         {label}
         {required ? <span className="ml-1 text-[#ef4444]">*</span> : null}
       </Label>
-      {hint ? <p className="text-[13px] text-[#64748b]">{hint}</p> : null}
+      {hint ? <p className="text-[13px] text-[var(--text-muted)]">{hint}</p> : null}
       {children}
     </div>
   );

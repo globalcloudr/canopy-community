@@ -54,7 +54,7 @@ function AudiencesContent() {
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[#64748b]">
+                <tr className="border-b border-[var(--app-divider)] text-left text-[13px] font-medium text-[var(--text-muted)]">
                   <th className="py-2.5 pr-4 font-medium">List name</th>
                   <th className="hidden py-2.5 pr-4 font-medium md:table-cell">Opt-in</th>
                   <th className="hidden py-2.5 pr-4 font-medium md:table-cell">Unsubscribe</th>
@@ -65,21 +65,21 @@ function AudiencesContent() {
                 {lists.map((list) => (
                   <tr key={list.listId}>
                     <td className="py-3.5 pr-4">
-                      <span className="text-[14px] font-medium text-[#0f172a]">
+                      <span className="text-[14px] font-medium text-[var(--ink)]">
                         {list.name}
                       </span>
                     </td>
-                    <td className="hidden py-3.5 pr-4 text-[14px] text-[#334155] md:table-cell">
+                    <td className="hidden py-3.5 pr-4 text-[14px] text-[var(--ink-2)] md:table-cell">
                       {typeof list.confirmedOptIn === "boolean"
                         ? list.confirmedOptIn
                           ? "Confirmed"
                           : "Single"
                         : "—"}
                     </td>
-                    <td className="hidden py-3.5 pr-4 text-[14px] text-[#334155] md:table-cell">
+                    <td className="hidden py-3.5 pr-4 text-[14px] text-[var(--ink-2)] md:table-cell">
                       {list.unsubscribeSetting ?? "—"}
                     </td>
-                    <td className="py-3.5 text-right text-[14px] font-medium text-[#334155]">
+                    <td className="py-3.5 text-right text-[14px] font-medium text-[var(--ink-2)]">
                       {list.subscriberCount != null
                         ? list.subscriberCount.toLocaleString()
                         : "—"}
@@ -109,8 +109,8 @@ function SidebarStat({
       <p
         className={
           active
-            ? "text-[14px] font-semibold text-[#2563eb]"
-            : "text-[14px] font-medium text-[#64748b]"
+            ? "text-[14px] font-semibold text-[var(--accent)]"
+            : "text-[14px] font-medium text-[var(--text-muted)]"
         }
       >
         {label}
@@ -118,8 +118,8 @@ function SidebarStat({
       <p
         className={
           active
-            ? "text-[1.1rem] font-semibold text-[#2563eb]"
-            : "text-[1.1rem] font-semibold text-[#0f172a]"
+            ? "text-[1.1rem] font-semibold text-[var(--accent)]"
+            : "text-[1.1rem] font-semibold text-[var(--ink)]"
         }
       >
         {typeof value === "number" ? value.toLocaleString() : value}
