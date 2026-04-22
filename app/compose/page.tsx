@@ -40,25 +40,46 @@ function ComposeContent() {
   const [replyTo, setReplyTo] = useState("");
 
   // Load draft from ?draft=<id> URL param once workspaceId is available.
+  // draftLoaded prevents re-runs; on failure it resets so a navigation/refresh
+  // can retry. A separate loadingDraft flag blocks concurrent fetches.
   const draftLoaded = useRef(false);
+  const [loadingDraft, setLoadingDraft] = useState(false);
+  const [draftLoadError, setDraftLoadError] = useState<string | null>(null);
   useEffect(() => {
     if (draftLoaded.current) return;
     if (!workspaceId) return;
     const id = searchParams.get("draft");
     if (!id) return;
+    // Lock immediately to prevent concurrent fetches if deps change mid-flight.
     draftLoaded.current = true;
+    setLoadingDraft(true);
+    setDraftLoadError(null);
     void (async () => {
       try {
         const { data } = await supabase.auth.getSession();
         const token = data.session?.access_token;
-        if (!token) return;
+        if (!token) {
+          draftLoaded.current = false; // allow retry after session is restored
+          setDraftLoadError("Your session has expired. Please return to the Portal and open Community again.");
+          return;
+        }
         const res = await fetch(`/api/community/drafts/${id}?workspaceId=${workspaceId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) return;
+        if (!res.ok) {
+          draftLoaded.current = false; // allow retry (e.g. workspaceId corrected)
+          const payload = (await res.json().catch(() => null)) as { error?: string } | null;
+          setDraftLoadError(payload?.error ?? "Could not load the draft. It may have been deleted or you may not have access.");
+          return;
+        }
         const payload = (await res.json()) as { draft?: CommunityDraft };
         const draft = payload.draft;
-        if (!draft) return;
+        if (!draft) {
+          draftLoaded.current = false;
+          setDraftLoadError("Draft not found. It may have been deleted.");
+          return;
+        }
+        // draftLoaded stays true — draft is now in state.
         setDraftId(draft.id);
         setCampaignName(draft.name);
         setSubject(draft.subject);
@@ -68,8 +89,11 @@ function ComposeContent() {
         setListIds(draft.listIds);
         if (draft.htmlContent) setHtmlContent(draft.htmlContent);
         if (draft.designJson) setDesignJson(draft.designJson);
-      } catch {
-        // silently ignore draft load errors
+      } catch (err) {
+        draftLoaded.current = false;
+        setDraftLoadError(err instanceof Error ? err.message : "Could not load draft.");
+      } finally {
+        setLoadingDraft(false);
       }
     })();
   }, [workspaceId, searchParams]);
@@ -187,7 +211,12 @@ function ComposeContent() {
         if (!response.ok) throw new Error(payload.error ?? "Failed to save draft.");
         if (payload.draft) {
           setDraftId(payload.draft.id);
-          router.replace(`/compose?draft=${payload.draft.id}`);
+          // Preserve ?workspace= if present so operators don't lose workspace context.
+          const workspaceSlug = searchParams.get("workspace");
+          const newPath = workspaceSlug
+            ? `/compose?draft=${payload.draft.id}&workspace=${encodeURIComponent(workspaceSlug)}`
+            : `/compose?draft=${payload.draft.id}`;
+          router.replace(newPath);
         }
       }
 
@@ -337,14 +366,42 @@ function ComposeContent() {
     );
   }
 
+  // Draft loading states — shown before the form when arriving via a Portal link
+  const hasDraftParam = Boolean(searchParams.get("draft"));
+  if (loadingDraft) {
+    return (
+      <div className="py-12 text-center text-[15px] text-[var(--text-muted)]">
+        Loading draft…
+      </div>
+    );
+  }
+
+  if (draftLoadError && hasDraftParam && !draftId) {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="rounded-[var(--radius-soft)] border border-red-200 bg-red-50 px-5 py-4">
+          <p className="text-[0.9rem] font-medium text-red-800">Could not load draft</p>
+          <p className="mt-1 text-[0.85rem] text-red-700">{draftLoadError}</p>
+        </div>
+        <div>
+          <Button variant="secondary" onClick={() => { setDraftLoadError(null); draftLoaded.current = true; router.replace("/compose"); }}>
+            Start a new campaign instead
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-[1.85rem] font-semibold tracking-[-0.03em] text-[var(--ink)]">
-          New campaign
+          {draftId ? "Edit draft" : "New campaign"}
         </h1>
         <p className="mt-1.5 text-[15px] text-[var(--text-muted)]">
-          Design your email, start from a template, or upload an HTML file.
+          {draftId
+            ? "Update your draft, then send or save again when ready."
+            : "Design your email, start from a template, or upload an HTML file."}
         </p>
       </div>
 
