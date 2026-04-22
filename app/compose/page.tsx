@@ -138,10 +138,14 @@ function ComposeContent() {
   async function handleSaveAsDraft(overrides?: {
     htmlContent?: string | null;
     designJson?: Record<string, unknown> | null;
+    /** When true, save silently in the background without showing the
+     *  "Draft saved" success screen. Used by auto-save so the user stays
+     *  on the compose form after closing the Unlayer editor. */
+    silent?: boolean;
   }) {
     if (!workspaceId) return;
 
-    setSavingDraft(true);
+    if (!overrides?.silent) setSavingDraft(true);
     setError(null);
 
     try {
@@ -187,11 +191,12 @@ function ComposeContent() {
         }
       }
 
-      setSavedAsDraft(true);
+      if (!overrides?.silent) setSavedAsDraft(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      // Silent auto-saves swallow errors — don't interrupt the user's flow.
+      if (!overrides?.silent) setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
-      setSavingDraft(false);
+      if (!overrides?.silent) setSavingDraft(false);
     }
   }
 
@@ -706,6 +711,7 @@ function ComposeContent() {
             void handleSaveAsDraft({
               htmlContent: data.html,
               designJson: data.designJson,
+              silent: true,
             });
           }}
           onClose={() => setEditorOpen(false)}
