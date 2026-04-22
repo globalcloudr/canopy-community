@@ -759,26 +759,46 @@ export async function composeCampaign(params: ComposeCampaignParams) {
       }
     }
 
-    // Log to portal nerve center (fire and forget)
-    void logPortalActivity({
-      workspace_id: params.workspaceId,
-      product_key:  "community_canopy",
-      event_type:   params.draft
-        ? "draft"
-        : params.scheduledDate
-        ? "newsletter_queued"
-        : "newsletter_sent",
-      title:        params.subject || params.name,
-      description:  params.draft
-        ? "Draft saved — not yet sent"
-        : params.scheduledDate
-        ? `Scheduled for ${new Date(params.scheduledDate).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}`
-        : `Sent to subscribers on the ${params.name || "community"} list`,
-      scheduled_for: params.scheduledDate && !params.draft
-        ? new Date(params.scheduledDate).toISOString()
-        : null,
-      event_url: `/auth/launch/community?path=/campaigns/${campaignId}`,
-    });
+    // Log to portal nerve center — fire and forget, never blocks the send
+    void (async () => {
+      // Fetch total subscriber count across all selected lists (best effort)
+      let recipientCount: number | null = null;
+      if (!params.draft) {
+        try {
+          const statResults = await Promise.all(
+            params.listIds.map((id) => getCampaignMonitorListStats(credentials, id))
+          );
+          recipientCount = statResults.reduce(
+            (sum, s) => sum + (s.totalActiveSubscribers ?? 0),
+            0
+          );
+        } catch {
+          // Missing count is fine — we'll log without it
+        }
+      }
+
+      await logPortalActivity({
+        workspace_id: params.workspaceId,
+        product_key:  "community_canopy",
+        event_type:   params.draft
+          ? "draft"
+          : params.scheduledDate
+          ? "newsletter_queued"
+          : "newsletter_sent",
+        title:        params.subject || params.name,
+        description:  params.draft
+          ? "Draft saved — not yet sent"
+          : params.scheduledDate
+          ? `Scheduled for ${new Date(params.scheduledDate).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}`
+          : recipientCount
+          ? `Sent to ${recipientCount.toLocaleString()} subscribers`
+          : "Sent to subscribers",
+        scheduled_for: params.scheduledDate && !params.draft
+          ? new Date(params.scheduledDate).toISOString()
+          : null,
+        event_url: `/auth/launch/community?path=/campaigns/${campaignId}`,
+      });
+    })();
 
     return { campaignId, draft: params.draft === true };
   } finally {
