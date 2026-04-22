@@ -513,7 +513,7 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
             </div>
           </AppShellSidebar>
 
-          <AppShellContent className="bg-white" containerClassName="max-w-[1080px] px-6 py-8 sm:px-8 lg:px-10">
+          <AppShellContent className="bg-white">
             {loadingSession ? (
               <div className="py-12 text-center">
                 <BodyText muted>Loading workspace…</BodyText>
