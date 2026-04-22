@@ -135,7 +135,10 @@ function ComposeContent() {
     setConfirming(true);
   }
 
-  async function handleSaveAsDraft() {
+  async function handleSaveAsDraft(overrides?: {
+    htmlContent?: string | null;
+    designJson?: Record<string, unknown> | null;
+  }) {
     if (!workspaceId) return;
 
     setSavingDraft(true);
@@ -154,8 +157,10 @@ function ComposeContent() {
         fromEmail,
         replyTo,
         listIds,
-        htmlContent,
-        designJson,
+        // Use overrides when provided (e.g. fresh from the Unlayer editor) so
+        // we don't race against React's async state update settling.
+        htmlContent: overrides?.htmlContent !== undefined ? overrides.htmlContent : htmlContent,
+        designJson: overrides?.designJson !== undefined ? overrides.designJson : designJson,
       };
 
       if (draftId) {
@@ -694,6 +699,14 @@ function ComposeContent() {
             setHtmlContent(data.html);
             setFileName("Email designed");
             setEditorOpen(false);
+            // Auto-save the draft with the new content so the Portal nerve
+            // center reflects the latest state without requiring a separate
+            // "Save as Draft" click. Pass the fresh values directly to avoid
+            // racing against React's async state update.
+            void handleSaveAsDraft({
+              htmlContent: data.html,
+              designJson: data.designJson,
+            });
           }}
           onClose={() => setEditorOpen(false)}
           saveLabel="Use this design"
