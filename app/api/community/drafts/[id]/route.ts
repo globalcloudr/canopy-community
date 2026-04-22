@@ -5,6 +5,7 @@ import {
   updateWorkspaceDraft,
 } from "@/lib/community-data";
 import { requireWorkspaceAccess, toErrorResponse } from "@/lib/server-auth";
+import { updatePortalActivityByUrl } from "@/lib/portal-activity";
 
 export async function GET(
   request: Request,
@@ -65,6 +66,12 @@ export async function PATCH(
       htmlContent: body.htmlContent,
       designJson: body.designJson,
     });
+
+    void updatePortalActivityByUrl(
+      workspaceId,
+      `/auth/launch/community?path=/campaigns/${id}`,
+      { title: draft.subject || draft.name || "Untitled campaign" }
+    );
 
     return NextResponse.json({ draft });
   } catch (error) {

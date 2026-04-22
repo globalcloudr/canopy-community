@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createWorkspaceDraft, getWorkspaceDrafts } from "@/lib/community-data";
 import { requireWorkspaceAccess, toErrorResponse } from "@/lib/server-auth";
+import { logPortalActivity } from "@/lib/portal-activity";
 
 export async function GET(request: Request) {
   const workspaceId = new URL(request.url).searchParams.get("workspaceId")?.trim() || null;
@@ -49,6 +50,15 @@ export async function POST(request: Request) {
       listIds: body.listIds ?? [],
       htmlContent: body.htmlContent ?? null,
       designJson: body.designJson ?? null,
+    });
+
+    void logPortalActivity({
+      workspace_id: workspaceId,
+      product_key: "community_canopy",
+      event_type: "draft",
+      title: draft.subject || draft.name || "Untitled campaign",
+      description: "Draft saved — not yet sent",
+      event_url: `/auth/launch/community?path=/campaigns/${draft.id}`,
     });
 
     return NextResponse.json({ draft });
