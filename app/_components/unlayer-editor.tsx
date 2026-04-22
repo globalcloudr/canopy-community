@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Button } from "@globalcloudr/canopy-ui";
 import type { EditorRef } from "react-email-editor";
@@ -21,8 +21,26 @@ export function UnlayerEditor({
   saveLabel = "Save",
 }: UnlayerEditorProps) {
   const editorRef = useRef<EditorRef>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Start with a reasonable default so the editor isn't 0px on first render.
+  const [editorHeight, setEditorHeight] = useState(600);
+
+  // Measure the container and keep the editor iframe sized to match exactly.
+  // react-email-editor uses the minHeight prop to size its iframe — percentage
+  // values don't resolve reliably against flex-computed heights, so we measure
+  // and pass an explicit pixel value instead.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const h = Math.floor(entry.contentRect.height);
+      if (h > 0) setEditorHeight(h);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const handleReady = useCallback(() => {
     if (initialDesign && editorRef.current?.editor) {
@@ -67,12 +85,14 @@ export function UnlayerEditor({
         </Button>
       </div>
 
-      {/* Editor */}
-      <div className="flex flex-col flex-1 min-h-0">
+      {/* Editor — ref lets ResizeObserver measure the true pixel height so we
+          can pass it as an explicit number to EmailEditor. Using a percentage
+          here would not resolve reliably against a flex-computed height. */}
+      <div ref={containerRef} className="flex-1 min-h-0">
         <EmailEditor
           ref={editorRef}
           onReady={handleReady}
-          minHeight="100%"
+          minHeight={editorHeight}
           options={{
             features: {
               undoRedo: true,
