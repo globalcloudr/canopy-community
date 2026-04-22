@@ -38,19 +38,22 @@ export async function logPortalActivity(event: PortalActivityEvent): Promise<voi
 }
 
 /**
- * Replaces all existing activity_events rows for a specific draft with a
- * single fresh row.
+ * Replaces all existing draft activity_events rows for this workspace+product
+ * with a single fresh row.
  *
- * Uses the draftId as a stable key — it appears in every URL format we've
- * ever used, so a LIKE filter catches old rows regardless of how the URL
- * was structured when they were first inserted. This avoids duplicates when
- * the URL format changes and also ensures the event_url is always up to date.
+ * We intentionally do NOT filter the DELETE by event_url — earlier versions
+ * of this code (and the initial POST /drafts handler) could leave behind rows
+ * where event_url was null or used a superseded URL format. An event_url
+ * LIKE filter would skip those null rows entirely, leaving stale "Draft saved"
+ * entries in the nerve center with no "Open →" link forever. Nuking all draft
+ * rows for the workspace+product is safe here because the Community app only
+ * surfaces a single in-progress draft at a time (the one just saved).
  *
  * Swallows all failures — non-critical.
  */
 export async function upsertPortalDraftActivity(
   event: PortalActivityEvent,
-  draftId: string
+  _draftId: string
 ): Promise<void> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -64,15 +67,13 @@ export async function upsertPortalDraftActivity(
   };
 
   try {
-    // 1. Delete any existing rows for this draft. The draftId appears in every
-    //    URL format (old /campaigns/{id} and new /compose?draft={id}), so this
-    //    catches stale rows regardless of when they were created.
-    //    PostgREST LIKE uses SQL wildcards (%), not glob (*).
+    // 1. Delete ALL existing draft rows for this workspace+product, including
+    //    any legacy rows where event_url is null. A LIKE filter on event_url
+    //    would skip null-url rows and leak them forever.
     const deleteUrl = new URL(`${supabaseUrl}/rest/v1/activity_events`);
     deleteUrl.searchParams.set("workspace_id", `eq.${event.workspace_id}`);
     deleteUrl.searchParams.set("product_key", `eq.${event.product_key}`);
     deleteUrl.searchParams.set("event_type", `eq.draft`);
-    deleteUrl.searchParams.set("event_url", `like.%${draftId}%`);
 
     await fetch(deleteUrl.toString(), { method: "DELETE", headers });
 
