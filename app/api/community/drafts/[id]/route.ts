@@ -5,7 +5,7 @@ import {
   updateWorkspaceDraft,
 } from "@/lib/community-data";
 import { requireWorkspaceAccess, toErrorResponse } from "@/lib/server-auth";
-import { updatePortalActivityByUrl } from "@/lib/portal-activity";
+import { upsertPortalDraftActivity } from "@/lib/portal-activity";
 
 export async function GET(
   request: Request,
@@ -67,11 +67,14 @@ export async function PATCH(
       designJson: body.designJson,
     });
 
-    void updatePortalActivityByUrl(
-      workspaceId,
-      `/auth/launch/community?path=/campaigns/${id}`,
-      { title: draft.subject || draft.name || "Untitled campaign" }
-    );
+    void upsertPortalDraftActivity({
+      workspace_id: workspaceId,
+      product_key: "community_canopy",
+      event_type: "draft",
+      title: draft.subject || draft.name || "Untitled campaign",
+      description: "Draft saved — not yet sent",
+      event_url: `/auth/launch/community?path=/campaigns/${id}`,
+    });
 
     return NextResponse.json({ draft });
   } catch (error) {
