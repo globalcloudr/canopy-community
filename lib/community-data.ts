@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { logPortalActivity } from "@/lib/portal-activity";
 import {
   createCampaignMonitorCampaign,
   getCampaignMonitorCampaignAnalytics,
@@ -757,6 +758,22 @@ export async function composeCampaign(params: ComposeCampaignParams) {
         );
       }
     }
+
+    // Log to portal nerve center (fire and forget)
+    void logPortalActivity({
+      workspace_id: params.workspaceId,
+      product_key:  "community_canopy",
+      event_type:   params.draft
+        ? "draft"
+        : params.scheduledDate
+        ? "newsletter_queued"
+        : "newsletter_sent",
+      title:         params.subject || params.name,
+      scheduled_for: params.scheduledDate && !params.draft
+        ? new Date(params.scheduledDate).toISOString()
+        : null,
+      event_url: `/auth/launch/community?path=/campaigns/${campaignId}`,
+    });
 
     return { campaignId, draft: params.draft === true };
   } finally {
