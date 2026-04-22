@@ -134,6 +134,14 @@ async function waitForSessionTokens() {
 
 // ─── Shell ────────────────────────────────────────────────────────────────────
 
+// Module-level guard against re-exchanging a single-use handoff code.
+// If the session-load effect fires twice in quick succession (StrictMode
+// double-invocation in dev, or searchParams reference churn in prod) we'd
+// otherwise consume the code on run 1 then fail on run 2 and bounce the
+// user back to the Portal. This keeps the second exchange short-circuited
+// so the first run's setSession is what wins.
+const exchangedLaunchCodes = new Set<string>();
+
 export function ProductShell({ activeNav, navItems, children }: ProductShellProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -221,40 +229,54 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
         // 1. Exchange Portal launch code if present
         const launchCode = searchParams.get("launch")?.trim();
         if (launchCode) {
-          const exchangeResponse = await fetch("/api/auth/exchange-handoff", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code: launchCode }),
-          });
-
-          if (!exchangeResponse.ok) {
-            window.location.assign(PORTAL_URL);
-            return;
-          }
-
-          const exchangePayload = (await exchangeResponse.json()) as {
-            accessToken?: string;
-            refreshToken?: string;
-            workspaceSlug?: string | null;
-          };
-
-          if (!exchangePayload.accessToken || !exchangePayload.refreshToken) {
-            window.location.assign(PORTAL_URL);
-            return;
-          }
-
-          await supabase.auth.setSession({
-            access_token: exchangePayload.accessToken,
-            refresh_token: exchangePayload.refreshToken,
-          });
-
-          if (typeof window !== "undefined") {
-            const url = new URL(window.location.href);
-            url.searchParams.delete("launch");
-            if (exchangePayload.workspaceSlug) {
-              url.searchParams.set("workspace", exchangePayload.workspaceSlug);
+          // Skip the exchange if we've already handled this code in a prior
+          // effect run. The first run's setSession already wrote tokens to
+          // storage, so we can fall through to the session check below.
+          if (exchangedLaunchCodes.has(launchCode)) {
+            // Clean up the launch param from the URL in case replaceState from
+            // the first run raced with this second run's initial read.
+            if (typeof window !== "undefined" && new URL(window.location.href).searchParams.has("launch")) {
+              const url = new URL(window.location.href);
+              url.searchParams.delete("launch");
+              window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
             }
-            window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+          } else {
+            exchangedLaunchCodes.add(launchCode);
+            const exchangeResponse = await fetch("/api/auth/exchange-handoff", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ code: launchCode }),
+            });
+
+            if (!exchangeResponse.ok) {
+              window.location.assign(PORTAL_URL);
+              return;
+            }
+
+            const exchangePayload = (await exchangeResponse.json()) as {
+              accessToken?: string;
+              refreshToken?: string;
+              workspaceSlug?: string | null;
+            };
+
+            if (!exchangePayload.accessToken || !exchangePayload.refreshToken) {
+              window.location.assign(PORTAL_URL);
+              return;
+            }
+
+            await supabase.auth.setSession({
+              access_token: exchangePayload.accessToken,
+              refresh_token: exchangePayload.refreshToken,
+            });
+
+            if (typeof window !== "undefined") {
+              const url = new URL(window.location.href);
+              url.searchParams.delete("launch");
+              if (exchangePayload.workspaceSlug) {
+                url.searchParams.set("workspace", exchangePayload.workspaceSlug);
+              }
+              window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+            }
           }
         }
 

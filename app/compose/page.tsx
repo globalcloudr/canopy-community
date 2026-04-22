@@ -40,46 +40,67 @@ function ComposeContent() {
   const [replyTo, setReplyTo] = useState("");
 
   // Load draft from ?draft=<id> URL param once workspaceId is available.
-  // draftLoaded prevents re-runs; on failure it resets so a navigation/refresh
-  // can retry. A separate loadingDraft flag blocks concurrent fetches.
-  const draftLoaded = useRef(false);
+  //
+  // The dep key is the (workspaceId, draftId) pair derived once per render.
+  // We track which pair is currently loading in loadedKey so StrictMode's
+  // double-mount and any re-renders triggered by ProductShell's replaceState
+  // don't refetch the same draft. Keying on (workspace, draft) rather than a
+  // boolean also means that if either changes, we correctly refetch.
+  const loadedKeyRef = useRef<string | null>(null);
   const [loadingDraft, setLoadingDraft] = useState(false);
   const [draftLoadError, setDraftLoadError] = useState<string | null>(null);
+
+  // Read draftId directly from the URL at effect time rather than through the
+  // useSearchParams closure. In Next.js 15, ProductShell's window.history
+  // .replaceState (stripping ?launch=) can race with when this effect captures
+  // searchParams, occasionally leaving the hook with an older snapshot. Reading
+  // window.location inside the effect avoids that window entirely.
   useEffect(() => {
-    if (draftLoaded.current) return;
     if (!workspaceId) return;
-    const id = searchParams.get("draft");
-    if (!id) return;
-    // Lock immediately to prevent concurrent fetches if deps change mid-flight.
-    draftLoaded.current = true;
+    const draftIdFromUrl =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("draft")
+        : searchParams.get("draft");
+    if (!draftIdFromUrl) return;
+
+    const key = `${workspaceId}::${draftIdFromUrl}`;
+    if (loadedKeyRef.current === key) return;
+    loadedKeyRef.current = key;
+
     setLoadingDraft(true);
     setDraftLoadError(null);
+
+    let cancelled = false;
     void (async () => {
       try {
         const { data } = await supabase.auth.getSession();
         const token = data.session?.access_token;
         if (!token) {
-          draftLoaded.current = false; // allow retry after session is restored
-          setDraftLoadError("Your session has expired. Please return to the Portal and open Community again.");
+          loadedKeyRef.current = null; // allow retry once session is restored
+          if (!cancelled) {
+            setDraftLoadError("Your session has expired. Please return to the Portal and open Community again.");
+          }
           return;
         }
-        const res = await fetch(`/api/community/drafts/${id}?workspaceId=${workspaceId}`, {
+        const res = await fetch(`/api/community/drafts/${draftIdFromUrl}?workspaceId=${workspaceId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {
-          draftLoaded.current = false; // allow retry (e.g. workspaceId corrected)
+          loadedKeyRef.current = null;
           const payload = (await res.json().catch(() => null)) as { error?: string } | null;
-          setDraftLoadError(payload?.error ?? "Could not load the draft. It may have been deleted or you may not have access.");
+          if (!cancelled) {
+            setDraftLoadError(payload?.error ?? "Could not load the draft. It may have been deleted or you may not have access.");
+          }
           return;
         }
         const payload = (await res.json()) as { draft?: CommunityDraft };
         const draft = payload.draft;
         if (!draft) {
-          draftLoaded.current = false;
-          setDraftLoadError("Draft not found. It may have been deleted.");
+          loadedKeyRef.current = null;
+          if (!cancelled) setDraftLoadError("Draft not found. It may have been deleted.");
           return;
         }
-        // draftLoaded stays true — draft is now in state.
+        if (cancelled) return;
         setDraftId(draft.id);
         setCampaignName(draft.name);
         setSubject(draft.subject);
@@ -90,12 +111,16 @@ function ComposeContent() {
         if (draft.htmlContent) setHtmlContent(draft.htmlContent);
         if (draft.designJson) setDesignJson(draft.designJson);
       } catch (err) {
-        draftLoaded.current = false;
-        setDraftLoadError(err instanceof Error ? err.message : "Could not load draft.");
+        loadedKeyRef.current = null;
+        if (!cancelled) {
+          setDraftLoadError(err instanceof Error ? err.message : "Could not load draft.");
+        }
       } finally {
-        setLoadingDraft(false);
+        if (!cancelled) setLoadingDraft(false);
       }
     })();
+
+    return () => { cancelled = true; };
   }, [workspaceId, searchParams]);
 
   // Pre-populate sender fields from the most recent sent campaign once overview loads.
@@ -384,7 +409,7 @@ function ComposeContent() {
           <p className="mt-1 text-[0.85rem] text-red-700">{draftLoadError}</p>
         </div>
         <div>
-          <Button variant="secondary" onClick={() => { setDraftLoadError(null); draftLoaded.current = true; router.replace("/compose"); }}>
+          <Button variant="secondary" onClick={() => { setDraftLoadError(null); loadedKeyRef.current = "dismissed"; router.replace("/compose"); }}>
             Start a new campaign instead
           </Button>
         </div>
