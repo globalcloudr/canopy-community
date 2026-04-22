@@ -430,7 +430,7 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
         />
 
         {/* Main layout */}
-        <AppShellFrame className="md:grid-cols-[296px_minmax(0,1fr)]">
+        <AppShellFrame>
           <AppShellSidebar>
             <div className="flex h-full flex-col">
 
@@ -513,7 +513,7 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
             </div>
           </AppShellSidebar>
 
-          <AppShellContent className="bg-white">
+          <AppShellContent className="bg-white" containerClassName="px-6 py-8 sm:px-8 lg:px-10">
             {loadingSession ? (
               <div className="py-12 text-center">
                 <BodyText muted>Loading workspace…</BodyText>
