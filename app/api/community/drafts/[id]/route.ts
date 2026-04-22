@@ -67,16 +67,19 @@ export async function PATCH(
       designJson: body.designJson,
     });
 
-    void upsertPortalDraftActivity({
-      workspace_id: workspaceId,
-      product_key: "community_canopy",
-      event_type: "draft",
-      title: draft.subject || draft.name || "Untitled campaign",
-      description: "Draft saved — not yet sent",
-      // Encode the compose path so ?draft= isn't parsed as a second URL param
-      // by the Portal's /auth/launch/community route.
-      event_url: `/auth/launch/community?path=${encodeURIComponent(`/compose?draft=${id}`)}`,
-    });
+    void upsertPortalDraftActivity(
+      {
+        workspace_id: workspaceId,
+        product_key: "community_canopy",
+        event_type: "draft",
+        title: draft.subject || draft.name || "Untitled campaign",
+        description: "Draft saved — not yet sent",
+        // Encode the compose path so ?draft= isn't parsed as a second URL param
+        // by the Portal's /auth/launch/community route.
+        event_url: `/auth/launch/community?path=${encodeURIComponent(`/compose?draft=${id}`)}`,
+      },
+      id
+    );
 
     return NextResponse.json({ draft });
   } catch (error) {

@@ -38,48 +38,47 @@ export async function logPortalActivity(event: PortalActivityEvent): Promise<voi
 }
 
 /**
- * Upserts an activity_events row for a draft save.
+ * Replaces all existing activity_events rows for a specific draft with a
+ * single fresh row.
  *
- * On update (PATCH): updates title/description on the existing row matched by
- * workspace_id + event_url, using `return=representation` so we can count how
- * many rows were affected.
- * On create (POST): if no row matched (draft was saved before this fix shipped,
- * or first save ever), inserts a fresh row so the draft appears in the Portal.
+ * Uses the draftId as a stable key — it appears in every URL format we've
+ * ever used, so a LIKE filter catches old rows regardless of how the URL
+ * was structured when they were first inserted. This avoids duplicates when
+ * the URL format changes and also ensures the event_url is always up to date.
  *
  * Swallows all failures — non-critical.
  */
-export async function upsertPortalDraftActivity(event: PortalActivityEvent): Promise<void> {
+export async function upsertPortalDraftActivity(
+  event: PortalActivityEvent,
+  draftId: string
+): Promise<void> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceRoleKey || !event.event_url) return;
+  if (!supabaseUrl || !serviceRoleKey) return;
 
   const headers = {
     apikey: serviceRoleKey,
     Authorization: `Bearer ${serviceRoleKey}`,
     "Content-Type": "application/json",
+    Prefer: "return=minimal",
   };
 
   try {
-    // 1. Try to update any existing row for this draft URL.
-    const patchUrl = new URL(`${supabaseUrl}/rest/v1/activity_events`);
-    patchUrl.searchParams.set("workspace_id", `eq.${event.workspace_id}`);
-    patchUrl.searchParams.set("event_url", `eq.${event.event_url}`);
+    // 1. Delete any existing rows for this draft. The draftId appears in every
+    //    URL format (old /campaigns/{id} and new /compose?draft={id}), so this
+    //    catches stale rows regardless of when they were created.
+    const deleteUrl = new URL(`${supabaseUrl}/rest/v1/activity_events`);
+    deleteUrl.searchParams.set("workspace_id", `eq.${event.workspace_id}`);
+    deleteUrl.searchParams.set("product_key", `eq.${event.product_key}`);
+    deleteUrl.searchParams.set("event_type", `eq.draft`);
+    deleteUrl.searchParams.set("event_url", `like.*${draftId}*`);
 
-    const patchRes = await fetch(patchUrl.toString(), {
-      method: "PATCH",
-      headers: { ...headers, Prefer: "return=representation" },
-      body: JSON.stringify({ title: event.title, description: event.description ?? null }),
-    });
+    await fetch(deleteUrl.toString(), { method: "DELETE", headers });
 
-    if (patchRes.ok) {
-      const updated = await patchRes.json() as unknown[];
-      if (updated.length > 0) return; // existing row updated — done
-    }
-
-    // 2. No existing row — insert one so the draft appears in the Portal.
+    // 2. Insert a fresh row with the current, correct event_url.
     await fetch(`${supabaseUrl}/rest/v1/activity_events`, {
       method: "POST",
-      headers: { ...headers, Prefer: "return=minimal" },
+      headers,
       body: JSON.stringify(event),
     });
   } catch {
