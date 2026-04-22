@@ -73,7 +73,9 @@ export async function PATCH(
       event_type: "draft",
       title: draft.subject || draft.name || "Untitled campaign",
       description: "Draft saved — not yet sent",
-      event_url: `/auth/launch/community?path=/campaigns/${id}`,
+      // Encode the compose path so ?draft= isn't parsed as a second URL param
+      // by the Portal's /auth/launch/community route.
+      event_url: `/auth/launch/community?path=${encodeURIComponent(`/compose?draft=${id}`)}`,
     });
 
     return NextResponse.json({ draft });
