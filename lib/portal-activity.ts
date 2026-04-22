@@ -22,7 +22,7 @@ export async function logPortalActivity(event: PortalActivityEvent): Promise<voi
   if (!supabaseUrl || !serviceRoleKey) return;
 
   try {
-    await fetch(`${supabaseUrl}/rest/v1/activity_events`, {
+    const res = await fetch(`${supabaseUrl}/rest/v1/activity_events`, {
       method: "POST",
       headers: {
         apikey: serviceRoleKey,
@@ -32,8 +32,11 @@ export async function logPortalActivity(event: PortalActivityEvent): Promise<voi
       },
       body: JSON.stringify(event),
     });
-  } catch {
-    // Non-critical — swallow silently
+    if (!res.ok) {
+      console.error("[portal-activity] logPortalActivity insert failed:", res.status, await res.text().catch(() => ""));
+    }
+  } catch (err) {
+    console.error("[portal-activity] logPortalActivity fetch error:", err);
   }
 }
 
@@ -75,15 +78,21 @@ export async function upsertPortalDraftActivity(
     deleteUrl.searchParams.set("product_key", `eq.${event.product_key}`);
     deleteUrl.searchParams.set("event_type", `eq.draft`);
 
-    await fetch(deleteUrl.toString(), { method: "DELETE", headers });
+    const deleteRes = await fetch(deleteUrl.toString(), { method: "DELETE", headers });
+    if (!deleteRes.ok) {
+      console.error("[portal-activity] upsertPortalDraftActivity delete failed:", deleteRes.status, await deleteRes.text().catch(() => ""));
+    }
 
     // 2. Insert a fresh row with the current, correct event_url.
-    await fetch(`${supabaseUrl}/rest/v1/activity_events`, {
+    const insertRes = await fetch(`${supabaseUrl}/rest/v1/activity_events`, {
       method: "POST",
       headers,
       body: JSON.stringify(event),
     });
-  } catch {
-    // Non-critical — swallow silently
+    if (!insertRes.ok) {
+      console.error("[portal-activity] upsertPortalDraftActivity insert failed:", insertRes.status, await insertRes.text().catch(() => ""));
+    }
+  } catch (err) {
+    console.error("[portal-activity] upsertPortalDraftActivity error:", err);
   }
 }
