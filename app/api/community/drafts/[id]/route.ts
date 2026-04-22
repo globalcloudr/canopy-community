@@ -67,7 +67,9 @@ export async function PATCH(
       designJson: body.designJson,
     });
 
-    void upsertPortalDraftActivity(
+    // Await so both the DELETE and INSERT complete before the serverless
+    // function closes. Using void here caused the second fetch to be cut off.
+    await upsertPortalDraftActivity(
       {
         workspace_id: workspaceId,
         product_key: "community_canopy",

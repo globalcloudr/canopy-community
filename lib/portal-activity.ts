@@ -67,11 +67,12 @@ export async function upsertPortalDraftActivity(
     // 1. Delete any existing rows for this draft. The draftId appears in every
     //    URL format (old /campaigns/{id} and new /compose?draft={id}), so this
     //    catches stale rows regardless of when they were created.
+    //    PostgREST LIKE uses SQL wildcards (%), not glob (*).
     const deleteUrl = new URL(`${supabaseUrl}/rest/v1/activity_events`);
     deleteUrl.searchParams.set("workspace_id", `eq.${event.workspace_id}`);
     deleteUrl.searchParams.set("product_key", `eq.${event.product_key}`);
     deleteUrl.searchParams.set("event_type", `eq.draft`);
-    deleteUrl.searchParams.set("event_url", `like.*${draftId}*`);
+    deleteUrl.searchParams.set("event_url", `like.%${draftId}%`);
 
     await fetch(deleteUrl.toString(), { method: "DELETE", headers });
 

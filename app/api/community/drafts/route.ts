@@ -52,7 +52,8 @@ export async function POST(request: Request) {
       designJson: body.designJson ?? null,
     });
 
-    void logPortalActivity({
+    // Await so the fetch completes before the serverless function closes.
+    await logPortalActivity({
       workspace_id: workspaceId,
       product_key: "community_canopy",
       event_type: "draft",
