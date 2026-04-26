@@ -146,14 +146,24 @@ export function SectionCard({
 export function EmptyState({
   title,
   body,
+  action,
 }: {
   title: string;
   body: string;
+  action?: { label: string; href: string };
 }) {
   return (
     <div className="rounded-lg border border-dashed border-[var(--rule)] bg-[var(--surface-muted)] px-5 py-6">
       <p className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--ink)]">{title}</p>
       <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[var(--text-muted)]">{body}</p>
+      {action && (
+        <a
+          href={action.href}
+          className="mt-3 inline-block text-[13px] font-medium text-[var(--accent)] hover:underline"
+        >
+          {action.label} →
+        </a>
+      )}
     </div>
   );
 }

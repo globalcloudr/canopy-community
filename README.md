@@ -2,6 +2,9 @@
 
 Canopy Community is the school newsletter product in the Canopy portfolio. It lets Canopy workspaces connect a Campaign Monitor client, create and send newsletters from Canopy, review newsletter activity, and manage reusable templates.
 
+**Live URL**: https://canopy-community.vercel.app
+**Status**: Beta
+
 ## Current Scope
 
 - Portal handoff and workspace-aware app shell
@@ -17,24 +20,18 @@ Canopy Community is the school newsletter product in the Canopy portfolio. It le
 
 ## Stack
 
-- Next.js 16
+- Next.js 15
 - React 19
 - TypeScript
 - Tailwind CSS v4
 - Supabase
 - Campaign Monitor API
 - `react-email-editor` for the template builder
-- `@canopy/ui` v0.1.10 vendored locally
+- `@globalcloudr/canopy-ui` v0.2.9 — the shared Canopy design system, installed from npm
 
 ## Shared UI
 
-- Community is part of the unified Canopy design system consuming `@canopy/ui` v0.1.10
-- All Canopy products (PhotoVault, Stories, Reach, Create, Community, Portal) now use shared design tokens and components
-- Design tokens: `--ink`, `--ink-2`, `--faint`, `--text-muted`, `--foreground`, `--surface`, `--surface-muted`, `--accent`, `--rule`, `--border` — replacing hardcoded hex colors across all products
-- Community uses the shared shell frame (`AppShellFrame`, `AppShellSidebar`, `AppShellContent`)
-- Core Canopy app fonts (Plus Jakarta Sans, Maven Pro, Source Serif 4) are loaded from `@canopy/ui` via `canopyFontVariables` — one shared font stack across all products
-- Sidebar uses standardized `AppSidebarPanel`, `AppSidebarSection`, and `border-l-2` left-border nav indicators matching other products
-- The shared design-system source of truth remains `canopy-platform/packages/ui`
+`@globalcloudr/canopy-ui` v0.2.9 — used for the shared shell frame, sidebar structure, design tokens, font ownership, and product switcher. Per-product accent color is set via `.product-community { --accent: ... }` in globals.
 
 ## Local Development
 

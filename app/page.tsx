@@ -196,7 +196,11 @@ function DraftRows({
   if (visible.length === 0) {
     return (
       <div className="pt-4">
-        <EmptyState title="No drafts right now" body="Draft newsletters will show up here as soon as they are saved." />
+        <EmptyState
+          title="No drafts yet"
+          body="Create a newsletter to get started — your work is saved automatically as you go."
+          action={{ label: "Create newsletter", href: "/compose" }}
+        />
       </div>
     );
   }
@@ -245,7 +249,10 @@ function SentRows({
   if (visible.length === 0) {
     return (
       <div className="pt-4">
-        <EmptyState title="No sent newsletters yet" body="Sent newsletters will appear here once your school account is connected." />
+        <EmptyState
+          title="No sent newsletters yet"
+          body="Newsletters you send through Canopy Community will appear here with delivery and engagement stats."
+        />
       </div>
     );
   }
@@ -314,8 +321,9 @@ function ListRows({
     return (
       <div className="pt-4">
         <EmptyState
-          title="No lists yet"
-          body="Once your school account is connected, mailing lists will appear here."
+          title="No mailing lists yet"
+          body="Your Campaign Monitor mailing lists will appear here once your account is connected."
+          action={{ label: "Go to Settings", href: "/settings" }}
         />
       </div>
     );
