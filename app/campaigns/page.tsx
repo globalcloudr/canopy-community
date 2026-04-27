@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import { Button, Input } from "@globalcloudr/canopy-ui";
 import { cn } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
-import { communityNavItems } from "@/app/_components/community-nav";
 import { useCommunityOverview, useCommunityWorkspaceId, useSentCampaigns } from "@/app/_components/community-data";
 import { EmptyState, PageHeader, formatShortDate } from "@/app/_components/community-ui";
 import { CampaignAnalyticsDrawer } from "@/app/_components/campaign-analytics-drawer";
@@ -14,7 +13,7 @@ type CampaignView = "overview" | "drafts" | "sent" | "scheduled";
 
 export default function CampaignsPage() {
   return (
-    <ProductShell activeNav="campaigns" navItems={communityNavItems}>
+    <ProductShell activeNav="campaigns">
       <CampaignsContent />
     </ProductShell>
   );

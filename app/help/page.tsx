@@ -1,7 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { BodyText, Button, Card, CardTitle } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
-import { communityNavItems } from "@/app/_components/community-nav";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -37,7 +38,7 @@ function Faq({ question, answer }: { question: string; answer: string }) {
 
 export default function HelpPage() {
   return (
-    <ProductShell activeNav="help" navItems={communityNavItems}>
+    <ProductShell activeNav="help">
       <div className="mx-auto max-w-3xl space-y-10">
 
         <div className="border-b border-[var(--border)] pb-6">

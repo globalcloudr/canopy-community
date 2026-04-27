@@ -37,7 +37,7 @@ import { readStoredWorkspaceId, writeStoredWorkspaceId } from "@/lib/workspace-c
  *
  * Usage:
  *   Wrap every page in <ProductShell activeNav="home" ...> ... </ProductShell>
- *   Define navItems once, e.g. in a constants file, and pass them on every page.
+ *   Nav items are defined inside this shell — just pass activeNav as a string.
  *
  * Product identity and workspace session behavior for Canopy Community.
  */
@@ -60,18 +60,92 @@ type AppSessionPayload = {
   activeWorkspace: OrgOption | null;
 };
 
-export type NavItem = {
+type NavItem = {
   key: string;
   href: string;
   label: string;
   icon: (props: { className?: string }) => ReactNode;
 };
 
+// ─── Nav items ────────────────────────────────────────────────────────────────
+
+function DashboardIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </svg>
+  );
+}
+function CampaignsIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <rect x="3" y="5" width="18" height="14" rx="2.5" />
+      <path d="m6 9 6 4 6-4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function AudienceIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
+      <circle cx="9.5" cy="8" r="4" />
+      <path d="M21 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 4.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+function TemplateIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <path d="M5 3h10l4 4v14H5z" />
+      <path d="M14 3v5h5" />
+      <path d="M8 13h8" />
+      <path d="M8 17h5" />
+    </svg>
+  );
+}
+function ComposeIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <path d="M12 20h9" strokeLinecap="round" />
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function SettingsIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <path d="M12 3.5l2.1 1.2 2.4-.2 1.2 2.1 2 1.3-.2 2.4L20.5 12l-1.2 2.1.2 2.4-2.1 1.2-1.3 2-2.4-.2L12 20.5l-2.1 1.2-2.4-.2-1.2-2.1-2-1.3.2-2.4L3.5 12l1.2-2.1-.2-2.4 2.1-1.2 1.3-2 2.4.2Z" />
+      <circle cx="12" cy="12" r="3.2" />
+    </svg>
+  );
+}
+function HelpIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9a2.5 2.5 0 0 1 5 .5c0 1.5-2.5 2-2.5 3.5" strokeLinecap="round" />
+      <circle cx="12" cy="17" r="0.5" fill="currentColor" />
+    </svg>
+  );
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { key: "dashboard", href: "/",          label: "Dashboard",    icon: DashboardIcon },
+  { key: "campaigns", href: "/campaigns", label: "Campaigns",    icon: CampaignsIcon },
+  { key: "compose",   href: "/compose",   label: "New campaign", icon: ComposeIcon   },
+  { key: "audiences", href: "/audiences", label: "Lists",        icon: AudienceIcon  },
+  { key: "templates", href: "/templates", label: "Templates",    icon: TemplateIcon  },
+  { key: "settings",  href: "/settings",  label: "Settings",     icon: SettingsIcon  },
+  { key: "help",      href: "/help",      label: "Help",         icon: HelpIcon      },
+];
+
 type ProductShellProps = {
   /** Nav key matching the current page — highlights that item in the sidebar */
   activeNav: string;
-  /** Nav items to render in the sidebar */
-  navItems: NavItem[];
   /** Page children — rendered in the content area */
   children: ReactNode;
 };
@@ -142,7 +216,7 @@ async function waitForSessionTokens() {
 // so the first run's setSession is what wins.
 const exchangedLaunchCodes = new Set<string>();
 
-export function ProductShell({ activeNav, navItems, children }: ProductShellProps) {
+export function ProductShell({ activeNav, children }: ProductShellProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -512,7 +586,7 @@ export function ProductShell({ activeNav, navItems, children }: ProductShellProp
             <AppSidebarPanel>
               <AppSidebarPanelBody>
                 <AppSidebarSection label="Navigation">
-                  {navItems.map((item) => {
+                  {NAV_ITEMS.map((item) => {
                     const Icon = item.icon;
                     return (
                       <Link

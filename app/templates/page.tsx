@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@globalcloudr/canopy-ui";
 import { cn } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
-import { communityNavItems } from "@/app/_components/community-nav";
 import {
   useCommunityTemplates,
   useCommunityWorkspaceId,
@@ -18,7 +17,7 @@ import type { CommunityTemplate } from "@/lib/community-schema";
 
 export default function TemplatesPage() {
   return (
-    <ProductShell activeNav="templates" navItems={communityNavItems}>
+    <ProductShell activeNav="templates">
       <TemplatesContent />
     </ProductShell>
   );

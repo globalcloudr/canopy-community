@@ -3,13 +3,12 @@
 
 import { Button } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
-import { communityNavItems } from "@/app/_components/community-nav";
 import { useCommunityOverview } from "@/app/_components/community-data";
 import { EmptyState, PageHeader, formatShortDate } from "@/app/_components/community-ui";
 
 export default function AudiencesPage() {
   return (
-    <ProductShell activeNav="audiences" navItems={communityNavItems}>
+    <ProductShell activeNav="audiences">
       <AudiencesContent />
     </ProductShell>
   );

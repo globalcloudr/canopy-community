@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Button, Input, Label } from "@globalcloudr/canopy-ui";
 import { cn } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
-import { communityNavItems } from "@/app/_components/community-nav";
 import { useCommunityOverview, useCommunityWorkspaceId, useCommunityTemplates } from "@/app/_components/community-data";
 import { UnlayerEditor } from "@/app/_components/unlayer-editor";
 import { supabase } from "@/lib/supabase-client";
@@ -13,7 +12,7 @@ import type { CommunityDraft, CommunityTemplate } from "@/lib/community-schema";
 
 export default function ComposePage() {
   return (
-    <ProductShell activeNav="compose" navItems={communityNavItems}>
+    <ProductShell activeNav="compose">
       <Suspense>
         <ComposeContent />
       </Suspense>

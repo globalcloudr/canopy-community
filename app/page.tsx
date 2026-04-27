@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Button, cn, DashboardHero } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
-import { communityNavItems } from "@/app/_components/community-nav";
 import { useCommunityOverview, useCommunityWorkspaceId } from "@/app/_components/community-data";
 import { EmptyState, formatShortDate, formatCompactDateTime } from "@/app/_components/community-ui";
 import { useProductShell } from "@/app/_components/product-shell";
@@ -17,7 +16,7 @@ import type {
 
 export default function DashboardPage() {
   return (
-    <ProductShell activeNav="dashboard" navItems={communityNavItems}>
+    <ProductShell activeNav="dashboard">
       <DashboardContent />
     </ProductShell>
   );

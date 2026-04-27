@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { BodyText, Button, Card, Input, Label } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
-import { communityNavItems } from "@/app/_components/community-nav";
 import {
   removeCampaignMonitorConnection,
   saveCampaignMonitorConnection,
@@ -15,7 +14,7 @@ import { EmptyState, PageHeader } from "@/app/_components/community-ui";
 
 export default function SettingsPage() {
   return (
-    <ProductShell activeNav="settings" navItems={communityNavItems}>
+    <ProductShell activeNav="settings">
       <SettingsContent />
     </ProductShell>
   );
