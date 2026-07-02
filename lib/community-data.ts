@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { logPortalActivity } from "@/lib/portal-activity";
+import { encryptSecret, decryptSecretNullable } from "@/lib/secret-crypto";
 import {
   createCampaignMonitorCampaign,
   getCampaignMonitorCampaignAnalytics,
@@ -45,7 +46,8 @@ function resolveCampaignMonitorApiKey(options: {
   return (
     options.providedApiKey?.trim() ||
     getSharedCampaignMonitorApiKey() ||
-    options.storedApiKey?.trim() ||
+    // storedApiKey comes from the DB and may be encrypted at rest.
+    decryptSecretNullable(options.storedApiKey)?.trim() ||
     null
   );
 }
@@ -112,7 +114,7 @@ export async function upsertCampaignMonitorConnection(params: {
       {
         workspace_id: params.workspaceId,
         client_id: params.clientId,
-        api_key: params.apiKey ?? "",
+        api_key: params.apiKey ? encryptSecret(params.apiKey) : "",
         auth_type: "api_key",
         account_name: params.accountName,
         country: params.country,
