@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 /**
  * POST /api/auth/exchange-handoff
@@ -41,6 +42,21 @@ function getConfig() {
 
 export async function POST(request: Request) {
   try {
+    // Unauthenticated endpoint that exchanges a handoff code for session tokens.
+    // Throttle per IP so codes can't be brute-forced.
+    const limit = await checkRateLimit({
+      name: "exchange-handoff",
+      identifier: getClientIp(request),
+      limit: 20,
+      windowSeconds: 60,
+    });
+    if (!limit.ok) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again shortly." },
+        { status: 429 }
+      );
+    }
+
     const body = (await request.json()) as { code?: string };
     const code = body.code?.trim();
 
