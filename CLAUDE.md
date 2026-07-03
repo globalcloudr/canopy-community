@@ -2,6 +2,8 @@
 
 This repo is the active Canopy Community product. It is not a starter scaffold anymore.
 
+> **Production readiness (July 2026):** an active security + reliability pass across all Canopy repos. The prioritized plan and live progress log are in `canopy-platform/docs/production-readiness-plan.md`. See this repo's `docs/progress.md` for what changed here.
+
 ## Product Purpose
 
 Canopy Community gives school workspaces a Canopy-native place to manage their newsletter program. The app connects to Campaign Monitor, surfaces workspace-specific campaigns, audiences, and templates, and allows users to compose and send HTML newsletters directly from Canopy — without logging into Campaign Monitor.

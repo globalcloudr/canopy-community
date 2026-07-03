@@ -30,6 +30,15 @@ All Canopy products (photovault, canopy-stories, canopy-reach, canopy-create, ca
 
 ---
 
+## 2026-07-02 — Production readiness: rate limiting, key encryption, deps, CI
+
+Part of the full-platform readiness pass. Central plan: `canopy-platform/docs/production-readiness-plan.md`.
+
+- **Security:** rate-limited the unauthenticated `/api/auth/exchange-handoff` (`lib/rate-limit.ts`). Campaign Monitor `api_key` encrypted at rest via `lib/secret-crypto.ts`. Backfill: `scripts/backfill-encrypt-cm-key.ts`.
+- **Deps/tooling:** Next 16.2.10 (0 vulns); lint restored; CI added.
+- **Env added (prod):** `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `SECRETS_ENCRYPTION_KEY`. Run the backfill after deploy.
+
+---
 ## Current Roadmap
 
 Near-term product work:
