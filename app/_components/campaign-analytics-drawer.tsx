@@ -56,7 +56,7 @@ export function CampaignAnalyticsDrawer({
   return (
     <>
       <Dialog open={!!campaign} onOpenChange={(open) => { if (!open) onClose(); }}>
-        <DialogContent className="left-auto right-0 top-0 h-screen max-h-screen w-full translate-x-0 translate-y-0 overflow-hidden rounded-none border-l border-[var(--rule)] p-0 shadow-xl sm:max-w-xl">
+        <DialogContent hideClose className="!animate-none left-auto right-0 top-0 h-screen max-h-screen w-full translate-x-0 translate-y-0 overflow-hidden rounded-none border-l border-[var(--rule)] p-0 shadow-xl sm:max-w-xl">
           <aside className="flex h-full flex-col bg-white">
 
             {/* Header */}
