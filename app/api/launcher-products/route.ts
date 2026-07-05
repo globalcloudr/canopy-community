@@ -10,7 +10,7 @@ import { requireWorkspaceAccess, toErrorResponse } from "@/lib/server-auth";
  * current school actually has enabled.
  */
 
-type LauncherProductKey = "photovault" | "stories_canopy" | "reach_canopy" | "community_canopy";
+type LauncherProductKey = "photovault" | "stories_canopy" | "reach_canopy" | "create_canopy" | "community_canopy";
 
 type EntitlementRow = {
   workspace_id?: string | null;
@@ -39,6 +39,7 @@ function isLauncherProductKey(
     value === "photovault" ||
     value === "stories_canopy" ||
     value === "reach_canopy" ||
+    value === "create_canopy" ||
     value === "community_canopy"
   );
 }

@@ -51,7 +51,7 @@ const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL ?? "https://app.usecanopy.
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type OrgOption = { id: string; name: string; slug: string };
-type LauncherProductKey = "photovault" | "stories_canopy" | "reach_canopy" | "community_canopy";
+type LauncherProductKey = "photovault" | "stories_canopy" | "reach_canopy" | "create_canopy" | "community_canopy";
 
 type AppSessionPayload = {
   user: { id: string; email: string; displayName: string };
@@ -477,6 +477,9 @@ export function ProductShell({ activeNav, children }: ProductShellProps) {
       : []),
     ...(launcherProductKeys.includes("reach_canopy")
       ? [{ key: "reach_canopy", label: "Canopy Reach", productKey: "reach_canopy" as const }]
+      : []),
+    ...(launcherProductKeys.includes("create_canopy")
+      ? [{ key: "create_canopy", label: "Canopy Create", productKey: "create_canopy" as const }]
       : []),
   ];
 
