@@ -150,13 +150,15 @@ export function CampaignAnalyticsDrawer({
                     </div>
                   </AnalyticsSection>
 
-                  <AnalyticsSection title="Reactions">
-                    <div className="grid grid-cols-3 gap-3">
-                      <StatCard label="Forwards" value={analytics.forwards?.toLocaleString() ?? "—"} />
-                      <StatCard label="Likes" value={analytics.likes?.toLocaleString() ?? "—"} />
-                      <StatCard label="Mentions" value={analytics.mentions?.toLocaleString() ?? "—"} />
-                    </div>
-                  </AnalyticsSection>
+                  {analytics.forwards != null || analytics.likes != null || analytics.mentions != null ? (
+                    <AnalyticsSection title="Reactions">
+                      <div className="grid grid-cols-3 gap-3">
+                        <StatCard label="Forwards" value={analytics.forwards?.toLocaleString() ?? "—"} />
+                        <StatCard label="Likes" value={analytics.likes?.toLocaleString() ?? "—"} />
+                        <StatCard label="Mentions" value={analytics.mentions?.toLocaleString() ?? "—"} />
+                      </div>
+                    </AnalyticsSection>
+                  ) : null}
 
                   {analytics.topLinks.length > 0 ? (
                     <AnalyticsSection title="Top links">
@@ -260,7 +262,7 @@ function ShareCampaignModal({ url, onClose }: { url: string; onClose: () => void
         {/* Body */}
         <div className="px-6 py-5">
           <p className="text-[14px] text-[var(--text-muted)]">
-            Share this campaign with friends and we'll show you the results.
+            Anyone with this link can view the web version of this newsletter.
           </p>
 
           {/* URL + copy */}
@@ -275,26 +277,6 @@ function ShareCampaignModal({ url, onClose }: { url: string; onClose: () => void
             >
               {copied ? "Copied!" : "Copy"}
             </button>
-          </div>
-
-          {/* Share buttons */}
-          <div className="mt-4 flex gap-3">
-            <a
-              href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex-1 rounded-lg border border-[var(--rule)] px-4 py-2.5 text-center text-[13px] font-medium text-[var(--ink-2)] transition hover:border-[var(--rule)] hover:bg-[var(--surface-muted)]"
-            >
-              Share on X
-            </a>
-            <a
-              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex-1 rounded-lg border border-[var(--rule)] px-4 py-2.5 text-center text-[13px] font-medium text-[var(--ink-2)] transition hover:border-[var(--rule)] hover:bg-[var(--surface-muted)]"
-            >
-              Share on Facebook
-            </a>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button, Input, Label } from "@globalcloudr/canopy-ui";
 import { cn } from "@globalcloudr/canopy-ui";
-import { ProductShell } from "@/app/_components/product-shell";
+import { ProductShell, useProductShell } from "@/app/_components/product-shell";
 import { useCommunityOverview, useCommunityWorkspaceId, useCommunityTemplates } from "@/app/_components/community-data";
 import { UnlayerEditor } from "@/app/_components/unlayer-editor";
 import { supabase } from "@/lib/supabase-client";
@@ -23,8 +23,9 @@ export default function ComposePage() {
 function ComposeContent() {
   const { workspaceId } = useCommunityWorkspaceId();
   const { overview } = useCommunityOverview();
+  const { userEmail } = useProductShell();
   const lists = overview?.lists ?? [];
-  const userEmail = overview?.connection?.accountName ?? "";
+  const connectionTimezone = overview?.connection?.timezone ?? null;
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -150,6 +151,13 @@ function ComposeContent() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [savedAsDraft, setSavedAsDraft] = useState(false);
+
+  // Prefill the confirmation email with the signed-in user's address. Only
+  // fills an empty field so a user-typed value is never clobbered on re-render.
+  useEffect(() => {
+    if (!userEmail) return;
+    setConfirmationEmail((prev) => prev || userEmail);
+  }, [userEmail]);
 
   const billing = overview?.billing ?? null;
 
@@ -628,7 +636,11 @@ function ComposeContent() {
             </div>
             {sendMode === "schedule" ? (
               <div className="mt-4">
-                <Field label="Send date and time" required>
+                <Field
+                  label="Send date and time"
+                  required
+                  hint={connectionTimezone ? `Times are in ${connectionTimezone}.` : undefined}
+                >
                   <Input
                     type="datetime-local"
                     value={scheduledDate}
@@ -692,7 +704,10 @@ function ComposeContent() {
                   />
                 ) : null}
                 {sendMode === "schedule" && scheduledDate ? (
-                  <ConfirmRow label="Scheduled for" value={new Date(scheduledDate).toLocaleString()} />
+                  <ConfirmRow
+                    label="Scheduled for"
+                    value={`${new Date(scheduledDate).toLocaleString()}${connectionTimezone ? ` (times are in ${connectionTimezone})` : ""}`}
+                  />
                 ) : (
                   <ConfirmRow label="Send time" value="Immediately" />
                 )}
@@ -831,9 +846,20 @@ function TemplatePicker({
   onSelect: (template: CommunityTemplate) => void;
   onClose: () => void;
 }) {
+  // Close on Escape
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
-      <div className="mx-4 w-full max-w-lg rounded-xl bg-white shadow-xl">
+      {/* Backdrop */}
+      <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
+      <div className="relative mx-4 w-full max-w-lg rounded-xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-[var(--rule)] px-5 py-4">
           <h3 className="text-[16px] font-semibold text-[var(--ink)]">Choose a template</h3>
           <button

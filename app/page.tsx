@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button, cn, DashboardHero } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
 import { useCommunityOverview, useCommunityWorkspaceId } from "@/app/_components/community-data";
-import { EmptyState, formatShortDate, formatCompactDateTime } from "@/app/_components/community-ui";
+import { EmptyState, LoadingRows, formatShortDate, formatCompactDateTime } from "@/app/_components/community-ui";
 import { useProductShell } from "@/app/_components/product-shell";
 import { CampaignAnalyticsDrawer } from "@/app/_components/campaign-analytics-drawer";
 import type {
@@ -30,6 +30,9 @@ function DashboardContent() {
 
   const draftCount = overview?.stats.draftCampaignCount ?? 0;
   const scheduledCount = overview?.stats.scheduledCampaignCount ?? 0;
+  // Show skeleton rows during the initial fetch only — a background refresh
+  // keeps the existing rows on screen.
+  const initialLoading = loading && !overview;
 
   return (
     <div className="flex flex-col gap-6">
@@ -57,7 +60,7 @@ function DashboardContent() {
         actionHref="/campaigns"
         actionLabel="See all draft campaigns"
       >
-        <DraftRows campaigns={overview?.draftCampaigns ?? []} />
+        {initialLoading ? <LoadingRows /> : <DraftRows campaigns={overview?.draftCampaigns ?? []} />}
       </DashboardSection>
 
       {/* Sent */}
@@ -66,7 +69,11 @@ function DashboardContent() {
         actionHref="/campaigns"
         actionLabel="See all sent campaigns"
       >
-        <SentRows campaigns={overview?.sentCampaigns ?? []} onSelect={setSelectedCampaign} />
+        {initialLoading ? (
+          <LoadingRows />
+        ) : (
+          <SentRows campaigns={overview?.sentCampaigns ?? []} onSelect={setSelectedCampaign} />
+        )}
       </DashboardSection>
 
       {/* Lists */}
@@ -75,7 +82,7 @@ function DashboardContent() {
         actionHref="/audiences"
         actionLabel="See all subscriber lists"
       >
-        <ListRows lists={overview?.lists ?? []} />
+        {initialLoading ? <LoadingRows /> : <ListRows lists={overview?.lists ?? []} />}
       </DashboardSection>
 
       <CampaignAnalyticsDrawer
@@ -282,9 +289,18 @@ function SentRows({
                   </svg>
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-[14px] font-medium text-[var(--ink)] group-hover:text-[var(--accent)]">
+                  {/* Button gives keyboard users a focusable path to the
+                      analytics drawer; the row onClick stays for mouse users. */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelect(campaign);
+                    }}
+                    className="block max-w-full truncate text-left text-[14px] font-medium text-[var(--ink)] group-hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                  >
                     {campaign.name || campaign.subject}
-                  </p>
+                  </button>
                   <p className="mt-0.5 text-[13px] text-[var(--text-muted)]">
                     Sent {formatShortDate(campaign.sentDate)}
                   </p>
