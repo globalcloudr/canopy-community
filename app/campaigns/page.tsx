@@ -5,7 +5,7 @@ import { Button, Input } from "@globalcloudr/canopy-ui";
 import { cn } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
 import { useCommunityOverview, useCommunityWorkspaceId, useSentCampaigns } from "@/app/_components/community-data";
-import { EmptyState, PageHeader, formatShortDate } from "@/app/_components/community-ui";
+import { EmptyState, LoadingRows, PageHeader, formatShortDate } from "@/app/_components/community-ui";
 import { CampaignAnalyticsDrawer } from "@/app/_components/campaign-analytics-drawer";
 import type { CommunityCampaignSummary, CommunityDraft } from "@/lib/community-schema";
 
@@ -122,7 +122,11 @@ function CampaignsContent() {
           ) : null}
 
           {view === "overview" ? (
-            <SentSection campaigns={filteredSent} onSelect={setSelectedCampaign} />
+            <SentSection
+              campaigns={filteredSent}
+              loading={loading && !overview}
+              onSelect={setSelectedCampaign}
+            />
           ) : null}
 
           {view === "sent" ? (
@@ -253,9 +257,18 @@ function SentRow({ c, onSelect }: { c: CommunityCampaignSummary; onSelect: (c: C
       onClick={() => onSelect(c)}
     >
       <td className="py-3 pr-4">
-        <span className="text-[14px] font-medium text-[var(--ink)] group-hover:text-[var(--accent)]">
+        {/* Button gives keyboard users a focusable path to the analytics
+            drawer; the row onClick stays for mouse users. */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect(c);
+          }}
+          className="block max-w-full truncate text-left text-[14px] font-medium text-[var(--ink)] group-hover:text-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+        >
           {c.name}
-        </span>
+        </button>
       </td>
       <td className="hidden py-3 pr-4 text-right text-[14px] text-[var(--ink-2)] md:table-cell">
         {c.recipientCount?.toLocaleString() ?? "—"}
@@ -275,9 +288,11 @@ function SentRow({ c, onSelect }: { c: CommunityCampaignSummary; onSelect: (c: C
 
 function SentSection({
   campaigns,
+  loading,
   onSelect,
 }: {
   campaigns: CommunityCampaignSummary[];
+  loading?: boolean;
   onSelect: (c: CommunityCampaignSummary) => void;
 }) {
   if (campaigns.length === 0) {
@@ -286,7 +301,11 @@ function SentSection({
         <h3 className="mb-3 text-[1rem] font-semibold tracking-[-0.01em] text-[var(--ink)]">
           Recently sent
         </h3>
-        <EmptyState title="No sent newsletters yet" body="Sent newsletters will appear here once your account is connected." />
+        {loading ? (
+          <LoadingRows className="pt-0" />
+        ) : (
+          <EmptyState title="No sent newsletters yet" body="Sent newsletters will appear here once your account is connected." />
+        )}
       </div>
     );
   }

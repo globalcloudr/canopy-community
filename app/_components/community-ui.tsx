@@ -168,6 +168,27 @@ export function EmptyState({
   );
 }
 
+/** Simple pulse placeholder rows shown while list data is loading, so pages
+ *  don't flash an empty state before the first fetch resolves. */
+export function LoadingRows({
+  rows = 3,
+  className,
+}: {
+  rows?: number;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex flex-col gap-3 pt-4", className)} aria-hidden="true">
+      {Array.from({ length: rows }).map((_, index) => (
+        <div
+          key={index}
+          className="h-10 animate-pulse rounded-lg bg-[var(--surface-muted)]"
+        />
+      ))}
+    </div>
+  );
+}
+
 export function SyncErrorNotice({
   message,
 }: {
@@ -207,7 +228,9 @@ export function CampaignStatusBadge({
   }
 
   if (status === "scheduled") {
-    return <Badge className="border-[#fed7aa] bg-[#fff7ed] text-[#c2410c]">Scheduled</Badge>;
+    // Status colors stay in the blue family (matching Draft) — warm accents are
+    // reserved for product identity, not campaign state.
+    return <Badge className="border-[#dbeafe] bg-[#eff6ff] text-[var(--accent)]">Scheduled</Badge>;
   }
 
   return <Badge className="border-[#dbeafe] bg-[#eff6ff] text-[var(--accent)]">Draft</Badge>;

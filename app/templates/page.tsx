@@ -349,6 +349,9 @@ function TemplateCard({
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Template actions"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
               className="rounded-md p-1.5 text-[var(--faint)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--ink-2)]"
             >
               <svg viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4" aria-hidden="true">
@@ -445,9 +448,20 @@ function TemplatePreviewModal({
   onClose: () => void;
   onEdit?: () => void;
 }) {
+  // Close on Escape
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
-      <div className="flex h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-xl">
+      {/* Backdrop */}
+      <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
+      <div className="relative flex h-[85vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-[var(--rule)] px-5 py-4">
           <div>
             <h3 className="text-[16px] font-semibold text-[var(--ink)]">{template.name}</h3>

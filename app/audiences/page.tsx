@@ -4,7 +4,7 @@
 import { Button } from "@globalcloudr/canopy-ui";
 import { ProductShell } from "@/app/_components/product-shell";
 import { useCommunityOverview } from "@/app/_components/community-data";
-import { EmptyState, PageHeader, formatShortDate } from "@/app/_components/community-ui";
+import { EmptyState, LoadingRows, PageHeader, formatShortDate } from "@/app/_components/community-ui";
 
 export default function AudiencesPage() {
   return (
@@ -45,7 +45,9 @@ function AudiencesContent() {
 
         {/* Main content */}
         <div className="min-w-0 flex-1">
-          {lists.length === 0 ? (
+          {loading && !overview ? (
+            <LoadingRows className="pt-0" />
+          ) : lists.length === 0 ? (
             <EmptyState
               title="No lists yet"
               body="Once your school account is connected, mailing lists will appear here."
