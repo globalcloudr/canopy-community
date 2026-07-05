@@ -44,8 +44,9 @@ Canopy Community gives school workspaces a Canopy-native place to manage their n
 - `app/api/auth/exchange-handoff/route.ts`
 - `app/api/community/overview/route.ts`
 - `app/api/community/compose/route.ts` — create and send campaigns
+- `app/api/community/test-send/route.ts` — `POST` (workspace-auth): creates an ephemeral CM draft named "[Test preview] …", calls CM `sendpreview.json` to the test address only, best-effort deletes the draft; never touches real lists
 - `app/api/integrations/campaign-monitor/route.ts`
-- `app/api/launcher-products/route.ts`
+- `app/api/launcher-products/route.ts` — launcher keys come from `@globalcloudr/canopy-ui/product-keys`; never redeclare launcher key lists locally
 
 ### Data and integrations
 
@@ -62,6 +63,11 @@ Canopy Community gives school workspaces a Canopy-native place to manage their n
 - `app/_components/community-ui.tsx` — shared UI primitives
 - `app/_components/community-sections.tsx` — page-level section components
 - `app/_components/community-data.tsx` — client-side data hooks
+
+UI notes:
+
+- `@globalcloudr/canopy-ui` is `^0.2.13`. Mobile navigation is built into the shell: `CanopyHeader` renders a hamburger below `md` opening the sidebar nav in a non-modal sheet — do NOT add an app-level drawer.
+- The campaign analytics side-drawer uses Dialog `hideClose` + `!animate-none` (repositions `DialogContent`; has its own close button) — reuse this pattern for future drawers.
 
 ### SQL
 
@@ -80,7 +86,10 @@ SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_APP_URL=http://localhost:3003
 NEXT_PUBLIC_PORTAL_URL=https://app.usecanopy.school
 CAMPAIGN_MONITOR_API_KEY=
+SECRETS_ENCRYPTION_KEY=
 ```
+
+`SECRETS_ENCRYPTION_KEY` is required to read per-workspace Campaign Monitor keys: `community_campaign_monitor_connections.api_key` is encrypted at rest (`enc:v1:` prefix); the key is set in Vercel and the backfill completed 2026-07-05.
 
 Optional:
 
@@ -111,7 +120,7 @@ The compose page (`/compose`) handles the full send lifecycle:
 
 1. User uploads an HTML file (read client-side via `FileReader`, previewed in an iframe).
 2. User fills subject, from name, from email, reply-to, and selects one or more lists.
-3. User enters a confirmation email address and reviews estimated cost before sending.
+3. User enters a confirmation email address (prefilled from the session email) and reviews estimated cost before sending. The send-review panel offers "Send a test email first" (prefilled from the session email; see `POST /api/community/test-send`). The schedule field and review row show the connection's timezone.
 4. On submit, the API route (`POST /api/community/compose`) calls `composeCampaign()` in `lib/community-data.ts`.
 5. `composeCampaign()` orchestrates:
    - Upload HTML to private Supabase Storage bucket (`community-html-uploads`)
@@ -189,6 +198,8 @@ Opening Community directly without a valid launch/session can redirect back to t
 - Keep all Campaign Monitor API behavior in `lib/campaign-monitor.ts`.
 - Filter all data by `workspace_id`.
 - Preserve Canopy handoff auth rather than creating ad hoc auth flows.
+- Keep the product shell's module-level replay guard over single-use `?launch=` codes — never re-exchange a consumed code on effect re-runs.
+- Switcher display stays entitlement-driven per workspace; launcher keys/labels come from `@globalcloudr/canopy-ui/product-keys` (`LAUNCHER_PRODUCT_KEYS`, `isLauncherProductKey`, `LAUNCHER_PRODUCT_LABELS`) — three per-app copies once drifted and silently hid Canopy Create from switchers.
 - Run `npx tsc --noEmit --incremental false` before considering work done.
 
 ## Next Product Phase

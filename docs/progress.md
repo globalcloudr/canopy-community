@@ -2,6 +2,19 @@
 
 Append new sessions at the top. Do not overwrite history.
 
+## 2026-07-05 — UX phases, test-send preview, timezone-aware compose, shared launcher keys
+
+Part of the full-platform readiness pass. Central plan: `canopy-platform/docs/production-readiness-plan.md`.
+
+- **Test send:** new `POST /api/community/test-send` (workspace-auth) — creates an ephemeral CM draft named "[Test preview] …", calls CM `sendpreview.json` to the test address only, best-effort deletes the draft; never touches real lists. UI: "Send a test email first" in the compose send-review panel, prefilled from the session email.
+- **Compose:** confirmation email prefilled from session; schedule field + review row show the connection's timezone.
+- **UI pattern note:** the campaign analytics side-drawer uses Dialog `hideClose` + `!animate-none` (repositions `DialogContent`; has its own close button) — reuse for future drawers.
+- **Secrets at rest:** `community_campaign_monitor_connections.api_key` encrypted (`enc:v1:`); `SECRETS_ENCRYPTION_KEY` set in Vercel; backfill completed 2026-07-05.
+- **Shared UI:** `@globalcloudr/canopy-ui` → `^0.2.13`. Mobile nav is now built into the shell — `CanopyHeader` renders a hamburger below `md` opening the sidebar nav in a non-modal sheet; apps must not add their own drawers. Launcher product keys now come from the shared `@globalcloudr/canopy-ui/product-keys` subpath (`LAUNCHER_PRODUCT_KEYS`, `isLauncherProductKey`, `LAUNCHER_PRODUCT_LABELS`) — three per-app copies had drifted and silently hid Canopy Create from switchers; never redeclare launcher key lists locally. Switcher display remains entitlement-driven per workspace.
+- **Launch hardening:** module-level replay guard over single-use `?launch=` codes in the product shell — a consumed code is never re-exchanged on effect re-runs.
+
+---
+
 ## 2026-04-20 — Design system alignment pass across all products
 
 All Canopy products (photovault, canopy-stories, canopy-reach, canopy-create, canopy-community, canopy-platform portal) are now fully on the shared `@globalcloudr/canopy-ui` design system.
