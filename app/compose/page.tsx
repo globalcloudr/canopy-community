@@ -151,12 +151,18 @@ function ComposeContent() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [savedAsDraft, setSavedAsDraft] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
+  const [testSending, setTestSending] = useState(false);
+  const [testSentTo, setTestSentTo] = useState<string | null>(null);
+  const [testError, setTestError] = useState<string | null>(null);
 
-  // Prefill the confirmation email with the signed-in user's address. Only
-  // fills an empty field so a user-typed value is never clobbered on re-render.
+  // Prefill the confirmation and test-send emails with the signed-in user's
+  // address. Only fills an empty field so a user-typed value is never
+  // clobbered on re-render.
   useEffect(() => {
     if (!userEmail) return;
     setConfirmationEmail((prev) => prev || userEmail);
+    setTestEmail((prev) => prev || userEmail);
   }, [userEmail]);
 
   const billing = overview?.billing ?? null;
@@ -188,6 +194,8 @@ function ComposeContent() {
   function handleReviewClick(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setTestError(null);
+    setTestSentTo(null);
     setConfirming(true);
   }
 
@@ -258,6 +266,51 @@ function ComposeContent() {
       if (!overrides?.silent) setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       if (!overrides?.silent) setSavingDraft(false);
+    }
+  }
+
+  async function handleSendTest() {
+    if (!workspaceId || !htmlContent) return;
+
+    setTestSending(true);
+    setTestError(null);
+    setTestSentTo(null);
+
+    try {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) throw new Error("Your session has expired. Please sign in again.");
+
+      const response = await fetch("/api/community/test-send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          workspaceId,
+          name: campaignName,
+          subject,
+          fromName,
+          fromEmail,
+          replyTo,
+          listIds,
+          htmlContent,
+          testEmail,
+        }),
+      });
+
+      const payload = (await response.json()) as { error?: string; testEmail?: string };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Failed to send the test email.");
+      }
+
+      setTestSentTo(payload.testEmail ?? testEmail);
+    } catch (err) {
+      setTestError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setTestSending(false);
     }
   }
 
@@ -718,6 +771,42 @@ function ComposeContent() {
                   Your account may not have enough credits for this send. Campaign Monitor will charge your saved payment method, or the send may fail.
                 </p>
               ) : null}
+
+              {/* Test send — previews the campaign in a real inbox without touching the mailing lists */}
+              <div className="mt-5 rounded-lg border border-[var(--rule)] bg-white p-4">
+                <p className="text-[14px] font-semibold text-[var(--ink)]">Send a test email first</p>
+                <p className="mt-1 text-[13px] text-[var(--text-muted)]">
+                  Check how this campaign looks in a real inbox. Test sends never go to your mailing lists.
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <Input
+                    type="email"
+                    value={testEmail}
+                    onChange={(e) => setTestEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    disabled={testSending || sending}
+                    className="w-full max-w-[280px]"
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={testSending || sending || !testEmail.trim()}
+                    onClick={() => void handleSendTest()}
+                  >
+                    {testSending ? "Sending test…" : "Send test email"}
+                  </Button>
+                </div>
+                {testSentTo ? (
+                  <p className="mt-3 rounded-lg border border-[#bfdbd5] bg-[#ecfdf5] px-4 py-3 text-[14px] text-[#0f766e]">
+                    Test sent to {testSentTo} — check your inbox.
+                  </p>
+                ) : null}
+                {testError ? (
+                  <p className="mt-3 rounded-lg border border-[#fca5a5] bg-[#fef2f2] px-4 py-3 text-[14px] text-[#b91c1c]">
+                    {testError}
+                  </p>
+                ) : null}
+              </div>
 
               <div className="mt-5 flex items-center gap-3">
                 <Button
