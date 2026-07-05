@@ -3,6 +3,7 @@ import { logPortalActivity } from "@/lib/portal-activity";
 import { encryptSecret, decryptSecretNullable } from "@/lib/secret-crypto";
 import {
   createCampaignMonitorCampaign,
+  deleteCampaignMonitorCampaign,
   getCampaignMonitorCampaignAnalytics,
   getCampaignMonitorCampaignSummary,
   getCampaignMonitorClientBilling,
@@ -14,6 +15,7 @@ import {
   getCampaignMonitorSentCampaigns,
   scheduleCampaignMonitorCampaign,
   sendCampaignMonitorCampaign,
+  sendCampaignMonitorCampaignPreview,
   type CampaignMonitorApiError,
 } from "@/lib/campaign-monitor";
 import type { CampaignAnalytics, CommunityConnection, CommunityDraft, CommunityOverview, CommunityTemplate } from "@/lib/community-schema";
@@ -805,6 +807,87 @@ export async function composeCampaign(params: ComposeCampaignParams) {
     return { campaignId, draft: params.draft === true };
   } finally {
     // 4. Always delete the HTML file from storage — CM has already fetched it
+    await deleteCampaignHtml(storagePath).catch(() => null);
+  }
+}
+
+// ─── Test send (campaign preview) ─────────────────────────────────────────────
+
+export type SendTestCampaignParams = {
+  workspaceId: string;
+  name: string;
+  subject: string;
+  fromName: string;
+  fromEmail: string;
+  replyTo: string;
+  listIds: string[];
+  htmlContent: string;
+  testEmails: string[];
+};
+
+/**
+ * Sends a test preview of a campaign without touching the real recipient
+ * lists. Mirrors the creation half of composeCampaign: uploads the HTML,
+ * creates a draft campaign in Campaign Monitor, then uses CM's sendpreview
+ * endpoint to deliver it to the test addresses only. The ephemeral CM draft
+ * is deleted afterwards (best effort) so test sends never clutter the
+ * client's drafts in Campaign Monitor, and nothing is ever sent or
+ * scheduled to the selected lists.
+ */
+export async function sendTestCampaignEmail(params: SendTestCampaignParams) {
+  const connectionRow = await getCampaignMonitorConnection(params.workspaceId);
+
+  if (!connectionRow) {
+    throw new Error("No Campaign Monitor connection found for this workspace.");
+  }
+
+  const apiKey = resolveCampaignMonitorApiKey({
+    storedApiKey: connectionRow.api_key,
+  });
+
+  if (!apiKey) {
+    throw new Error("Campaign Monitor API key is not configured.");
+  }
+
+  const credentials = {
+    clientId: connectionRow.client_id,
+    apiKey,
+  };
+
+  // 1. Upload HTML to Supabase Storage and get a short-lived signed URL
+  const { signedUrl, storagePath } = await uploadCampaignHtmlForSend({
+    workspaceId: params.workspaceId,
+    html: params.htmlContent,
+  });
+
+  try {
+    // 2. Create an ephemeral draft campaign in Campaign Monitor.
+    // CM fetches the HTML from the signed URL at this point. The name is
+    // prefixed so it is identifiable if the best-effort cleanup below fails.
+    const { campaignId } = await createCampaignMonitorCampaign(credentials, {
+      name: `[Test preview] ${params.name}`,
+      subject: params.subject,
+      fromName: params.fromName,
+      fromEmail: params.fromEmail,
+      replyTo: params.replyTo,
+      htmlUrl: signedUrl,
+      listIds: params.listIds,
+    });
+
+    try {
+      // 3. Send the preview to the test addresses only — sendpreview never
+      // delivers to the campaign's lists.
+      await sendCampaignMonitorCampaignPreview(credentials, campaignId, params.testEmails);
+    } finally {
+      // 4. Delete the ephemeral CM draft — the preview has already been
+      // dispatched by the time sendpreview returns. Best effort: a leftover
+      // draft in CM is harmless.
+      await deleteCampaignMonitorCampaign(credentials, campaignId).catch(() => null);
+    }
+
+    return { sent: true as const };
+  } finally {
+    // 5. Always delete the HTML file from storage — CM has already fetched it
     await deleteCampaignHtml(storagePath).catch(() => null);
   }
 }

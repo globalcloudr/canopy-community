@@ -454,6 +454,34 @@ export async function scheduleCampaignMonitorCampaign(
   );
 }
 
+export async function sendCampaignMonitorCampaignPreview(
+  credentials: CampaignMonitorCredentials,
+  campaignId: string,
+  emails: string[]
+): Promise<void> {
+  await requestJson<unknown>(
+    `/campaigns/${encodeURIComponent(campaignId)}/sendpreview.json`,
+    credentials,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        PreviewRecipients: emails,
+      }),
+    }
+  );
+}
+
+export async function deleteCampaignMonitorCampaign(
+  credentials: CampaignMonitorCredentials,
+  campaignId: string
+): Promise<void> {
+  await requestJson<unknown>(
+    `/campaigns/${encodeURIComponent(campaignId)}.json`,
+    credentials,
+    { method: "DELETE" }
+  );
+}
+
 type CampaignMonitorListStatsResponse = {
   TotalActiveSubscribers?: number | null;
   NewActiveSubscribersToday?: number | null;
