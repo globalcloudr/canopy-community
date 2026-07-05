@@ -23,6 +23,7 @@ import {
 import { supabase } from "@/lib/supabase-client";
 import { buildWorkspaceHref } from "@/lib/workspace-href";
 import { readStoredWorkspaceId, writeStoredWorkspaceId } from "@/lib/workspace-client";
+import { isLauncherProductKey, type LauncherProductKey } from "@globalcloudr/canopy-ui/product-keys";
 
 /**
  * ProductShell — the root layout component for all product pages.
@@ -51,7 +52,6 @@ const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL ?? "https://app.usecanopy.
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type OrgOption = { id: string; name: string; slug: string };
-type LauncherProductKey = "photovault" | "stories_canopy" | "reach_canopy" | "create_canopy" | "community_canopy";
 
 type AppSessionPayload = {
   user: { id: string; email: string; displayName: string };
@@ -279,9 +279,7 @@ export function ProductShell({ activeNav, children }: ProductShellProps) {
 
         const payload = (await response.json()) as { products?: LauncherProductKey[] };
         setLauncherProductKeys(
-          (payload.products ?? []).filter((v): v is LauncherProductKey =>
-            v === "photovault" || v === "stories_canopy" || v === "reach_canopy" || v === "create_canopy" || v === "community_canopy"
-          )
+          (payload.products ?? []).filter(isLauncherProductKey)
         );
       } catch {
         if (!controller.signal.aborted) setLauncherProductKeys([]);
