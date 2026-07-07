@@ -38,7 +38,7 @@ function DashboardContent() {
     <div className="flex flex-col gap-6">
       <DashboardHero
         eyebrow="Canopy Community"
-        headline="Welcome back"
+        headline={<>School news, <span className="font-bold text-[var(--accent)]">delivered</span>.</>}
         subheading={[
           draftCount > 0 ? `You have ${draftCount} draft campaign${draftCount === 1 ? "" : "s"} in progress.` : null,
           scheduledCount > 0 ? `${scheduledCount} scheduled.` : null,
