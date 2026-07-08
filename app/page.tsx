@@ -40,9 +40,10 @@ function DashboardContent() {
         eyebrow="Canopy Community"
         headline={<>School news, <span className="font-bold text-[var(--accent)]">delivered</span>.</>}
         subheading={[
+          "Send newsletters and school-to-community email from one place.",
           draftCount > 0 ? `You have ${draftCount} draft campaign${draftCount === 1 ? "" : "s"} in progress.` : null,
           scheduledCount > 0 ? `${scheduledCount} scheduled.` : null,
-        ].filter(Boolean).join(" ") || undefined}
+        ].filter(Boolean).join(" ")}
         ctaLabel="Create campaign"
         ctaHref="/compose"
       />
